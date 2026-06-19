@@ -12,7 +12,7 @@ AEROAPI_MONTHLY_CAP = "800"
 # Your email address for 75%/100% usage-cap warnings. Not a secret, but you
 # may also set it via `wrangler secret put ALERT_EMAIL` if you'd rather not
 # commit it.
-ALERT_EMAIL = "you@example.com"
+ALERT_EMAIL = tom.tsutton@gmail.com
 
 # Created with: npx wrangler kv namespace create SKYFRAME2_KV
 # Named distinctly from the original app's SKYFRAME_KV so both versions can
@@ -20,4 +20,4 @@ ALERT_EMAIL = "you@example.com"
 # Paste the "id" it prints below.
 [[kv_namespaces]]
 binding = "SKYFRAME2_KV"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = e132f1f47234490e944776ed0e0a3145
