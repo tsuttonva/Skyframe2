@@ -826,6 +826,9 @@ function drawGeoOutlines(cx, cy, maxR) {
   rebuildGeoCacheIfNeeded(cx, cy, maxR);
   if (!geoCache.loops.length) return;
   ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+  ctx.clip();
   ctx.strokeStyle = geoCache.mode === 'county' ? 'rgba(57,255,122,0.25)' : 'rgba(74,209,255,0.3)';
   ctx.lineWidth = 1;
   for (var i = 0; i < geoCache.loops.length; i++) {
@@ -1117,16 +1120,26 @@ canvas.addEventListener('click', function (evt) {
   if (STATE.radarRadiusNm <= CONFIG.COUNTY_ZOOM_NM && STATE.countiesGeo) {
     var feature = findFeatureAtPoint(geo.lon, geo.lat, STATE.countiesGeo.features);
     if (feature) {
-      STATE.highlightedFeature = feature;
-      var name = countyName(feature.id) || feature.properties.name;
-      showCountyPill(name);
+      if (STATE.highlightedFeature === feature) {
+        STATE.highlightedFeature = null;
+        hideCountyPill();
+      } else {
+        STATE.highlightedFeature = feature;
+        var name = countyName(feature.id) || feature.properties.name;
+        showCountyPill(name);
+      }
       return;
     }
   } else if (STATE.countriesGeo) {
     var cfeature = findFeatureAtPoint(geo.lon, geo.lat, STATE.countriesGeo.features);
     if (cfeature) {
-      STATE.highlightedFeature = cfeature;
-      showCountyPill(cfeature.properties.name);
+      if (STATE.highlightedFeature === cfeature) {
+        STATE.highlightedFeature = null;
+        hideCountyPill();
+      } else {
+        STATE.highlightedFeature = cfeature;
+        showCountyPill(cfeature.properties.name);
+      }
       return;
     }
   }
@@ -1168,7 +1181,7 @@ function restartRefreshCycleNoFetch() {
 }
 
 function adjustRadarRadius(dir) {
-  var step = getRadarStep(STATE.radarRadiusNm);
+  var step = dir > 0 ? getRadarStep(STATE.radarRadiusNm) : getRadarStep(STATE.radarRadiusNm - 1);
   setRadarRadius(STATE.radarRadiusNm + dir * step, dir > 0);
 }
 
