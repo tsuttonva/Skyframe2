@@ -20,4 +20,4 @@ ALERT_EMAIL = "you@example.com"
 # Paste the "id" it prints below.
 [[kv_namespaces]]
 binding = "SKYFRAME2_KV"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = e132f1f47234490e944776ed0e0a3145
