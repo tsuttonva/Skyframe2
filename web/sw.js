@@ -10,7 +10,7 @@
  * geocoding, the CDN-hosted TopoJSON libs -- is left completely untouched
  * (no respondWith), so live data is never served stale from a cache.
  */
-var CACHE_VERSION = '1.0.4';
+var CACHE_VERSION = '1.0.5';
 var CACHE_NAME = 'skyframe-' + CACHE_VERSION;
 
 var STATIC_ASSETS = [
@@ -30,7 +30,14 @@ var STATIC_ASSETS = [
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(STATIC_ASSETS);
+      // cache.addAll() does plain fetch()es, which can be satisfied by the
+      // browser's HTTP cache and silently re-cache stale assets under the
+      // new cache name. Force a real network round-trip for each one.
+      return Promise.all(STATIC_ASSETS.map(function (url) {
+        return fetch(url, { cache: 'reload' }).then(function (resp) {
+          return cache.put(url, resp);
+        });
+      }));
     }).then(function () {
       return self.skipWaiting();
     })
