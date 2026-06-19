@@ -295,13 +295,36 @@ async function incrementUsageAndMaybeAlert(env) {
   return count;
 }
 
+// AeroAPI's /flights/{ident} returns every flight under that ident -- past,
+// scheduled, and future -- not just the one currently in the air. Idents are
+// frequently reused (e.g. a charter doing the same round-trip repeatedly), so
+// flights[0] can easily be the wrong leg. Prefer whichever flight is actually
+// airborne right now, falling back to one whose scheduled window contains
+// the current time, and only defaulting to flights[0] if nothing matches.
+function pickCurrentFlight(flights) {
+  if (!flights || !flights.length) return null;
+  var airborne = flights.find(function (f) { return f.actual_off && !f.actual_on; });
+  if (airborne) return airborne;
+  var now = Date.now();
+  var inWindow = flights.find(function (f) {
+    var off = f.actual_off || f.scheduled_off || f.estimated_off;
+    var on = f.actual_on || f.estimated_on || f.scheduled_on;
+    if (!off || !on) return false;
+    var offTime = new Date(off).getTime();
+    var onTime = new Date(on).getTime();
+    return offTime <= now && now <= onTime;
+  });
+  if (inWindow) return inWindow;
+  return flights[0];
+}
+
 async function paidRouteLookup(callsign, env) {
   const resp = await fetch('https://aeroapi.flightaware.com/aeroapi/flights/' + encodeURIComponent(callsign) + '?max_pages=1', {
     headers: { 'x-apikey': env.FLIGHTAWARE_KEY },
   });
   if (!resp.ok) throw new Error('aeroapi error ' + resp.status);
   const data = await resp.json();
-  const flight = data && data.flights && data.flights[0];
+  const flight = pickCurrentFlight(data && data.flights);
   if (!flight) return null;
   const origin = flight.origin || {};
   const dest = flight.destination || {};
