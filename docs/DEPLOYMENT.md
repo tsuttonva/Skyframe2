@@ -165,22 +165,29 @@ These two are both optional — the app works without either, just with
 reduced features (no military tagging without the hex database lookup
 still works fine without a key; no route lookups without the route key).
 
+Secrets belong to one specific Worker, not your whole Cloudflare account —
+so even if you already set these for an earlier version of the app, you
+still need to set them again here for `skyframe2-worker`. That's fine: you
+can paste in the exact same key value you already have, no need to
+generate a new one.
+
 **FlightAware AeroAPI key** (powers the origin/destination route lookup on
 the detail card). Sign up at [flightaware.com/commercial/aeroapi](https://flightaware.com/commercial/aeroapi/),
-get an API key, then run:
+get an API key (or reuse your existing one), then run:
 
 ```
-npx wrangler secret put AEROAPI_KEY
+npx wrangler secret put FLIGHTAWARE_KEY
 ```
 
 It will prompt you to paste the key and press Enter. The key is now stored
 securely on Cloudflare, not in any file.
 
 **Resend API key** (powers the 75%/100% usage-cap warning emails). Sign up
-for free at [resend.com](https://resend.com), get an API key, then run:
+for free at [resend.com](https://resend.com), get an API key (or reuse your
+existing one), then run:
 
 ```
-npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put RESEND_KEY
 ```
 
 Paste the key when prompted.

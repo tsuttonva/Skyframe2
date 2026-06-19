@@ -243,12 +243,12 @@ async function getUsage(env) {
 }
 
 async function sendUsageEmail(env, subject, body) {
-  if (!env.RESEND_API_KEY || !env.ALERT_EMAIL) return;
+  if (!env.RESEND_KEY || !env.ALERT_EMAIL) return;
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + env.RESEND_API_KEY,
+        Authorization: 'Bearer ' + env.RESEND_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -297,7 +297,7 @@ async function incrementUsageAndMaybeAlert(env) {
 
 async function paidRouteLookup(callsign, env) {
   const resp = await fetch('https://aeroapi.flightaware.com/aeroapi/flights/' + encodeURIComponent(callsign) + '?max_pages=1', {
-    headers: { 'x-apikey': env.AEROAPI_KEY },
+    headers: { 'x-apikey': env.FLIGHTAWARE_KEY },
   });
   if (!resp.ok) throw new Error('aeroapi error ' + resp.status);
   const data = await resp.json();
@@ -353,7 +353,7 @@ async function handleRoute(request, env) {
   let result = null;
   let usedPaid = false;
 
-  if (usage.status !== 'LIMIT_REACHED' && env.AEROAPI_KEY) {
+  if (usage.status !== 'LIMIT_REACHED' && env.FLIGHTAWARE_KEY) {
     try {
       result = await paidRouteLookup(callsign, env);
       usedPaid = true;
