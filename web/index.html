@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>SkyFrame</title>
+<meta name="theme-color" content="#000a04">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SkyFrame">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/favicon-16.png" sizes="16x16">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{
+  --bg:#01040a; --panel:#04120a; --panel-line:#0d3b22;
+  --primary:#39ff7a; --primary-dim:#1f6b3f; --text:#d9ffe9; --text-dim:#7fbf9a;
+  --blue:#4ad1ff; --amber:#ffb84d; --gold:#ffd24a; --red:#ff3b3b;
+  --violet:#b388ff; --cyan:#66e0ff; --burnt:#cc6633; --brightgreen:#33ff66;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", "Courier New", monospace;
+}
+[data-theme="retro"]{
+  --bg:#070300; --panel:#1a0d00; --panel-line:#664400;
+  --primary:#ffb000; --primary-dim:#996b00; --text:#ffe2a8; --text-dim:#bf8b3a;
+  --blue:#ffb000; --amber:#ff8c00; --gold:#ffd24a; --red:#ff3b3b;
+  --violet:#ffb000; --cyan:#ffb000; --burnt:#cc6633; --brightgreen:#ffb000;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;}
+body{display:flex;flex-direction:column;}
+
+#loading{position:fixed;inset:0;background:#000;color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:var(--mono);}
+#loading[hidden]{display:none;}
+#loading .spinner{width:46px;height:46px;border-radius:50%;border:3px solid var(--primary-dim);border-top-color:var(--primary);animation:spin 1s linear infinite;margin-bottom:18px;}
+#loading .loadTitle{font-size:22px;letter-spacing:3px;margin-bottom:6px;}
+#loading .loadStatus{font-size:13px;color:var(--text-dim);}
+#loading .loadVersion{position:absolute;bottom:14px;font-size:11px;color:var(--text-dim);letter-spacing:1px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+#app{display:flex;flex-direction:column;height:100%;width:100%;}
+#app[hidden]{display:none;}
+
+header#header{display:flex;align-items:center;gap:14px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;-webkit-overflow-scrolling:touch;}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:54px;}
+.stat .v{font-size:16px;font-weight:700;color:var(--primary);}
+.stat .l{font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+.radiusCtl{display:flex;align-items:center;gap:4px;}
+.radiusCtl button{background:var(--panel-line);color:var(--primary);border:none;width:24px;height:24px;border-radius:4px;font-size:14px;line-height:1;}
+.radiusCtl .val{font-size:13px;min-width:54px;text-align:center;}
+#locLabel{font-size:12px;color:var(--primary);border:1px solid var(--panel-line);padding:6px 10px;border-radius:6px;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
+#searchBox{background:var(--panel);border:1px solid var(--panel-line);color:var(--text);padding:6px 8px;border-radius:6px;font-size:12px;width:110px;}
+#clock{display:flex;flex-direction:column;font-size:11px;color:var(--text-dim);font-family:var(--mono);}
+#versionTag{font-size:9px;color:var(--text-dim);opacity:0.7;}
+
+main#main{flex:1;display:flex;min-height:0;}
+#radarWrap{position:relative;flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;}
+#radar{display:block;max-width:100%;max-height:100%;}
+
+#demoBanner{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,40,40,0.18);border:1px solid var(--red);color:#ff8a8a;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:2px;animation:pulseBanner 1.6s ease-in-out infinite;z-index:5;}
+@keyframes pulseBanner{0%,100%{opacity:1;}50%{opacity:0.45;}}
+
+#toastWrap{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:6;pointer-events:none;}
+.toast{background:rgba(0,10,5,0.92);border:1px solid var(--primary-dim);color:var(--text);padding:8px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.4s;white-space:nowrap;text-align:center;}
+.toast.legendary{border-color:var(--gold);color:var(--gold);}
+.toast.show{opacity:1;}
+
+#countyLabel{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(0,20,10,0.85);border:1px solid var(--blue);color:var(--blue);padding:5px 14px;border-radius:14px;font-size:12px;z-index:4;}
+
+#sideList{width:230px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--panel-line);overflow-y:auto;}
+#sideList[hidden]{display:none;}
+.flightRow{padding:8px 10px;border-bottom:1px solid var(--panel-line);font-size:12px;cursor:pointer;}
+.flightRow:active,.flightRow.selected{background:rgba(57,255,122,0.12);}
+.flightRow .cs{font-weight:700;color:var(--primary);}
+.flightRow .mil{color:var(--gold);font-size:10px;border:1px solid var(--gold);border-radius:4px;padding:0 4px;margin-left:6px;}
+.flightRow .sub{color:var(--text-dim);font-size:11px;margin-top:2px;}
+
+#detailCard{position:absolute;right:10px;top:10px;width:260px;background:rgba(2,16,8,0.96);border:1px solid var(--primary-dim);border-radius:10px;padding:12px;font-size:12px;z-index:8;}
+#detailCard[hidden]{display:none;}
+#detailCard h3{margin:0 0 8px;color:var(--primary);font-size:15px;}
+#detailCard .row{display:flex;justify-content:space-between;margin:3px 0;color:var(--text-dim);}
+#detailCard .row b{color:var(--text);font-weight:600;}
+#detailCard .closeBtn{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--text-dim);}
+#detailCard .note{margin-top:8px;padding:6px;border-radius:6px;background:rgba(255,80,80,0.12);color:#ff9a9a;font-size:11px;}
+
+footer#footer{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);border-top:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;}
+footer#footer button{background:var(--panel-line);color:var(--text);border:none;padding:7px 12px;border-radius:6px;font-size:12px;flex-shrink:0;}
+footer#footer button.active{background:var(--primary);color:#001a0a;}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:50;}
+.modal[hidden]{display:none;}
+.modalBox{background:var(--panel);border:1px solid var(--panel-line);border-radius:10px;padding:18px;width:300px;}
+.modalBox h3{margin:0 0 12px;color:var(--primary);}
+.modalBox input{width:100%;padding:8px;background:var(--bg);border:1px solid var(--panel-line);color:var(--text);border-radius:6px;margin-bottom:10px;}
+.modalBox button{width:100%;padding:9px;background:var(--primary);color:#001a0a;border:none;border-radius:6px;font-weight:700;margin-bottom:6px;}
+.modalBox .secondary{background:var(--panel-line);color:var(--text);}
+.modalBox .closeX{position:absolute;}
+
+@keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 2px currentColor);}50%{filter:drop-shadow(0 0 14px currentColor);}}
+@keyframes shakeU2{0%{transform:translate(0,0);}10%{transform:translate(-14px,8px);}20%{transform:translate(12px,-10px);}30%{transform:translate(-12px,6px);}40%{transform:translate(10px,-8px);}50%{transform:translate(-8px,5px);}60%{transform:translate(7px,-5px);}70%{transform:translate(-5px,3px);}80%{transform:translate(4px,-2px);}90%{transform:translate(-2px,1px);}100%{transform:translate(0,0);}}
+@keyframes shakeStrong{0%{transform:translate(0,0);}15%{transform:translate(-8px,5px);}30%{transform:translate(7px,-6px);}45%{transform:translate(-6px,4px);}60%{transform:translate(5px,-3px);}75%{transform:translate(-3px,2px);}100%{transform:translate(0,0);}}
+.shake-u2{animation:shakeU2 0.7s ease-in-out;}
+.shake-strong{animation:shakeStrong 0.5s ease-in-out;}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loadTitle">SKYFRAME</div>
+  <div class="loadStatus" id="loadStatus">Starting up&hellip;</div>
+  <div class="loadVersion" id="loadVersion"></div>
+</div>
+
+<div id="app" hidden>
+  <header id="header">
+    <div class="stat"><span class="v" id="statOverhead">0</span><span class="l">Overhead</span></div>
+    <div class="stat"><span class="v" id="statHighest">0</span><span class="l">Highest ft</span></div>
+    <div class="stat"><span class="v" id="statFastest">0</span><span class="l">Fastest kt</span></div>
+    <div class="radiusCtl">
+      <button id="radarMinus">-</button>
+      <span class="val" id="radarVal">50 nm radar</span>
+      <button id="radarPlus">+</button>
+    </div>
+    <div class="radiusCtl">
+      <button id="alertMinus">-</button>
+      <span class="val" id="alertVal">15 nm alert</span>
+      <button id="alertPlus">+</button>
+    </div>
+    <div id="locLabel">Loading location&hellip;</div>
+    <input id="searchBox" placeholder="Find callsign/tail">
+    <div id="clock"><span id="clockLocal">--:--:--</span><span id="clockZulu">--:--:--Z</span></div>
+    <div id="versionTag"></div>
+  </header>
+
+  <main id="main">
+    <div id="radarWrap">
+      <canvas id="radar" width="800" height="800"></canvas>
+      <div id="demoBanner" hidden>DEMO MODE</div>
+      <div id="toastWrap"></div>
+      <div id="countyLabel" hidden></div>
+      <div id="detailCard" hidden>
+        <span class="closeBtn" id="detailClose">&times;</span>
+        <h3 id="detailTitle">Callsign</h3>
+        <div class="row"><span>Type</span><b id="detailType">-</b></div>
+        <div class="row"><span>From</span><b id="detailFrom">-</b></div>
+        <div class="row"><span>To</span><b id="detailTo">-</b></div>
+        <div class="row"><span>Reg</span><b id="detailReg">-</b></div>
+        <div class="row"><span>Altitude</span><b id="detailAlt">-</b></div>
+        <div class="row"><span>Speed</span><b id="detailSpeed">-</b></div>
+        <div class="row"><span>Heading</span><b id="detailHeading">-</b></div>
+        <div class="row"><span>Vert rate</span><b id="detailVrate">-</b></div>
+        <div class="row"><span>Squawk</span><b id="detailSquawk">-</b></div>
+        <div id="detailNote" class="note" hidden></div>
+        <button id="trackBtn" style="width:100%;margin-top:10px;padding:7px;background:var(--primary-dim);color:var(--text);border:none;border-radius:6px;">Track</button>
+      </div>
+    </div>
+    <aside id="sideList"></aside>
+  </main>
+
+  <footer id="footer">
+    <button id="chimeBtn">Chime: ON</button>
+    <span class="val" id="footerAlertVal" style="font-size:11px;color:var(--text-dim);">Alert 15nm</span>
+    <button id="refreshBtn">REFRESH</button>
+    <button id="demoBtn">DEMO</button>
+    <button id="themeBtn">Theme</button>
+    <button id="testAudioBtn">TEST</button>
+  </footer>
+</div>
+
+<div class="modal" id="locationModal" hidden>
+  <div class="modalBox">
+    <h3>Set Location</h3>
+    <input id="locInput" placeholder="City, ST or lat,lon">
+    <button id="locUseGps">Use GPS</button>
+    <button id="locSubmit">Set Location</button>
+    <button class="secondary" id="locCancel">Cancel</button>
+  </div>
+</div>
+
+<script>
+/* ============================== CONFIG ============================== */
+var CONFIG = {
+  VERSION: '1.0.0',
+  WORKER_URL: 'https://skyframe-worker.YOUR_SUBDOMAIN.workers.dev',
+  DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
+  RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
+  ALERT_MIN_NM: 1, ALERT_MAX_NM: 20, ALERT_DEFAULT_NM: 15, ALERT_HYSTERESIS: 1.2,
+  REFRESH_MS: 30000,
+  FIRST_LOAD_RETRY_DELAY_MS: 2000,
+  FALLBACK_DEMO_RETRY_MS: 4000,
+  WORKER_TIMEOUT_MS: 20000,
+  DIRECT_TIMEOUT_MS: 10000,
+  WORKER_FAIL_THRESHOLD: 2,
+  SUSPICIOUS_EMPTY_THRESHOLD: 20,
+  COUNTY_ZOOM_NM: 75,
+  FIPS_CACHE_MS: 90 * 24 * 60 * 60 * 1000,
+  US_ATLAS_COUNTIES: 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json',
+  WORLD_ATLAS_COUNTRIES: 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json',
+  TOPOJSON_LIB: 'https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js',
+  AF1_HEX: 'adf9d2'
+};
+
+var EMERGENCY_SQUAWKS = ['7500', '7600', '7700'];
+
+/* ============================== STATE ============================== */
+var STATE = {
+  location: { lat: CONFIG.DEFAULT_LOCATION.lat, lon: CONFIG.DEFAULT_LOCATION.lon, label: CONFIG.DEFAULT_LOCATION.label },
+  radarRadiusNm: CONFIG.RADAR_DEFAULT_NM,
+  alertRadiusNm: CONFIG.ALERT_DEFAULT_NM,
+  theme: 'modern',
+  chimeOn: true,
+  aircraft: [],
+  selectedIcao: null,
+  trackedIcao: null,
+  stale: false,
+  hasEverSucceeded: false,
+  firstLoadRetryDone: false,
+  refreshTimer: null,
+  source: { preferred: null, workerFails: 0 },
+  lastGoodCount: 0,
+  alertedSet: {},
+  emergencyActive: {},
+  enrichmentCache: {},
+  routeCache: {},
+  demoMode: null,
+  audioUnlocked: false,
+  speechUnlocked: false,
+  fips: null,
+  countiesGeo: null,
+  countriesGeo: null,
+  highlightedFeature: null
+};
+
+/* ============================ PERSISTENCE ============================ */
+var Persist = {
+  get: function (key, fallback) {
+    try {
+      var raw = window.localStorage.getItem('skyframe_' + key);
+      if (raw === null || raw === undefined) return fallback;
+      return JSON.parse(raw);
+    } catch (e) { return fallback; }
+  },
+  set: function (key, value) {
+    try { window.localStorage.setItem('skyframe_' + key, JSON.stringify(value)); } catch (e) {}
+  }
+};
+
+/* ============================== UTILS ============================== */
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  var R = 6371;
+  var dLat = (lat2 - lat1) * Math.PI / 180;
+  var dLon = (lon2 - lon1) * Math.PI / 180;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function kmToNm(km) { return km / 1.852; }
+function nmToKm(nm) { return nm * 1.852; }
+
+function bearingDeg(lat1, lon1, lat2, lon2) {
+  var phi1 = lat1 * Math.PI / 180, phi2 = lat2 * Math.PI / 180;
+  var dLon = (lon2 - lon1) * Math.PI / 180;
+  var y = Math.sin(dLon) * Math.cos(phi2);
+  var x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLon);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function destPoint(lat, lon, bearing, distKm) {
+  var R = 6371;
+  var brng = bearing * Math.PI / 180;
+  var lat1 = lat * Math.PI / 180, lon1 = lon * Math.PI / 180;
+  var lat2 = Math.asin(Math.sin(lat1) * Math.cos(distKm / R) + Math.cos(lat1) * Math.sin(distKm / R) * Math.cos(brng));
+  var lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(distKm / R) * Math.cos(lat1), Math.cos(distKm / R) - Math.sin(lat1) * Math.sin(lat2));
+  return { lat: lat2 * 180 / Math.PI, lon: lon2 * 180 / Math.PI };
+}
+
+function fmtAlt(ft) {
+  if (ft === null || ft === undefined) return '-';
+  return 'FL' + Math.round(ft / 100);
+}
+
+function fmtNum(n, digits) {
+  if (n === null || n === undefined || isNaN(n)) return '-';
+  return n.toFixed(digits || 0);
+}
+
+function debounce(fn, ms) {
+  var t = null;
+  return function () {
+    var args = arguments;
+    if (t) clearTimeout(t);
+    t = setTimeout(function () { fn.apply(null, args); }, ms);
+  };
+}
+
+/* ===================== AIRCRAFT CATEGORIES & ICONS ===================== */
+var MIL_CALLSIGN_PREFIXES = ['RCH', 'REACH', 'NAVY', 'ARMY', 'MARINE', 'CNV', 'GRZLY', 'AME',
+  'CONVOY', 'TANKER', 'NCHO', 'COBRA', 'KNIFE', 'VIPER', 'EAGLE', 'HAWK', 'PAT', 'SAM', 'AF1', 'AF2'];
+
+function isMilitaryCallsignFallback(callsign) {
+  if (!callsign) return false;
+  var cs = callsign.toUpperCase();
+  for (var i = 0; i < MIL_CALLSIGN_PREFIXES.length; i++) {
+    if (cs.indexOf(MIL_CALLSIGN_PREFIXES[i]) === 0) return true;
+  }
+  return false;
+}
+
+function startsWithAny(str, prefixes) {
+  for (var i = 0; i < prefixes.length; i++) {
+    if (str.indexOf(prefixes[i]) === 0) return true;
+  }
+  return false;
+}
+
+var HELO_PREFIXES = ['EC', 'S76', 'S92', 'R22', 'R44', 'AS3', 'AW1', 'BK1', 'CH4', 'CH5', 'UH6'];
+var HEAVY_PREFIXES = ['B74', 'B77', 'B78', 'B76', 'A38', 'A34', 'A35', 'A33', 'A30', 'IL7', 'AN1', 'MD1'];
+var GA_PREFIXES = ['C1', 'C2', 'PA', 'SR2', 'BE3', 'BE4', 'BE5', 'BE6', 'M20', 'RV'];
+var TURBO_PREFIXES = ['AT4', 'AT7', 'DH8', 'DHC', 'SF3', 'SB2', 'L41', 'BE19', 'BE20', 'PC1', 'JS3', 'JS4'];
+
+function getAircraftCategory(ac) {
+  var type = (ac.aircraft_type || '').toUpperCase();
+  var callsign = (ac.callsign || '').toUpperCase();
+  var hex = (ac.icao24 || '').toLowerCase();
+
+  if (callsign.indexOf('HBAL') === 0 || type === 'BALL') return 'balloon';
+  if (type === 'U2' || type === 'TU2') return 'u2';
+  if (type === 'VC25' || hex === 'adf9d2' || hex === 'adf9d7') return 'af1';
+  if (type === 'B52' || type === 'B52H') return 'b52';
+  if (type === 'E3' || type === 'E3B' || type === 'E3C' || type === 'E3CF' || type === 'E3TF') return 'awacs';
+  if (type.indexOf('H') === 0 || startsWithAny(type, HELO_PREFIXES)) return 'helo';
+  if (startsWithAny(type, HEAVY_PREFIXES)) return 'heavy';
+  if (startsWithAny(type, GA_PREFIXES)) return 'ga';
+  if (startsWithAny(type, TURBO_PREFIXES)) return 'turbo';
+  return 'jet';
+}
+
+var CATEGORY_COLOR_VAR = {
+  balloon: '--violet', u2: '--gold', af1: '--cyan', b52: '--burnt',
+  awacs: '--brightgreen', helo: null, heavy: null, ga: null, turbo: null, jet: null
+};
+
+function isLegendary(category) {
+  return category === 'u2' || category === 'af1' || category === 'b52' || category === 'awacs';
+}
+
+/* ICAO type code -> friendly name. Bare code shown if missing; backend
+   enrichment in the detail card can backfill a richer name. */
+var ICAO_TYPES = {
+  A19N: 'Airbus A319neo', A20N: 'Airbus A320neo', A21N: 'Airbus A321neo',
+  A319: 'Airbus A319', A320: 'Airbus A320', A321: 'Airbus A321',
+  A332: 'Airbus A330-200', A333: 'Airbus A330-300', A338: 'Airbus A330-800', A339: 'Airbus A330-900',
+  A359: 'Airbus A350-900', A35K: 'Airbus A350-1000', A388: 'Airbus A380-800',
+  B737: 'Boeing 737', B738: 'Boeing 737-800', B739: 'Boeing 737-900',
+  B38M: 'Boeing 737 MAX 8', B39M: 'Boeing 737 MAX 9', B3XM: 'Boeing 737 MAX 10',
+  B752: 'Boeing 757-200', B753: 'Boeing 757-300',
+  B762: 'Boeing 767-200', B763: 'Boeing 767-300', B764: 'Boeing 767-400',
+  B772: 'Boeing 777-200', B77L: 'Boeing 777-200LR', B77W: 'Boeing 777-300ER',
+  B788: 'Boeing 787-8', B789: 'Boeing 787-9', B78X: 'Boeing 787-10',
+  B744: 'Boeing 747-400', B748: 'Boeing 747-8',
+  E135: 'Embraer ERJ-135', E145: 'Embraer ERJ-145',
+  E170: 'Embraer E170', E175: 'Embraer E175', E190: 'Embraer E190', E195: 'Embraer E195',
+  CRJ1: 'Bombardier CRJ-100', CRJ2: 'Bombardier CRJ-200', CRJ7: 'Bombardier CRJ-700', CRJ9: 'Bombardier CRJ-900',
+  MD11: 'McDonnell Douglas MD-11',
+  C25A: 'Cessna Citation CJ2', C25B: 'Cessna Citation CJ3', C25C: 'Cessna Citation CJ4',
+  C525: 'Cessna CitationJet', C560: 'Cessna Citation V', C56X: 'Cessna Citation Excel/XLS',
+  C680: 'Cessna Citation Sovereign', C68A: 'Cessna Citation Latitude',
+  GLF4: 'Gulfstream IV', GLF5: 'Gulfstream V', GLF6: 'Gulfstream G650', G280: 'Gulfstream G280',
+  FA7X: 'Dassault Falcon 7X', FA8X: 'Dassault Falcon 8X', LJ45: 'Learjet 45', LJ60: 'Learjet 60',
+  E50P: 'Embraer Phenom 100', E55P: 'Embraer Phenom 300', PC24: 'Pilatus PC-24',
+  C150: 'Cessna 150', C152: 'Cessna 152', C172: 'Cessna 172 Skyhawk', C177: 'Cessna 177 Cardinal',
+  C182: 'Cessna 182 Skylane', C206: 'Cessna 206 Stationair', C210: 'Cessna 210 Centurion',
+  P28A: 'Piper PA-28 Cherokee/Archer', P28B: 'Piper PA-28R Arrow', P32R: 'Piper PA-32 Saratoga',
+  PA34: 'Piper PA-34 Seneca', PA44: 'Piper PA-44 Seminole',
+  SR20: 'Cirrus SR20', SR22: 'Cirrus SR22',
+  BE33: 'Beechcraft Bonanza', BE35: 'Beechcraft Bonanza', BE36: 'Beechcraft Bonanza A36',
+  BE55: 'Beechcraft Baron', BE58: 'Beechcraft Baron 58',
+  M20P: "Mooney M20", M20T: "Mooney M20T", RV6: "Van's RV-6", RV7: "Van's RV-7",
+  RV9: "Van's RV-9", RV10: "Van's RV-10", EPIC: 'Epic E1000', DA40: 'Diamond DA40', DA42: 'Diamond DA42',
+  AT43: 'ATR 42', AT45: 'ATR 42', AT72: 'ATR 72', AT76: 'ATR 72-600',
+  DH8A: 'Dash 8-100', DH8B: 'Dash 8-200', DH8C: 'Dash 8-300', DH8D: 'Dash 8-400 Q400',
+  SF34: 'Saab 340', SB20: 'Saab 2000', B190: 'Beechcraft 1900', BE20: 'Beechcraft King Air 200',
+  PC12: 'Pilatus PC-12', JS31: 'Jetstream 31', JS32: 'Jetstream 32', JS41: 'Jetstream 41',
+  EC30: 'Eurocopter EC130', EC35: 'Eurocopter EC135', EC45: 'Eurocopter EC145', EC55: 'Eurocopter EC155',
+  S76: 'Sikorsky S-76', S92: 'Sikorsky S-92', R22: 'Robinson R22', R44: 'Robinson R44',
+  AS50: 'AS350 Ecureuil', AS55: 'AS355 Twin Squirrel', AS65: 'AS365 Dauphin',
+  B06: 'Bell 206 JetRanger', B407: 'Bell 407', H60: 'Sikorsky H-60', UH60: 'UH-60 Black Hawk',
+  AW139: 'AgustaWestland AW139', AW169: 'AgustaWestland AW169',
+  U2: 'Lockheed U-2 Dragon Lady', TU2: 'Lockheed TU-2 Dragon Lady (trainer)',
+  VC25: 'Boeing VC-25 (Air Force One)', B52: 'Boeing B-52 Stratofortress', B52H: 'Boeing B-52H Stratofortress',
+  E3: 'Boeing E-3 Sentry (AWACS)', E3B: 'Boeing E-3B Sentry (AWACS)', E3C: 'Boeing E-3C Sentry (AWACS)',
+  E3CF: 'Boeing E-3 Sentry (AWACS, French)', E3TF: 'Boeing E-3 Sentry (AWACS, Turkish)',
+  BALL: 'Balloon'
+};
+
+function getTypeName(typeCode) {
+  if (!typeCode) return '-';
+  var name = ICAO_TYPES[typeCode.toUpperCase()];
+  return name || typeCode;
+}
+
+/* ============================== LOCATION ============================== */
+var Location = {
+
+  stripPrefixes: function (name) {
+    if (!name) return name;
+    var prefixes = ['City of ', 'Town of ', 'Village of ', 'Township of '];
+    for (var i = 0; i < prefixes.length; i++) {
+      if (name.indexOf(prefixes[i]) === 0) return name.slice(prefixes[i].length);
+    }
+    return name;
+  },
+
+  reverseGeocode: function (lat, lon, cb) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon;
+    var done = false;
+    var timer = setTimeout(function () { if (!done) { done = true; cb(null); } }, 8000);
+    fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        var a = data && data.address ? data.address : {};
+        var place = a.city || a.town || a.village || a.hamlet || a.county || null;
+        var state = a.state_code ? a.state_code.toUpperCase() : (a.state || '');
+        if (!place) { cb(null); return; }
+        place = Location.stripPrefixes(place);
+        cb(state ? (place + ', ' + state) : place);
+      })
+      .catch(function () { if (!done) { done = true; clearTimeout(timer); cb(null); } });
+  },
+
+  forwardGeocode: function (query, cb) {
+    var m = query.match(/^\s*(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)\s*$/);
+    if (m) {
+      var lat = parseFloat(m[1]), lon = parseFloat(m[3]);
+      Location.reverseGeocode(lat, lon, function (label) {
+        cb({ lat: lat, lon: lon, label: label || (lat.toFixed(3) + ',' + lon.toFixed(3)) });
+      });
+      return;
+    }
+    var url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(query);
+    fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) { return r.json(); })
+      .then(function (results) {
+        if (!results || !results.length) { cb(null); return; }
+        var r = results[0];
+        cb({ lat: parseFloat(r.lat), lon: parseFloat(r.lon), label: query });
+      })
+      .catch(function () { cb(null); });
+  },
+
+  setLocation: function (loc) {
+    STATE.location = loc;
+    Persist.set('location', loc);
+    document.getElementById('locLabel').textContent = loc.label;
+    onLocationChanged();
+  },
+
+  /* GPS -> last-saved location -> compiled-in default. Never blocks startup:
+     geolocation is attempted with its own timeout, and any failure path
+     resolves immediately to a usable location. */
+  init: function () {
+    var saved = Persist.get('location', null);
+
+    if (!navigator.geolocation) {
+      Location.setLocation(saved || CONFIG.DEFAULT_LOCATION);
+      return;
+    }
+
+    var settled = false;
+    var fallbackTimer = setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      Location.setLocation(saved || CONFIG.DEFAULT_LOCATION);
+    }, 6000);
+
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(fallbackTimer);
+        var lat = pos.coords.latitude, lon = pos.coords.longitude;
+        var loc = { lat: lat, lon: lon, label: (saved && saved.label) || (lat.toFixed(3) + ',' + lon.toFixed(3)) };
+        Location.setLocation(loc);
+        Location.reverseGeocode(lat, lon, function (label) {
+          if (label) Location.setLocation({ lat: lat, lon: lon, label: label });
+        });
+      },
+      function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(fallbackTimer);
+        Location.setLocation(saved || CONFIG.DEFAULT_LOCATION);
+      },
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+    );
+  },
+
+  useGpsNow: function () {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude, lon = pos.coords.longitude;
+      Location.setLocation({ lat: lat, lon: lon, label: lat.toFixed(3) + ',' + lon.toFixed(3) });
+      Location.reverseGeocode(lat, lon, function (label) {
+        if (label) Location.setLocation({ lat: lat, lon: lon, label: label });
+      });
+    }, function () {}, { enableHighAccuracy: false, timeout: 8000 });
+  }
+};
+
+function onLocationChanged() {
+  STATE.aircraft = [];
+  STATE.enrichmentCache = {};
+  STATE.routeCache = {};
+  STATE.alertedSet = {};
+  STATE.emergencyActive = {};
+  STATE.source.preferred = null;
+  STATE.source.workerFails = 0;
+  STATE.hasEverSucceeded = false;
+  STATE.firstLoadRetryDone = false;
+  if (typeof renderAll === 'function') renderAll();
+  if (typeof restartRefreshCycle === 'function') restartRefreshCycle();
+}
+
+/* ======================= DATA SOURCES & FAILOVER ======================= */
+
+function fetchWithTimeout(url, opts, timeoutMs) {
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = setTimeout(function () { if (controller) controller.abort(); }, timeoutMs);
+  var fetchOpts = opts || {};
+  if (controller) fetchOpts.signal = controller.signal;
+  return fetch(url, fetchOpts).then(function (r) {
+    clearTimeout(timer);
+    return r;
+  }, function (err) {
+    clearTimeout(timer);
+    throw err;
+  });
+}
+
+function normalizeWorkerAircraft(list) {
+  return list.map(function (a) {
+    return {
+      icao24: a.icao24, callsign: a.callsign, lat: a.lat, lon: a.lon,
+      baro_alt: a.baro_alt, velocity: a.velocity, true_track: a.true_track,
+      vert_rate: a.vert_rate, squawk: a.squawk, aircraft_type: a.aircraft_type,
+      is_military: !!a.is_military, dist_km: a.dist_km
+    };
+  });
+}
+
+function fetchFromWorker(lat, lon, distNm) {
+  var url = CONFIG.WORKER_URL + '/flights?lat=' + lat + '&lon=' + lon + '&dist=' + distNm;
+  return fetchWithTimeout(url, {}, CONFIG.WORKER_TIMEOUT_MS).then(function (r) {
+    if (!r.ok) throw new Error('worker http ' + r.status);
+    return r.json();
+  }).then(function (data) {
+    return normalizeWorkerAircraft(data.aircraft || []);
+  });
+}
+
+function fetchFromAdsbLolDirect(lat, lon, distNm) {
+  var url = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + Math.min(250, Math.round(distNm));
+  return fetchWithTimeout(url, {}, CONFIG.DIRECT_TIMEOUT_MS).then(function (r) {
+    if (!r.ok) throw new Error('adsb.lol http ' + r.status);
+    return r.json();
+  }).then(function (data) {
+    var list = (data && data.ac) || [];
+    return list.map(function (ac) {
+      var hex = (ac.hex || '').toLowerCase();
+      var altBaro = typeof ac.alt_baro === 'number' ? ac.alt_baro : 0;
+      var vertRate = typeof ac.baro_rate === 'number' ? ac.baro_rate : (typeof ac.geom_rate === 'number' ? ac.geom_rate : 0);
+      var callsign = (ac.flight || '').trim();
+      return {
+        icao24: hex, callsign: callsign, lat: ac.lat, lon: ac.lon,
+        baro_alt: altBaro, velocity: typeof ac.gs === 'number' ? ac.gs : 0,
+        true_track: typeof ac.track === 'number' ? ac.track : 0, vert_rate: vertRate,
+        squawk: ac.squawk || '', aircraft_type: ac.t || '',
+        is_military: isMilitaryCallsignFallback(callsign),
+        dist_km: (typeof ac.lat === 'number' && typeof ac.lon === 'number') ? haversineKm(lat, lon, ac.lat, ac.lon) : null
+      };
+    }).filter(function (a) { return typeof a.lat === 'number' && typeof a.lon === 'number'; });
+  });
+}
+
+function fetchFromOpenSky(lat, lon, distNm) {
+  var distKm = nmToKm(distNm);
+  var dLat = distKm / 111;
+  var dLon = distKm / (111 * Math.cos(lat * Math.PI / 180));
+  var url = 'https://opensky-network.org/api/states/all?lamin=' + (lat - dLat) + '&lomin=' + (lon - dLon) +
+    '&lamax=' + (lat + dLat) + '&lomax=' + (lon + dLon);
+  return fetchWithTimeout(url, {}, CONFIG.DIRECT_TIMEOUT_MS).then(function (r) {
+    if (!r.ok) throw new Error('opensky http ' + r.status);
+    return r.json();
+  }).then(function (data) {
+    var rows = data && data.states ? data.states : [];
+    return rows.map(function (s) {
+      var hex = (s[0] || '').toLowerCase();
+      var callsign = (s[1] || '').trim();
+      var alt = typeof s[7] === 'number' ? s[7] * 3.28084 : 0;
+      var aLat = s[6], aLon = s[5];
+      return {
+        icao24: hex, callsign: callsign, lat: aLat, lon: aLon,
+        baro_alt: alt, velocity: typeof s[9] === 'number' ? s[9] * 1.94384 : 0,
+        true_track: typeof s[10] === 'number' ? s[10] : 0,
+        vert_rate: typeof s[11] === 'number' ? s[11] * 196.85 : 0,
+        squawk: s[14] || '', aircraft_type: '',
+        is_military: isMilitaryCallsignFallback(callsign),
+        dist_km: (typeof aLat === 'number' && typeof aLon === 'number') ? haversineKm(lat, lon, aLat, aLon) : null
+      };
+    }).filter(function (a) { return typeof a.lat === 'number' && typeof a.lon === 'number'; });
+  });
+}
+
+var SOURCE_FETCHERS = { worker: fetchFromWorker, direct: fetchFromAdsbLolDirect, opensky: fetchFromOpenSky };
+
+function buildSourceOrder() {
+  var base = (STATE.source.workerFails >= CONFIG.WORKER_FAIL_THRESHOLD)
+    ? ['direct', 'opensky', 'worker']
+    : ['worker', 'direct', 'opensky'];
+  if (STATE.source.preferred && base.indexOf(STATE.source.preferred) !== -1) {
+    base = [STATE.source.preferred].concat(base.filter(function (s) { return s !== STATE.source.preferred; }));
+  }
+  return base;
+}
+
+function fetchAircraftOnce() {
+  var order = buildSourceOrder();
+  var lat = STATE.location.lat, lon = STATE.location.lon, dist = STATE.radarRadiusNm;
+
+  function tryNext(i) {
+    if (i >= order.length) return Promise.reject(new Error('all sources failed'));
+    var src = order[i];
+    return SOURCE_FETCHERS[src](lat, lon, dist).then(function (aircraft) {
+      if (aircraft.length === 0 && STATE.lastGoodCount > CONFIG.SUSPICIOUS_EMPTY_THRESHOLD) {
+        return tryNext(i + 1);
+      }
+      if (src === 'worker') STATE.source.workerFails = 0;
+      STATE.source.preferred = src;
+      if (aircraft.length > 0) STATE.lastGoodCount = aircraft.length;
+      return { aircraft: aircraft, source: src };
+    }).catch(function (err) {
+      if (src === 'worker') STATE.source.workerFails++;
+      return tryNext(i + 1);
+    });
+  }
+
+  return tryNext(0);
+}
+
+function applyAircraftResult(aircraft, source) {
+  STATE.aircraft = aircraft;
+  STATE.stale = false;
+  STATE.hasEverSucceeded = true;
+  if (typeof renderAll === 'function') renderAll();
+  if (typeof checkAlerts === 'function') checkAlerts(aircraft);
+}
+
+function markStale() {
+  STATE.stale = true;
+  if (typeof renderAll === 'function') renderAll();
+}
+
+function attemptRefresh() {
+  if (STATE.demoMode === 'showcase') return;
+  fetchAircraftOnce().then(function (result) {
+    applyAircraftResult(result.aircraft, result.source);
+    if (STATE.demoMode === 'fallback' && typeof DemoEngine !== 'undefined') DemoEngine.exitFallback(true);
+  }).catch(function () {
+    handleFetchFailure();
+  });
+}
+
+function handleFetchFailure() {
+  if (STATE.demoMode === 'fallback') return;
+  if (STATE.aircraft.length > 0) { markStale(); return; }
+  if (!STATE.firstLoadRetryDone) {
+    STATE.firstLoadRetryDone = true;
+    setTimeout(attemptRefresh, CONFIG.FIRST_LOAD_RETRY_DELAY_MS);
+    return;
+  }
+  if (typeof DemoEngine !== 'undefined') DemoEngine.enterFallback();
+}
+
+function restartRefreshCycle() {
+  if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
+  if (STATE.demoMode === 'showcase') return;
+  attemptRefresh();
+  STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.REFRESH_MS);
+}
+
+/* ============================== RADAR DRAW ============================== */
+var canvas = document.getElementById('radar');
+var ctx = canvas.getContext('2d');
+var sweepAngle = 0;
+var geoCache = { key: null, loops: [], mode: null };
+
+function getCssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function logicalSize() {
+  return canvas.clientWidth || 800;
+}
+
+function resizeCanvas() {
+  var wrap = document.getElementById('radarWrap');
+  var size = Math.min(wrap.clientWidth, wrap.clientHeight) - 16;
+  size = Math.max(220, size);
+  var dpr = window.devicePixelRatio || 1;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  canvas.width = Math.round(size * dpr);
+  canvas.height = Math.round(size * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  geoCache.key = null;
+}
+
+function getVisibleAircraftSorted() {
+  return STATE.aircraft
+    .filter(function (a) { return typeof a.dist_km === 'number' && kmToNm(a.dist_km) <= STATE.radarRadiusNm; })
+    .sort(function (a, b) { return a.dist_km - b.dist_km; });
+}
+
+function project(lat, lon, cx, cy, maxR) {
+  var myLat = STATE.location.lat, myLon = STATE.location.lon;
+  var radiusKm = nmToKm(STATE.radarRadiusNm);
+  var latRange = radiusKm / 111;
+  var lonRange = radiusKm / (111 * Math.cos(myLat * Math.PI / 180));
+  var x = cx + ((lon - myLon) / lonRange) * maxR;
+  var y = cy - ((lat - myLat) / latRange) * maxR;
+  return { x: x, y: y };
+}
+
+function inverseProject(x, y, cx, cy, maxR) {
+  var myLat = STATE.location.lat, myLon = STATE.location.lon;
+  var radiusKm = nmToKm(STATE.radarRadiusNm);
+  var latRange = radiusKm / 111;
+  var lonRange = radiusKm / (111 * Math.cos(myLat * Math.PI / 180));
+  var lon = myLon + ((x - cx) / maxR) * lonRange;
+  var lat = myLat + ((cy - y) / maxR) * latRange;
+  return { lat: lat, lon: lon };
+}
+
+/* ---- point-in-polygon (even-odd, hole-aware) for county/country click ---- */
+function pointInRing(lon, lat, ring) {
+  var inside = false;
+  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    var xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    var intersect = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+function pointInPolygonRings(lon, lat, rings) {
+  if (!rings.length) return false;
+  if (!pointInRing(lon, lat, rings[0])) return false;
+  for (var h = 1; h < rings.length; h++) {
+    if (pointInRing(lon, lat, rings[h])) return false;
+  }
+  return true;
+}
+function pointInGeometry(lon, lat, geometry) {
+  if (!geometry) return false;
+  if (geometry.type === 'Polygon') return pointInPolygonRings(lon, lat, geometry.coordinates);
+  if (geometry.type === 'MultiPolygon') {
+    for (var p = 0; p < geometry.coordinates.length; p++) {
+      if (pointInPolygonRings(lon, lat, geometry.coordinates[p])) return true;
+    }
+  }
+  return false;
+}
+function findFeatureAtPoint(lon, lat, features) {
+  for (var i = 0; i < features.length; i++) {
+    if (pointInGeometry(lon, lat, features[i].geometry)) return features[i];
+  }
+  return null;
+}
+
+/* ---- cache projected outline loops; only rebuilt when view changes ---- */
+function projectRingsToLoops(features, cx, cy, maxR) {
+  var loops = [];
+  var bound = maxR * 1.4;
+  for (var f = 0; f < features.length; f++) {
+    var geom = features[f].geometry;
+    if (!geom) continue;
+    var polys = geom.type === 'Polygon' ? [geom.coordinates] : (geom.type === 'MultiPolygon' ? geom.coordinates : []);
+    for (var p = 0; p < polys.length; p++) {
+      var ring = polys[p][0];
+      var pts = [];
+      var anyInView = false;
+      for (var i = 0; i < ring.length; i++) {
+        var pr = project(ring[i][1], ring[i][0], cx, cy, maxR);
+        pts.push(pr);
+        if (Math.abs(pr.x - cx) < bound && Math.abs(pr.y - cy) < bound) anyInView = true;
+      }
+      if (anyInView) loops.push(pts);
+    }
+  }
+  return loops;
+}
+
+function rebuildGeoCacheIfNeeded(cx, cy, maxR) {
+  var mode = STATE.radarRadiusNm <= CONFIG.COUNTY_ZOOM_NM ? 'county' : 'country';
+  var key = mode + ':' + STATE.location.lat.toFixed(2) + ',' + STATE.location.lon.toFixed(2) + ',' + STATE.radarRadiusNm + ',' + Math.round(maxR);
+  if (geoCache.key === key) return;
+  geoCache.key = key;
+  geoCache.mode = mode;
+  if (mode === 'county' && STATE.countiesGeo) {
+    geoCache.loops = projectRingsToLoops(STATE.countiesGeo.features, cx, cy, maxR);
+  } else if (mode === 'country' && STATE.countriesGeo) {
+    geoCache.loops = projectRingsToLoops(STATE.countriesGeo.features, cx, cy, maxR);
+  } else {
+    geoCache.loops = [];
+  }
+}
+
+function drawGeoOutlines(cx, cy, maxR) {
+  rebuildGeoCacheIfNeeded(cx, cy, maxR);
+  if (!geoCache.loops.length) return;
+  ctx.save();
+  ctx.strokeStyle = geoCache.mode === 'county' ? 'rgba(57,255,122,0.25)' : 'rgba(74,209,255,0.3)';
+  ctx.lineWidth = 1;
+  for (var i = 0; i < geoCache.loops.length; i++) {
+    var loop = geoCache.loops[i];
+    ctx.beginPath();
+    ctx.moveTo(loop[0].x, loop[0].y);
+    for (var j = 1; j < loop.length; j++) ctx.lineTo(loop[j].x, loop[j].y);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  if (STATE.highlightedFeature) {
+    var hl = projectRingsToLoops([STATE.highlightedFeature], cx, cy, maxR);
+    ctx.fillStyle = 'rgba(74,209,255,0.18)';
+    ctx.strokeStyle = '#4ad1ff';
+    ctx.lineWidth = 1.5;
+    for (var k = 0; k < hl.length; k++) {
+      var lp = hl[k];
+      ctx.beginPath();
+      ctx.moveTo(lp[0].x, lp[0].y);
+      for (var m = 1; m < lp.length; m++) ctx.lineTo(lp[m].x, lp[m].y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawSweep(cx, cy, maxR, primary) {
+  var rad = sweepAngle * Math.PI / 180;
+  ctx.save();
+  var grad = ctx.createLinearGradient(cx, cy, cx + Math.cos(rad) * maxR, cy + Math.sin(rad) * maxR);
+  grad.addColorStop(0, primary);
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = 0.45;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.arc(cx, cy, maxR, rad - 0.45, rad);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawRadarChrome(cx, cy, maxR, size) {
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, size, size);
+
+  var primary = getCssVar('--primary') || '#39ff7a';
+  var dim = getCssVar('--primary-dim') || '#1f6b3f';
+
+  drawGeoOutlines(cx, cy, maxR);
+
+  var ringCount = 3;
+  ctx.font = '11px monospace';
+  for (var i = 1; i <= ringCount; i++) {
+    var r = maxR * (i / ringCount);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = dim;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = dim;
+    ctx.fillText(Math.round(STATE.radarRadiusNm * (i / ringCount)) + ' nm', cx + 4, cy - r + 12);
+  }
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+  ctx.strokeStyle = primary;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.strokeStyle = dim;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx - maxR, cy); ctx.lineTo(cx + maxR, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, cy - maxR); ctx.lineTo(cx, cy + maxR); ctx.stroke();
+
+  drawSweep(cx, cy, maxR, primary);
+
+  var alertNmClamped = Math.min(STATE.alertRadiusNm, STATE.radarRadiusNm);
+  var alertR = Math.min(maxR * (alertNmClamped / STATE.radarRadiusNm), maxR);
+  ctx.save();
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, alertR, 0, Math.PI * 2);
+  ctx.strokeStyle = primary;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fillStyle = primary;
+  ctx.fill();
+}
+
+function colorForAircraft(ac) {
+  var category = getAircraftCategory(ac);
+  var isEmergency = EMERGENCY_SQUAWKS.indexOf(ac.squawk) !== -1;
+  if (isEmergency) return getCssVar('--red');
+  if (ac.icao24 === STATE.selectedIcao) return getCssVar('--blue');
+  if (ac.icao24 === STATE.trackedIcao) return getCssVar('--amber');
+  if (CATEGORY_COLOR_VAR[category]) {
+    if (category === 'u2') {
+      var pulse = (Math.sin(Date.now() / 260) + 1) / 2;
+      return pulse > 0.5 ? '#fff7d6' : getCssVar('--gold');
+    }
+    return getCssVar(CATEGORY_COLOR_VAR[category]);
+  }
+  if (ac.is_military) return getCssVar('--gold');
+  return getCssVar('--primary');
+}
+
+function drawAircraftIcon(x, y, headingDeg, category, color, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (category !== 'balloon') ctx.rotate(headingDeg * Math.PI / 180);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1.4;
+  var s = size;
+
+  ctx.beginPath();
+  if (category === 'balloon') {
+    ctx.arc(0, -s * 0.2, s * 0.55, 0, Math.PI * 2);
+    ctx.moveTo(-s * 0.18, s * 0.3); ctx.lineTo(s * 0.18, s * 0.3); ctx.lineTo(s * 0.12, s * 0.55); ctx.lineTo(-s * 0.12, s * 0.55); ctx.closePath();
+  } else if (category === 'u2') {
+    ctx.moveTo(0, -s); ctx.lineTo(-s * 1.6, s * 0.15); ctx.lineTo(-s * 0.2, s * 0.05);
+    ctx.lineTo(0, s); ctx.lineTo(s * 0.2, s * 0.05); ctx.lineTo(s * 1.6, s * 0.15); ctx.closePath();
+  } else if (category === 'af1') {
+    ctx.moveTo(0, -s); ctx.lineTo(-s * 1.1, s * 0.4); ctx.lineTo(-s * 0.3, s * 0.3); ctx.lineTo(0, s);
+    ctx.lineTo(s * 0.3, s * 0.3); ctx.lineTo(s * 1.1, s * 0.4); ctx.closePath();
+  } else if (category === 'b52') {
+    ctx.moveTo(0, -s * 0.9); ctx.lineTo(-s * 1.3, s * 0.55); ctx.lineTo(-s * 0.25, s * 0.25); ctx.lineTo(0, s);
+    ctx.lineTo(s * 0.25, s * 0.25); ctx.lineTo(s * 1.3, s * 0.55); ctx.closePath();
+  } else if (category === 'awacs') {
+    ctx.moveTo(0, -s); ctx.lineTo(-s * 0.85, s * 0.35); ctx.lineTo(-s * 0.2, s * 0.2); ctx.lineTo(0, s * 0.9);
+    ctx.lineTo(s * 0.2, s * 0.2); ctx.lineTo(s * 0.85, s * 0.35); ctx.closePath();
+  } else if (category === 'helo') {
+    ctx.moveTo(-s * 0.9, 0); ctx.lineTo(s * 0.9, 0);
+    ctx.moveTo(0, -s * 0.15); ctx.lineTo(0, s * 0.55); ctx.lineTo(-s * 0.25, s * 0.7); ctx.lineTo(s * 0.25, s * 0.7); ctx.closePath();
+  } else if (category === 'heavy') {
+    ctx.moveTo(0, -s); ctx.lineTo(-s * 1.0, s * 0.45); ctx.lineTo(-s * 0.22, s * 0.25); ctx.lineTo(0, s);
+    ctx.lineTo(s * 0.22, s * 0.25); ctx.lineTo(s * 1.0, s * 0.45); ctx.closePath();
+  } else if (category === 'ga') {
+    ctx.moveTo(0, -s * 0.8); ctx.lineTo(-s * 0.55, s * 0.35); ctx.lineTo(-s * 0.12, s * 0.2); ctx.lineTo(0, s * 0.75);
+    ctx.lineTo(s * 0.12, s * 0.2); ctx.lineTo(s * 0.55, s * 0.35); ctx.closePath();
+  } else if (category === 'turbo') {
+    ctx.moveTo(0, -s * 0.85); ctx.lineTo(-s * 0.75, s * 0.4); ctx.lineTo(-s * 0.16, s * 0.22); ctx.lineTo(0, s * 0.85);
+    ctx.lineTo(s * 0.16, s * 0.22); ctx.lineTo(s * 0.75, s * 0.4); ctx.closePath();
+  } else {
+    ctx.moveTo(0, -s); ctx.lineTo(-s * 0.6, s * 0.5); ctx.lineTo(0, s * 0.25); ctx.lineTo(s * 0.6, s * 0.5); ctx.closePath();
+  }
+  ctx.fill();
+  ctx.stroke();
+
+  if (isLegendary(category)) {
+    var pulse = (Math.sin(Date.now() / 220) + 1) / 2;
+    ctx.save();
+    ctx.globalAlpha = 0.25 + pulse * 0.4;
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 1.7, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2 + pulse * 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+function trendArrow(vertRate) {
+  if (vertRate > 300) return '↑';
+  if (vertRate < -300) return '↓';
+  return '→';
+}
+
+function drawAircraftAll(cx, cy, maxR) {
+  var list = getVisibleAircraftSorted();
+  ctx.font = '11px monospace';
+  for (var i = 0; i < list.length; i++) {
+    var ac = list[i];
+    var pr = project(ac.lat, ac.lon, cx, cy, maxR);
+    var category = getAircraftCategory(ac);
+    var color = colorForAircraft(ac);
+    var isEmergency = EMERGENCY_SQUAWKS.indexOf(ac.squawk) !== -1;
+    if (isEmergency && Math.floor(Date.now() / 400) % 2 === 0) color = '#330000';
+
+    drawAircraftIcon(pr.x, pr.y, ac.true_track || 0, category, color, 9);
+
+    var label = (ac.callsign || ac.icao24 || '?').trim() + ' / ' + fmtAlt(ac.baro_alt) + trendArrow(ac.vert_rate) + ' ' + Math.round(ac.velocity || 0) + 'kt';
+    ctx.fillStyle = isEmergency ? getCssVar('--red') : color;
+    ctx.fillText(label, pr.x + 11, pr.y + 4);
+  }
+}
+
+function drawRadar() {
+  var size = logicalSize();
+  var cx = size / 2, cy = size / 2;
+  var maxR = size / 2 - 26;
+  ctx.clearRect(0, 0, size, size);
+  drawRadarChrome(cx, cy, maxR, size);
+  drawAircraftAll(cx, cy, maxR);
+}
+
+function animationLoop() {
+  sweepAngle = (sweepAngle + 1.1) % 360;
+  drawRadar();
+  requestAnimationFrame(animationLoop);
+}
+
+/* ===================== COUNTY / COUNTRY DATA & CLICK ID ===================== */
+function loadScript(src, cb) {
+  var s = document.createElement('script');
+  s.src = src;
+  s.onload = function () { cb(true); };
+  s.onerror = function () { cb(false); };
+  document.head.appendChild(s);
+}
+
+function loadGeoData() {
+  loadScript(CONFIG.TOPOJSON_LIB, function (ok) {
+    if (!ok || typeof topojson === 'undefined') return;
+    fetch(CONFIG.US_ATLAS_COUNTIES).then(function (r) { return r.json(); }).then(function (us) {
+      var geo = topojson.feature(us, us.objects.counties);
+      STATE.countiesGeo = geo;
+      geoCache.key = null;
+    }).catch(function () {});
+    fetch(CONFIG.WORLD_ATLAS_COUNTRIES).then(function (r) { return r.json(); }).then(function (world) {
+      var geo = topojson.feature(world, world.objects.countries);
+      STATE.countriesGeo = geo;
+      geoCache.key = null;
+    }).catch(function () {});
+  });
+}
+
+function loadFipsNames() {
+  var cached = Persist.get('fipsCache', null);
+  var cachedAt = Persist.get('fipsCacheAt', 0);
+  if (cached && (Date.now() - cachedAt) < CONFIG.FIPS_CACHE_MS) {
+    STATE.fips = cached;
+    return;
+  }
+  fetch('fips.json').then(function (r) { return r.json(); }).then(function (data) {
+    STATE.fips = data;
+    Persist.set('fipsCache', data);
+    Persist.set('fipsCacheAt', Date.now());
+  }).catch(function () { STATE.fips = cached || {}; });
+}
+
+function countyName(fipsId) {
+  if (!STATE.fips) return null;
+  var id = String(fipsId);
+  while (id.length < 5) id = '0' + id;
+  return STATE.fips[id] || null;
+}
+
+function showCountyPill(text) {
+  var el = document.getElementById('countyLabel');
+  el.textContent = text;
+  el.hidden = false;
+}
+function hideCountyPill() {
+  document.getElementById('countyLabel').hidden = true;
+}
+
+function canvasEventToLogical(evt) {
+  var rect = canvas.getBoundingClientRect();
+  var clientX = (evt.touches && evt.touches[0]) ? evt.touches[0].clientX : evt.clientX;
+  var clientY = (evt.touches && evt.touches[0]) ? evt.touches[0].clientY : evt.clientY;
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+canvas.addEventListener('click', function (evt) {
+  var pt = canvasEventToLogical(evt);
+  var size = logicalSize();
+  var cx = size / 2, cy = size / 2, maxR = size / 2 - 26;
+
+  var list = getVisibleAircraftSorted();
+  for (var i = 0; i < list.length; i++) {
+    var pr = project(list[i].lat, list[i].lon, cx, cy, maxR);
+    var d = Math.sqrt((pr.x - pt.x) * (pr.x - pt.x) + (pr.y - pt.y) * (pr.y - pt.y));
+    if (d < 14) {
+      selectAircraft(list[i].icao24);
+      return;
+    }
+  }
+
+  var geo = inverseProject(pt.x, pt.y, cx, cy, maxR);
+  if (STATE.radarRadiusNm <= CONFIG.COUNTY_ZOOM_NM && STATE.countiesGeo) {
+    var feature = findFeatureAtPoint(geo.lon, geo.lat, STATE.countiesGeo.features);
+    if (feature) {
+      STATE.highlightedFeature = feature;
+      var name = countyName(feature.id) || feature.properties.name;
+      showCountyPill(name);
+      return;
+    }
+  } else if (STATE.countriesGeo) {
+    var cfeature = findFeatureAtPoint(geo.lon, geo.lat, STATE.countriesGeo.features);
+    if (cfeature) {
+      STATE.highlightedFeature = cfeature;
+      showCountyPill(cfeature.properties.name);
+      return;
+    }
+  }
+  STATE.highlightedFeature = null;
+  hideCountyPill();
+});
+
+/* ============================ HEADER / STATS ============================ */
+function getRadarStep(current) {
+  if (current < 25) return 5;
+  if (current < 100) return 25;
+  return 50;
+}
+
+function setRadarRadius(nm, isExpand) {
+  var clamped = clamp(nm, CONFIG.RADAR_MIN_NM, CONFIG.RADAR_MAX_NM);
+  var shrinking = clamped < STATE.radarRadiusNm;
+  STATE.radarRadiusNm = clamped;
+  if (STATE.alertRadiusNm > STATE.radarRadiusNm) {
+    STATE.alertRadiusNm = STATE.radarRadiusNm;
+    Persist.set('alertRadius', STATE.alertRadiusNm);
+  }
+  Persist.set('radarRadius', STATE.radarRadiusNm);
+  geoCache.key = null;
+  renderAll();
+
+  if (shrinking) {
+    restartRefreshCycleNoFetch();
+  } else {
+    STATE.source.preferred = null;
+    restartRefreshCycle();
+  }
+}
+
+function restartRefreshCycleNoFetch() {
+  if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
+  if (STATE.demoMode === 'showcase') return;
+  STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.REFRESH_MS);
+}
+
+function adjustRadarRadius(dir) {
+  var step = getRadarStep(STATE.radarRadiusNm);
+  setRadarRadius(STATE.radarRadiusNm + dir * step, dir > 0);
+}
+
+function adjustAlertRadius(dir) {
+  var next = clamp(STATE.alertRadiusNm + dir, CONFIG.ALERT_MIN_NM, Math.min(CONFIG.ALERT_MAX_NM, STATE.radarRadiusNm));
+  STATE.alertRadiusNm = next;
+  Persist.set('alertRadius', next);
+  renderAll();
+}
+
+function updateClock() {
+  var now = new Date();
+  document.getElementById('clockLocal').textContent = now.toLocaleTimeString();
+  var z = now.toISOString().substr(11, 8) + 'Z';
+  document.getElementById('clockZulu').textContent = z;
+}
+
+/* ============================== ALERTS ============================== */
+
+/* AudioContext must be created/resumed inside a user gesture, and the
+   resume must be awaited before scheduling sound -- iOS suspends the
+   context aggressively and a beep scheduled too early is silently lost. */
+var sharedAudioCtx = null;
+function getAudioCtx() {
+  var AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return Promise.resolve(null);
+  if (!sharedAudioCtx) {
+    try { sharedAudioCtx = new AudioCtor(); } catch (e) { return Promise.resolve(null); }
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    return sharedAudioCtx.resume().then(function () { return sharedAudioCtx; }).catch(function () { return sharedAudioCtx; });
+  }
+  return Promise.resolve(sharedAudioCtx);
+}
+
+function playTone(audioCtx, freq1, freq2, startAt, duration) {
+  var osc = audioCtx.createOscillator();
+  var gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq1, startAt);
+  osc.frequency.setValueAtTime(freq2, startAt + duration * 0.5);
+  gain.gain.setValueAtTime(0.0001, startAt);
+  gain.gain.exponentialRampToValueAtTime(0.35, startAt + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(startAt);
+  osc.stop(startAt + duration + 0.02);
+}
+
+function playChimes(count, rapid) {
+  if (!STATE.chimeOn) return;
+  var n = count || 1;
+  var gap = rapid ? 0.18 : 0.45;
+  var dur = rapid ? 0.12 : 0.22;
+  var f1 = rapid ? 1200 : 880, f2 = rapid ? 900 : 660;
+  getAudioCtx().then(function (audioCtx) {
+    if (!audioCtx) return;
+    var t = audioCtx.currentTime;
+    for (var i = 0; i < n; i++) {
+      playTone(audioCtx, f1, f2, t + i * gap, dur);
+    }
+  });
+}
+
+/* Web Speech is queued one utterance at a time -- cancel-then-speak races
+   on iOS drop speech. A "busy" flag drains the queue as each utterance ends. */
+var Speech = {
+  queue: [],
+  busy: false,
+  speak: function (text) {
+    if (!('speechSynthesis' in window) || !text) return;
+    Speech.queue.push(text);
+    Speech.drain();
+  },
+  drain: function () {
+    if (Speech.busy) return;
+    var text = Speech.queue.shift();
+    if (text === undefined) return;
+    Speech.busy = true;
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.0;
+    utter.onend = function () { Speech.busy = false; Speech.drain(); };
+    utter.onerror = function () { Speech.busy = false; Speech.drain(); };
+    try { window.speechSynthesis.speak(utter); } catch (e) { Speech.busy = false; }
+  },
+  prime: function () {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      var u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+};
+
+/* On the very first user gesture, unlock both audio paths. On return to
+   foreground, proactively re-arm both rather than waiting for the next
+   click -- an alert can fire before any click on a backgrounded tab. */
+function unlockAudioOnce() {
+  STATE.audioUnlocked = true;
+  STATE.speechUnlocked = true;
+  getAudioCtx();
+  Speech.prime();
+  document.removeEventListener('pointerdown', unlockAudioOnce);
+  document.removeEventListener('touchstart', unlockAudioOnce);
+  document.removeEventListener('keydown', unlockAudioOnce);
+}
+document.addEventListener('pointerdown', unlockAudioOnce, { passive: true });
+document.addEventListener('touchstart', unlockAudioOnce, { passive: true });
+document.addEventListener('keydown', unlockAudioOnce, { passive: true });
+
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible') {
+    getAudioCtx();
+    Speech.prime();
+  }
+});
+
+function showToast(message, legendary) {
+  var wrap = document.getElementById('toastWrap');
+  var el = document.createElement('div');
+  el.className = legendary ? 'toast legendary' : 'toast';
+  el.textContent = (legendary ? '★ ' : '') + message;
+  wrap.appendChild(el);
+  setTimeout(function () { el.className += ' show'; }, 15);
+  setTimeout(function () {
+    el.className = el.className.replace(' show', '');
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 450);
+  }, 5000);
+}
+
+function triggerShake(cssClass) {
+  var app = document.getElementById('app');
+  app.classList.remove('shake-u2');
+  app.classList.remove('shake-strong');
+  void app.offsetWidth;
+  app.classList.add(cssClass);
+  setTimeout(function () { app.classList.remove(cssClass); }, 800);
+}
+
+var AIRLINE_NAMES = {
+  AAL: 'American', UAL: 'United', DAL: 'Delta', SWA: 'Southwest', JBU: 'JetBlue',
+  ASA: 'Alaska', FFT: 'Frontier', NKS: 'Spirit', SKW: 'SkyWest', RPA: 'Republic',
+  ENY: 'Envoy', EDV: 'Endeavor Air', QXE: 'Horizon Air', UPS: 'UPS', FDX: 'FedEx',
+  ACA: 'Air Canada', BAW: 'British Airways', AFR: 'Air France', DLH: 'Lufthansa',
+  KLM: 'KLM', VIR: 'Virgin Atlantic', QFA: 'Qantas', ANA: 'All Nippon Airways'
+};
+
+function spokenIdentity(ac) {
+  if (!ac.callsign) return ac.is_military ? 'Military aircraft' : 'Unidentified aircraft';
+  var cs = ac.callsign.trim().toUpperCase();
+  var m = cs.match(/^([A-Z]{3})(\d+)/);
+  if (m && AIRLINE_NAMES[m[1]]) {
+    var num = m[2];
+    var grouped = num.length > 2 ? (num.slice(0, num.length - 2) + ' ' + num.slice(-2)) : num;
+    return AIRLINE_NAMES[m[1]] + ' ' + grouped;
+  }
+  if (ac.is_military) return 'Military aircraft, ' + cs;
+  return cs;
+}
+
+function announceAircraft(ac) {
+  var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+  var typeName = getTypeName(ac.aircraft_type);
+  var alt = Math.round(ac.baro_alt || 0);
+  var parts = [spokenIdentity(ac) + ','];
+  if (typeName && typeName !== '-') parts.push(typeName + ',');
+  if (distNm !== null) parts.push(Math.round(distNm) + (Math.round(distNm) === 1 ? ' mile,' : ' miles,'));
+  parts.push(alt + ' feet.');
+  return parts.join(' ');
+}
+
+/* Military aircraft play a fun audio easter-egg before the informative
+   announcement; the easter egg alone is never enough on its own. */
+function playMilitaryEasterEgg(done) {
+  var finished = false;
+  function finish() { if (finished) return; finished = true; done(); }
+  var el;
+  try { el = new Audio('military.mp3'); } catch (e) { el = null; }
+  if (!el) { Speech.speak('Military aircraft inbound.'); finish(); return; }
+  el.addEventListener('ended', finish);
+  el.addEventListener('error', function () { Speech.speak('Military aircraft inbound.'); finish(); });
+  var playPromise = el.play();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(function () { Speech.speak('Military aircraft inbound.'); finish(); });
+  }
+  setTimeout(finish, 4000);
+}
+
+function fireStandardAlert(ac) {
+  playChimes(1, false);
+  var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+  showToast((ac.callsign || ac.icao24 || 'Aircraft') +
+    (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : '') + ' ' + fmtAlt(ac.baro_alt), false);
+  if (ac.is_military) {
+    playMilitaryEasterEgg(function () { Speech.speak(announceAircraft(ac)); });
+  } else {
+    Speech.speak(announceAircraft(ac));
+  }
+}
+
+var LEGENDARY_CONFIG = {
+  u2: {
+    chimes: 3, shakeClass: 'shake-u2',
+    line: function (distNm) {
+      return 'Lockheed U-2. Dragon Lady.' + (distNm !== null ? ' ' + Math.round(distNm) + ' miles out.' : '');
+    }
+  },
+  af1: {
+    chimes: 2, shakeClass: 'shake-strong',
+    line: function () { return 'VC-25. The President\'s aircraft. Air Force One.'; }
+  },
+  b52: {
+    chimes: 2, shakeClass: 'shake-strong',
+    line: function () { return 'B-52 Stratofortress. Still flying after 70 years.'; }
+  },
+  awacs: {
+    chimes: 2, shakeClass: 'shake-strong',
+    line: function () { return 'E-3 Sentry AWACS. Eyes in the sky.'; }
+  }
+};
+
+function fireLegendaryAlert(ac, category) {
+  var cfg = LEGENDARY_CONFIG[category];
+  if (!cfg) return;
+  var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+  playChimes(cfg.chimes, false);
+  triggerShake(cfg.shakeClass);
+  showToast((ac.callsign || ac.icao24 || category.toUpperCase()) +
+    (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : '') + ' ' + fmtAlt(ac.baro_alt), true);
+  Speech.speak(cfg.line(distNm));
+}
+
+function fireBalloonAlert(ac) {
+  var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+  playChimes(1, false);
+  showToast('Balloon spotted' + (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : ''), true);
+  Speech.speak('Balloon sighted' + (distNm !== null ? ', ' + Math.round(distNm) + ' miles out.' : '.'));
+}
+
+var EMERGENCY_NAMES = { '7700': 'general emergency', '7600': 'radio failure', '7500': 'hijack' };
+
+function fireEmergencyAlert(ac, distNm) {
+  playChimes(4, true);
+  var name = EMERGENCY_NAMES[ac.squawk] || 'emergency';
+  showToast('EMERGENCY ' + ac.squawk + ' — ' + (ac.callsign || ac.icao24 || 'Aircraft') +
+    (distNm !== null ? ' ' + fmtNum(distNm, 1) + ' nm' : ''), false);
+  Speech.speak('Emergency squawk ' + ac.squawk + ', ' + name + '. ' +
+    (ac.callsign ? ac.callsign : 'Unidentified aircraft') +
+    (distNm !== null ? ', ' + Math.round(distNm) + ' miles out.' : '.'));
+}
+
+function checkEmergencySquawk(ac, distNm) {
+  var icao = ac.icao24;
+  if (!icao) return;
+  var isEmergency = EMERGENCY_SQUAWKS.indexOf(ac.squawk) !== -1;
+  var activeSquawk = STATE.emergencyActive[icao];
+  if (isEmergency && activeSquawk !== ac.squawk) {
+    STATE.emergencyActive[icao] = ac.squawk;
+    fireEmergencyAlert(ac, distNm);
+  } else if (!isEmergency && activeSquawk) {
+    delete STATE.emergencyActive[icao];
+  }
+}
+
+/* Per-aircraft alertedSet makes each aircraft alert only once per session;
+   it expires with ~1.2x hysteresis on the way out to avoid boundary flapping.
+   Legendary/balloon sightings always fire once regardless of alert radius. */
+function checkAlerts(aircraftList) {
+  var alertNm = STATE.alertRadiusNm;
+  var hystNm = alertNm * CONFIG.ALERT_HYSTERESIS;
+  var seenIcaos = {};
+
+  for (var i = 0; i < aircraftList.length; i++) {
+    var ac = aircraftList[i];
+    if (!ac.icao24) continue;
+    seenIcaos[ac.icao24] = true;
+    var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+    var category = getAircraftCategory(ac);
+    var legendary = isLegendary(category);
+    var isBalloon = category === 'balloon';
+    var alreadyAlerted = !!STATE.alertedSet[ac.icao24];
+
+    if ((legendary || isBalloon) && !alreadyAlerted) {
+      STATE.alertedSet[ac.icao24] = true;
+      if (legendary) fireLegendaryAlert(ac, category);
+      else fireBalloonAlert(ac);
+    } else if (!legendary && !isBalloon) {
+      var withinAlert = distNm !== null && distNm <= alertNm;
+      if (withinAlert && !alreadyAlerted) {
+        STATE.alertedSet[ac.icao24] = true;
+        fireStandardAlert(ac);
+      } else if (alreadyAlerted && distNm !== null && distNm > hystNm) {
+        delete STATE.alertedSet[ac.icao24];
+      }
+    }
+
+    checkEmergencySquawk(ac, distNm);
+  }
+
+  for (var icao in STATE.emergencyActive) {
+    if (!seenIcaos[icao]) delete STATE.emergencyActive[icao];
+  }
+}
+
+/* ============================== DEMO ENGINE ============================== */
+/* Both fallback and showcase demo render through the exact same pipeline as
+   real data (STATE.aircraft + renderAll + checkAlerts) -- only the trigger,
+   content, and exit behavior differ. */
+
+var DEMO_AMBIENT_TYPES = ['B738', 'A320', 'B739', 'A321', 'E175', 'CRJ9', 'B737', 'A319', 'DH8D', 'PC12', 'C172', 'SR22'];
+var DEMO_CIVILIAN_PREFIXES = ['UAL', 'DAL', 'AAL', 'SWA', 'JBU', 'ASA', 'FFT', 'NKS', 'SKW', 'RPA', 'ENY', 'EDV'];
+var DEMO_MIL_PREFIXES = ['RCH', 'REACH', 'NAVY', 'ARMY', 'CNV', 'TANKER', 'VIPER', 'EAGLE', 'HAWK', 'SAM'];
+var DEMO_MIL_TRANSIT_TYPES = ['C130', 'KC35', 'C17', 'B737'];
+var DEMO_LEGENDARY_PRESETS = {
+  u2: { type: 'U2', altitude: 65000, velocity: 410 },
+  af1: { type: 'VC25', altitude: 39000, velocity: 480, icao24: CONFIG.AF1_HEX, callsign: 'AF1' },
+  b52: { type: 'B52H', altitude: 45000, velocity: 440 },
+  awacs: { type: 'E3C', altitude: 32000, velocity: 360 }
+};
+
+var DemoEngine = {
+  mode: null,
+  aircraft: [],
+  tickTimer: null,
+  scheduledTimers: [],
+
+  randomHex: function () {
+    var hex;
+    do {
+      hex = '';
+      for (var i = 0; i < 6; i++) hex += Math.floor(Math.random() * 16).toString(16);
+    } while (DemoEngine.hexInUse(hex));
+    return hex;
+  },
+
+  hexInUse: function (hex) {
+    for (var i = 0; i < DemoEngine.aircraft.length; i++) {
+      if (DemoEngine.aircraft[i].icao24 === hex) return true;
+    }
+    return false;
+  },
+
+  randomCallsign: function (military) {
+    var prefixes = military ? DEMO_MIL_PREFIXES : DEMO_CIVILIAN_PREFIXES;
+    var prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    var num = 100 + Math.floor(Math.random() * 8899);
+    return prefix + num;
+  },
+
+  spawn: function (opts) {
+    opts = opts || {};
+    var angle = Math.random() * 360;
+    var spawnDistNm = STATE.radarRadiusNm * (1.0 + Math.random() * 0.15);
+    var spawnPt = destPoint(STATE.location.lat, STATE.location.lon, angle, nmToKm(spawnDistNm));
+    var aimAngle = bearingDeg(spawnPt.lat, spawnPt.lon, STATE.location.lat, STATE.location.lon);
+    var jitter = (Math.random() - 0.5) * 70;
+    var heading = (aimAngle + jitter + 360) % 360;
+
+    var ac = {
+      icao24: opts.icao24 || DemoEngine.randomHex(),
+      callsign: opts.callsign || DemoEngine.randomCallsign(!!opts.military),
+      lat: spawnPt.lat, lon: spawnPt.lon,
+      baro_alt: opts.altitude !== undefined ? opts.altitude : (8000 + Math.floor(Math.random() * 33) * 1000),
+      velocity: opts.velocity !== undefined ? opts.velocity : (260 + Math.floor(Math.random() * 220)),
+      true_track: heading,
+      vert_rate: opts.vertRate !== undefined ? opts.vertRate : (Math.random() < 0.7 ? 0 : (Math.random() < 0.5 ? -800 : 800)),
+      squawk: opts.squawk || '1200',
+      aircraft_type: opts.type || DEMO_AMBIENT_TYPES[Math.floor(Math.random() * DEMO_AMBIENT_TYPES.length)],
+      is_military: !!opts.military,
+      dist_km: nmToKm(spawnDistNm)
+    };
+    DemoEngine.aircraft.push(ac);
+    return ac;
+  },
+
+  populateAmbient: function (target) {
+    while (DemoEngine.aircraft.length < target) DemoEngine.spawn({});
+  },
+
+  spawnMilitaryTransit: function () {
+    DemoEngine.spawn({
+      military: true,
+      type: DEMO_MIL_TRANSIT_TYPES[Math.floor(Math.random() * DEMO_MIL_TRANSIT_TYPES.length)],
+      altitude: 18000 + Math.floor(Math.random() * 15000),
+      velocity: 280 + Math.floor(Math.random() * 120)
+    });
+  },
+
+  spawnBalloon: function () {
+    DemoEngine.spawn({
+      callsign: 'HBAL' + (300 + Math.floor(Math.random() * 600)),
+      type: 'BALL',
+      altitude: 45000 + Math.floor(Math.random() * 15000),
+      velocity: 8 + Math.floor(Math.random() * 12),
+      vertRate: 0
+    });
+  },
+
+  spawnLegendary: function (kind) {
+    var preset = DEMO_LEGENDARY_PRESETS[kind];
+    if (!preset) return;
+    DemoEngine.spawn({
+      military: true, type: preset.type, altitude: preset.altitude, velocity: preset.velocity,
+      icao24: preset.icao24, callsign: preset.callsign
+    });
+  },
+
+  triggerEmergency: function () {
+    var candidates = DemoEngine.aircraft.filter(function (a) {
+      var cat = getAircraftCategory(a);
+      return !isLegendary(cat) && cat !== 'balloon';
+    });
+    if (!candidates.length) return;
+    var ac = candidates[Math.floor(Math.random() * candidates.length)];
+    var codes = ['7700', '7600', '7500'];
+    ac.squawk = codes[Math.floor(Math.random() * codes.length)];
+    setTimeout(function () {
+      if (DemoEngine.mode === 'showcase') ac.squawk = '1200';
+    }, 18000);
+  },
+
+  startTick: function () {
+    DemoEngine.tickTimer = setInterval(DemoEngine.tick, 1000);
+    DemoEngine.tick();
+  },
+
+  stopTick: function () {
+    if (DemoEngine.tickTimer) clearInterval(DemoEngine.tickTimer);
+    DemoEngine.tickTimer = null;
+  },
+
+  tick: function () {
+    var stillAlive = [];
+    for (var i = 0; i < DemoEngine.aircraft.length; i++) {
+      var ac = DemoEngine.aircraft[i];
+      var stepKm = (ac.velocity || 0) * 1.852 / 3600;
+      var next = destPoint(ac.lat, ac.lon, ac.true_track, stepKm);
+      ac.lat = next.lat; ac.lon = next.lon;
+      ac.dist_km = haversineKm(STATE.location.lat, STATE.location.lon, ac.lat, ac.lon);
+      if (kmToNm(ac.dist_km) <= STATE.radarRadiusNm * 1.6) stillAlive.push(ac);
+    }
+    DemoEngine.aircraft = stillAlive;
+    var targetCount = DemoEngine.mode === 'showcase' ? 16 : 14;
+    DemoEngine.populateAmbient(targetCount);
+    STATE.aircraft = DemoEngine.aircraft;
+    if (typeof renderAll === 'function') renderAll();
+    if (typeof checkAlerts === 'function') checkAlerts(DemoEngine.aircraft);
+  },
+
+  scheduleEvent: function (delayMs, fn) {
+    var id = setTimeout(function () {
+      if (DemoEngine.mode === 'showcase') fn();
+    }, delayMs);
+    DemoEngine.scheduledTimers.push(id);
+  },
+
+  clearScheduledEvents: function () {
+    for (var i = 0; i < DemoEngine.scheduledTimers.length; i++) clearTimeout(DemoEngine.scheduledTimers[i]);
+    DemoEngine.scheduledTimers = [];
+  },
+
+  scheduleShow: function () {
+    var totalMs = (180 + Math.random() * 120) * 1000;
+
+    DemoEngine.scheduleEvent(Math.random() * totalMs * 0.5, function () { DemoEngine.spawnMilitaryTransit(); });
+
+    if (Math.random() < 0.6) {
+      DemoEngine.scheduleEvent(totalMs * 0.5 + Math.random() * totalMs * 0.45, function () { DemoEngine.spawnMilitaryTransit(); });
+    }
+    if (Math.random() < 0.5) {
+      DemoEngine.scheduleEvent(Math.random() * totalMs * 0.8, function () { DemoEngine.spawnBalloon(); });
+    }
+    if (Math.random() < 0.35) {
+      var kinds = ['u2', 'af1', 'b52', 'awacs'];
+      var pick = kinds[Math.floor(Math.random() * kinds.length)];
+      DemoEngine.scheduleEvent(totalMs * 0.1 + Math.random() * totalMs * 0.7, function () { DemoEngine.spawnLegendary(pick); });
+    }
+    if (Math.random() < 0.25) {
+      DemoEngine.scheduleEvent(Math.random() * totalMs * 0.7, function () { DemoEngine.triggerEmergency(); });
+    }
+
+    DemoEngine.scheduleEvent(totalMs, function () { DemoEngine.scheduleShow(); });
+  },
+
+  enterFallback: function () {
+    if (DemoEngine.mode) return;
+    DemoEngine.mode = 'fallback';
+    STATE.demoMode = 'fallback';
+    var banner = document.getElementById('demoBanner');
+    banner.hidden = false;
+    banner.textContent = 'DEMO MODE — Reconnecting…';
+    DemoEngine.aircraft = [];
+    DemoEngine.populateAmbient(14);
+    DemoEngine.startTick();
+    if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
+    STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.FALLBACK_DEMO_RETRY_MS);
+  },
+
+  exitFallback: function (alreadySucceeded) {
+    if (DemoEngine.mode !== 'fallback') return;
+    DemoEngine.mode = null;
+    STATE.demoMode = null;
+    DemoEngine.stopTick();
+    DemoEngine.aircraft = [];
+    document.getElementById('demoBanner').hidden = true;
+    if (alreadySucceeded) {
+      if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
+      STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.REFRESH_MS);
+    } else {
+      restartRefreshCycle();
+    }
+  },
+
+  enterShowcase: function () {
+    if (DemoEngine.mode === 'showcase') return;
+    if (DemoEngine.mode === 'fallback') DemoEngine.exitFallback(false);
+    DemoEngine.mode = 'showcase';
+    STATE.demoMode = 'showcase';
+    if (STATE.refreshTimer) { clearInterval(STATE.refreshTimer); STATE.refreshTimer = null; }
+    var banner = document.getElementById('demoBanner');
+    banner.hidden = false;
+    banner.textContent = 'DEMO MODE';
+    var btn = document.getElementById('demoBtn');
+    if (btn) btn.textContent = 'EXIT DEMO';
+    DemoEngine.aircraft = [];
+    DemoEngine.populateAmbient(16);
+    DemoEngine.startTick();
+    DemoEngine.scheduleShow();
+  },
+
+  exitShowcase: function () {
+    if (DemoEngine.mode !== 'showcase') return;
+    DemoEngine.mode = null;
+    STATE.demoMode = null;
+    DemoEngine.clearScheduledEvents();
+    DemoEngine.stopTick();
+    DemoEngine.aircraft = [];
+    document.getElementById('demoBanner').hidden = true;
+    var btn = document.getElementById('demoBtn');
+    if (btn) btn.textContent = 'DEMO';
+    STATE.aircraft = [];
+    STATE.source.preferred = null;
+    STATE.firstLoadRetryDone = false;
+    restartRefreshCycle();
+  },
+
+  toggleShowcase: function () {
+    if (DemoEngine.mode === 'showcase') DemoEngine.exitShowcase();
+    else DemoEngine.enterShowcase();
+  }
+};
+
+function renderHeaderStats() {
+  var list = getVisibleAircraftSorted();
+  var highest = 0, fastest = 0;
+  for (var i = 0; i < list.length; i++) {
+    if ((list[i].baro_alt || 0) > highest) highest = list[i].baro_alt;
+    if ((list[i].velocity || 0) > fastest) fastest = list[i].velocity;
+  }
+  document.getElementById('statOverhead').textContent = list.length;
+  document.getElementById('statHighest').textContent = Math.round(highest);
+  document.getElementById('statFastest').textContent = Math.round(fastest);
+  document.getElementById('radarVal').textContent = STATE.radarRadiusNm + ' nm radar';
+  document.getElementById('alertVal').textContent = STATE.alertRadiusNm + ' nm alert';
+  document.getElementById('footerAlertVal').textContent = 'Alert ' + STATE.alertRadiusNm + 'nm' + (STATE.stale ? ' (stale)' : '');
+  document.getElementById('versionTag').textContent = 'v' + CONFIG.VERSION;
+}
+
+/* ============================== SIDE LIST ============================== */
+function renderSideList() {
+  var list = getVisibleAircraftSorted();
+  var container = document.getElementById('sideList');
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    var ac = list[i];
+    var selected = ac.icao24 === STATE.selectedIcao ? ' selected' : '';
+    html += '<div class="flightRow' + selected + '" data-icao="' + ac.icao24 + '">' +
+      '<span class="cs">' + (ac.callsign || ac.icao24) + '</span>' +
+      (ac.is_military ? '<span class="mil">MIL</span>' : '') +
+      '<div class="sub">' + getTypeName(ac.aircraft_type) + ' &middot; ' + fmtAlt(ac.baro_alt) + ' &middot; ' +
+      Math.round(ac.velocity || 0) + 'kt &middot; ' + fmtNum(kmToNm(ac.dist_km), 1) + 'nm</div></div>';
+  }
+  container.innerHTML = html;
+  var rows = container.querySelectorAll('.flightRow');
+  for (var r = 0; r < rows.length; r++) {
+    rows[r].addEventListener('click', function () {
+      selectAircraft(this.getAttribute('data-icao'));
+    });
+  }
+}
+
+/* ============================== DETAIL CARD ============================== */
+var NOTABLE_STATUSES = ['Delayed', 'Diverted', 'Cancelled', 'Landed', 'Return to Gate'];
+
+function findAircraft(icao) {
+  for (var i = 0; i < STATE.aircraft.length; i++) {
+    if (STATE.aircraft[i].icao24 === icao) return STATE.aircraft[i];
+  }
+  return null;
+}
+
+function selectAircraft(icao) {
+  STATE.selectedIcao = icao;
+  renderAll();
+  openDetailCard(icao);
+}
+
+function openDetailCard(icao) {
+  var ac = findAircraft(icao);
+  if (!ac) return;
+  var card = document.getElementById('detailCard');
+  card.hidden = false;
+  document.getElementById('detailTitle').textContent = ac.callsign || ac.icao24;
+  document.getElementById('detailType').textContent = getTypeName(ac.aircraft_type);
+  document.getElementById('detailReg').textContent = '-';
+  document.getElementById('detailAlt').textContent = fmtAlt(ac.baro_alt) + ' (' + Math.round(ac.baro_alt || 0) + ' ft)';
+  document.getElementById('detailSpeed').textContent = Math.round(ac.velocity || 0) + ' kt';
+  document.getElementById('detailHeading').textContent = Math.round(ac.true_track || 0) + (char_deg());
+  document.getElementById('detailVrate').textContent = Math.round(ac.vert_rate || 0) + ' fpm';
+  document.getElementById('detailSquawk').textContent = ac.squawk || '-';
+  document.getElementById('detailFrom').textContent = 'Looking up...';
+  document.getElementById('detailTo').textContent = 'Looking up...';
+  document.getElementById('detailNote').hidden = true;
+  document.getElementById('trackBtn').textContent = (STATE.trackedIcao === icao) ? 'Untrack' : 'Track';
+
+  var category = getAircraftCategory(ac);
+  enrichAircraft(ac, category);
+  lookupRoute(ac, category);
+}
+
+function char_deg() { return String.fromCharCode(176); }
+
+function enrichAircraft(ac, category) {
+  var cached = STATE.enrichmentCache[ac.icao24];
+  if (cached) { applyEnrichment(ac.icao24, cached); return; }
+  fetch(CONFIG.WORKER_URL + '/aircraft?icao=' + ac.icao24).then(function (r) { return r.json(); })
+    .then(function (data) {
+      STATE.enrichmentCache[ac.icao24] = data;
+      applyEnrichment(ac.icao24, data);
+    }).catch(function () {});
+}
+
+function applyEnrichment(icao, data) {
+  if (STATE.selectedIcao !== icao) return;
+  if (data.registration) document.getElementById('detailReg').textContent = data.registration;
+  if (data.type_name && data.type_name.length > 1) document.getElementById('detailType').textContent = data.type_name;
+}
+
+function lookupRoute(ac, category) {
+  if (category === 'balloon') {
+    document.getElementById('detailFrom').textContent = 'No fixed route';
+    document.getElementById('detailTo').textContent = 'Drifting with wind';
+    return;
+  }
+  if (category === 'af1') {
+    document.getElementById('detailFrom').textContent = 'Joint Base Andrews';
+    document.getElementById('detailTo').textContent = 'As directed';
+    return;
+  }
+  if (isLegendary(category)) {
+    document.getElementById('detailFrom').textContent = 'Classified / N\/A';
+    document.getElementById('detailTo').textContent = 'Classified / N\/A';
+    return;
+  }
+  if (!ac.callsign) {
+    document.getElementById('detailFrom').textContent = '-';
+    document.getElementById('detailTo').textContent = '-';
+    return;
+  }
+  var cached = STATE.routeCache[ac.callsign];
+  if (cached) { applyRoute(ac.icao24, cached); return; }
+  fetch(CONFIG.WORKER_URL + '/route', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callsign: ac.callsign, lat: ac.lat, lon: ac.lon })
+  }).then(function (r) { return r.json(); })
+    .then(function (data) {
+      STATE.routeCache[ac.callsign] = data;
+      applyRoute(ac.icao24, data);
+    }).catch(function () {
+      document.getElementById('detailFrom').textContent = 'Unavailable';
+      document.getElementById('detailTo').textContent = 'Unavailable';
+    });
+}
+
+function applyRoute(icao, data) {
+  if (STATE.selectedIcao !== icao) return;
+  if (data.origin && data.origin.code) {
+    document.getElementById('detailFrom').textContent = data.origin.code + (data.origin.city ? (' ' + data.origin.city) : '');
+  } else {
+    document.getElementById('detailFrom').textContent = 'Unknown';
+  }
+  if (data.destination && data.destination.code) {
+    document.getElementById('detailTo').textContent = data.destination.code + (data.destination.city ? (' ' + data.destination.city) : '');
+  } else {
+    document.getElementById('detailTo').textContent = 'Unknown';
+  }
+  if (data.status && NOTABLE_STATUSES.indexOf(data.status) !== -1) {
+    var note = document.getElementById('detailNote');
+    note.hidden = false;
+    note.textContent = 'Status: ' + data.status;
+  }
+}
+
+document.getElementById('detailClose').addEventListener('click', function () {
+  document.getElementById('detailCard').hidden = true;
+  STATE.selectedIcao = null;
+  renderAll();
+});
+
+document.getElementById('trackBtn').addEventListener('click', function () {
+  if (!STATE.selectedIcao) return;
+  STATE.trackedIcao = (STATE.trackedIcao === STATE.selectedIcao) ? null : STATE.selectedIcao;
+  this.textContent = STATE.trackedIcao ? 'Untrack' : 'Track';
+});
+
+/* ============================== SEARCH ============================== */
+document.getElementById('searchBox').addEventListener('keydown', function (evt) {
+  if (evt.key !== 'Enter') return;
+  var q = this.value.trim().toUpperCase();
+  if (!q) { STATE.trackedIcao = null; return; }
+  for (var i = 0; i < STATE.aircraft.length; i++) {
+    var ac = STATE.aircraft[i];
+    if ((ac.callsign && ac.callsign.toUpperCase().indexOf(q) !== -1) || (ac.icao24 && ac.icao24.toUpperCase().indexOf(q) !== -1)) {
+      STATE.trackedIcao = ac.icao24;
+      selectAircraft(ac.icao24);
+      return;
+    }
+  }
+});
+
+/* ============================== HEADER RADIUS CONTROLS ============================== */
+document.getElementById('radarMinus').addEventListener('click', function () { adjustRadarRadius(-1); });
+document.getElementById('radarPlus').addEventListener('click', function () { adjustRadarRadius(1); });
+document.getElementById('alertMinus').addEventListener('click', function () { adjustAlertRadius(-1); });
+document.getElementById('alertPlus').addEventListener('click', function () { adjustAlertRadius(1); });
+
+/* ============================== LOCATION MODAL ============================== */
+document.getElementById('locLabel').addEventListener('click', function () {
+  document.getElementById('locInput').value = '';
+  document.getElementById('locationModal').hidden = false;
+});
+
+document.getElementById('locCancel').addEventListener('click', function () {
+  document.getElementById('locationModal').hidden = true;
+});
+
+document.getElementById('locUseGps').addEventListener('click', function () {
+  document.getElementById('locationModal').hidden = true;
+  Location.useGpsNow();
+});
+
+function submitLocationInput() {
+  var query = document.getElementById('locInput').value.trim();
+  if (!query) return;
+  document.getElementById('locationModal').hidden = true;
+  Location.forwardGeocode(query, function (loc) {
+    if (loc) Location.setLocation(loc);
+  });
+}
+
+document.getElementById('locSubmit').addEventListener('click', submitLocationInput);
+document.getElementById('locInput').addEventListener('keydown', function (evt) {
+  if (evt.key === 'Enter') submitLocationInput();
+});
+
+/* ============================== THEME ============================== */
+function applyTheme(theme) {
+  STATE.theme = theme;
+  if (theme === 'retro') {
+    document.documentElement.setAttribute('data-theme', 'retro');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  Persist.set('theme', theme);
+}
+
+document.getElementById('themeBtn').addEventListener('click', function () {
+  applyTheme(STATE.theme === 'retro' ? 'modern' : 'retro');
+});
+
+/* ============================== FOOTER CONTROLS ============================== */
+document.getElementById('chimeBtn').addEventListener('click', function () {
+  STATE.chimeOn = !STATE.chimeOn;
+  Persist.set('chimeOn', STATE.chimeOn);
+  this.textContent = 'Chime: ' + (STATE.chimeOn ? 'ON' : 'OFF');
+});
+
+document.getElementById('refreshBtn').addEventListener('click', function () {
+  if (STATE.demoMode === 'showcase') return;
+  STATE.source.preferred = null;
+  restartRefreshCycle();
+});
+
+document.getElementById('demoBtn').addEventListener('click', function () {
+  DemoEngine.toggleShowcase();
+});
+
+document.getElementById('testAudioBtn').addEventListener('click', function () {
+  unlockAudioOnce();
+  playChimes(1, false);
+  Speech.speak('SkyFrame audio test. Radio check, one, two, three.');
+});
+
+/* ============================== RENDER ALL ============================== */
+function renderAll() {
+  renderHeaderStats();
+  renderSideList();
+  if (STATE.selectedIcao && !document.getElementById('detailCard').hidden) {
+    var ac = findAircraft(STATE.selectedIcao);
+    if (!ac) {
+      document.getElementById('detailCard').hidden = true;
+      STATE.selectedIcao = null;
+    } else {
+      document.getElementById('detailAlt').textContent = fmtAlt(ac.baro_alt) + ' (' + Math.round(ac.baro_alt || 0) + ' ft)';
+      document.getElementById('detailSpeed').textContent = Math.round(ac.velocity || 0) + ' kt';
+      document.getElementById('detailHeading').textContent = Math.round(ac.true_track || 0) + char_deg();
+      document.getElementById('detailVrate').textContent = Math.round(ac.vert_rate || 0) + ' fpm';
+      document.getElementById('detailSquawk').textContent = ac.squawk || '-';
+    }
+  }
+}
+
+/* ============================== INIT / BOOTSTRAP ============================== */
+/* Must resolve quickly no matter what: geolocation and every network call
+   below are fire-and-forget. The loading screen is dismissed synchronously
+   at the end of this function, never waiting on any of them (a real bug in
+   development was the app hanging forever on "Acquiring location"). */
+function init() {
+  document.getElementById('loadVersion').textContent = 'v' + CONFIG.VERSION;
+  document.getElementById('versionTag').textContent = 'v' + CONFIG.VERSION;
+
+  STATE.radarRadiusNm = clamp(Persist.get('radarRadius', CONFIG.RADAR_DEFAULT_NM), CONFIG.RADAR_MIN_NM, CONFIG.RADAR_MAX_NM);
+  STATE.alertRadiusNm = clamp(Persist.get('alertRadius', CONFIG.ALERT_DEFAULT_NM), CONFIG.ALERT_MIN_NM, Math.min(CONFIG.ALERT_MAX_NM, STATE.radarRadiusNm));
+  STATE.chimeOn = Persist.get('chimeOn', true);
+  document.getElementById('chimeBtn').textContent = 'Chime: ' + (STATE.chimeOn ? 'ON' : 'OFF');
+  applyTheme(Persist.get('theme', 'modern'));
+
+  resizeCanvas();
+  window.addEventListener('resize', debounce(resizeCanvas, 150));
+  window.addEventListener('orientationchange', function () { setTimeout(resizeCanvas, 200); });
+
+  /* Show the app shell now -- everything below is async/best-effort and
+     must never be able to leave the user stuck on the loading screen. */
+  document.getElementById('loading').hidden = true;
+  document.getElementById('app').hidden = false;
+
+  loadFipsNames();
+  loadGeoData();
+  Location.init();
+
+  requestAnimationFrame(animationLoop);
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+}
+
+init();
+</script>
+</body>
+</html>
