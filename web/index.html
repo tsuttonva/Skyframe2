@@ -191,13 +191,14 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.6',
+  VERSION: '1.0.7',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
   ALERT_MIN_NM: 1, ALERT_MAX_NM: 20, ALERT_DEFAULT_NM: 15, ALERT_HYSTERESIS: 1.2,
   REFRESH_MS: 30000,
   FIRST_LOAD_RETRY_DELAY_MS: 2000,
+  STALE_RETRY_DELAYS_MS: [3000, 6000],
   FALLBACK_DEMO_RETRY_MS: 4000,
   WORKER_TIMEOUT_MS: 20000,
   DIRECT_TIMEOUT_MS: 10000,
@@ -235,6 +236,9 @@ var STATE = {
   statFastestIcao: null,
   source: { preferred: null, workerFails: 0 },
   lastGoodCount: 0,
+  lastGoodRadiusNm: 0,
+  fetchInFlight: false,
+  staleRetryCount: 0,
   alertedSet: {},
   emergencyActive: {},
   enrichmentCache: {},
@@ -542,6 +546,7 @@ function onLocationChanged() {
   STATE.source.workerFails = 0;
   STATE.hasEverSucceeded = false;
   STATE.firstLoadRetryDone = false;
+  STATE.staleRetryCount = 0;
   if (typeof renderAll === 'function') renderAll();
   if (typeof restartRefreshCycle === 'function') restartRefreshCycle();
 }
@@ -656,12 +661,17 @@ function fetchAircraftOnce() {
     if (i >= order.length) return Promise.reject(new Error('all sources failed'));
     var src = order[i];
     return SOURCE_FETCHERS[src](lat, lon, dist).then(function (aircraft) {
-      if (aircraft.length === 0 && STATE.lastGoodCount > CONFIG.SUSPICIOUS_EMPTY_THRESHOLD) {
+      // An empty result is only "suspicious" (likely a broken response rather
+      // than genuine all-clear airspace) if it's at least as wide a radius as
+      // the one where we last actually saw a healthy count -- otherwise a
+      // small radar radius would legitimately see 0 and we'd cascade through
+      // every source for nothing, leaving the app stuck STALE forever.
+      if (aircraft.length === 0 && STATE.lastGoodCount > CONFIG.SUSPICIOUS_EMPTY_THRESHOLD && dist >= STATE.lastGoodRadiusNm) {
         return tryNext(i + 1);
       }
       if (src === 'worker') STATE.source.workerFails = 0;
       STATE.source.preferred = src;
-      if (aircraft.length > 0) STATE.lastGoodCount = aircraft.length;
+      if (aircraft.length > 0) { STATE.lastGoodCount = aircraft.length; STATE.lastGoodRadiusNm = dist; }
       return { aircraft: aircraft, source: src };
     }).catch(function (err) {
       if (src === 'worker') STATE.source.workerFails++;
@@ -677,6 +687,7 @@ function applyAircraftResult(aircraft, source) {
   STATE.stale = false;
   STATE.hasEverSucceeded = true;
   STATE.lastRefreshedAt = new Date();
+  STATE.staleRetryCount = 0;
   if (typeof renderAll === 'function') renderAll();
   if (typeof checkAlerts === 'function') checkAlerts(aircraft);
   checkSchergerSighting();
@@ -689,17 +700,32 @@ function markStale() {
 
 function attemptRefresh() {
   if (STATE.demoMode === 'showcase') return;
+  if (STATE.fetchInFlight) return;
+  STATE.fetchInFlight = true;
   fetchAircraftOnce().then(function (result) {
+    STATE.fetchInFlight = false;
     applyAircraftResult(result.aircraft, result.source);
     if (STATE.demoMode === 'fallback' && typeof DemoEngine !== 'undefined') DemoEngine.exitFallback(true);
   }).catch(function () {
+    STATE.fetchInFlight = false;
     handleFetchFailure();
   });
 }
 
+/* A single failed fetch shouldn't leave the user staring at STALE for up to
+   a full REFRESH_MS -- retry quickly a couple of times with backoff before
+   falling back to the normal cadence. */
 function handleFetchFailure() {
   if (STATE.demoMode === 'fallback') return;
-  if (STATE.aircraft.length > 0) { markStale(); return; }
+  if (STATE.aircraft.length > 0) {
+    markStale();
+    var delay = CONFIG.STALE_RETRY_DELAYS_MS[STATE.staleRetryCount];
+    if (delay !== undefined) {
+      STATE.staleRetryCount++;
+      setTimeout(attemptRefresh, delay);
+    }
+    return;
+  }
   if (!STATE.firstLoadRetryDone) {
     STATE.firstLoadRetryDone = true;
     setTimeout(attemptRefresh, CONFIG.FIRST_LOAD_RETRY_DELAY_MS);
@@ -1343,6 +1369,11 @@ document.addEventListener('visibilitychange', function () {
   if (document.visibilityState === 'visible') {
     getAudioCtx();
     Speech.prime();
+    // Mobile browsers throttle/suspend timers while backgrounded, so the
+    // regular refresh interval may not have ticked in a while -- refetch
+    // immediately on return rather than waiting out whatever's left of it.
+    var staleForMs = STATE.lastRefreshedAt ? (Date.now() - STATE.lastRefreshedAt.getTime()) : Infinity;
+    if (staleForMs > 5000 && typeof attemptRefresh === 'function') attemptRefresh();
   }
 });
 
