@@ -45,6 +45,8 @@ body{display:flex;flex-direction:column;}
 
 header#header{display:flex;align-items:center;gap:14px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;-webkit-overflow-scrolling:touch;}
 .stat{display:flex;flex-direction:column;align-items:center;min-width:54px;flex-shrink:0;}
+.stat.clickable{cursor:pointer;}
+.stat.clickable:hover .v{color:var(--primary);}
 .stat .v{font-size:16px;font-weight:700;color:var(--primary);}
 .stat .l{font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
 .radiusCtl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
@@ -121,8 +123,8 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <div id="app" hidden>
   <header id="header">
     <div class="stat"><span class="v" id="statOverhead">0</span><span class="l">Overhead</span></div>
-    <div class="stat"><span class="v" id="statHighest">0</span><span class="l">Highest ft</span></div>
-    <div class="stat"><span class="v" id="statFastest">0</span><span class="l">Fastest kt</span></div>
+    <div class="stat clickable" id="statHighestWrap"><span class="v" id="statHighest">0</span><span class="l">Highest ft</span></div>
+    <div class="stat clickable" id="statFastestWrap"><span class="v" id="statFastest">0</span><span class="l">Fastest kt</span></div>
     <div class="radiusCtl">
       <button id="radarMinus">-</button>
       <span class="val" id="radarVal">50 nm radar</span>
@@ -189,7 +191,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.5',
+  VERSION: '1.0.6',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -229,6 +231,8 @@ var STATE = {
   lastRefreshedAt: null,
   nextRefreshAt: null,
   schergerPresent: false,
+  statHighestIcao: null,
+  statFastestIcao: null,
   source: { preferred: null, workerFails: 0 },
   lastGoodCount: 0,
   alertedSet: {},
@@ -468,10 +472,12 @@ var Location = {
   },
 
   setLocation: function (loc) {
+    var prev = STATE.location;
+    var coordsChanged = !prev || prev.lat !== loc.lat || prev.lon !== loc.lon;
     STATE.location = loc;
     Persist.set('location', loc);
     document.getElementById('locLabel').textContent = loc.label;
-    onLocationChanged();
+    if (coordsChanged) onLocationChanged();
   },
 
   /* GPS -> last-saved location -> compiled-in default. Never blocks startup:
@@ -1803,10 +1809,13 @@ var DemoEngine = {
 function renderHeaderStats() {
   var list = getVisibleAircraftSorted();
   var highest = 0, fastest = 0;
+  var highestIcao = null, fastestIcao = null;
   for (var i = 0; i < list.length; i++) {
-    if ((list[i].baro_alt || 0) > highest) highest = list[i].baro_alt;
-    if ((list[i].velocity || 0) > fastest) fastest = list[i].velocity;
+    if ((list[i].baro_alt || 0) > highest) { highest = list[i].baro_alt; highestIcao = list[i].icao24; }
+    if ((list[i].velocity || 0) > fastest) { fastest = list[i].velocity; fastestIcao = list[i].icao24; }
   }
+  STATE.statHighestIcao = highestIcao;
+  STATE.statFastestIcao = fastestIcao;
   document.getElementById('statOverhead').textContent = list.length;
   document.getElementById('statHighest').textContent = Math.round(highest);
   document.getElementById('statFastest').textContent = Math.round(fastest);
@@ -1983,6 +1992,8 @@ document.getElementById('searchBox').addEventListener('keydown', function (evt) 
 /* ============================== HEADER RADIUS CONTROLS ============================== */
 document.getElementById('radarMinus').addEventListener('click', function () { adjustRadarRadius(-1); });
 document.getElementById('radarPlus').addEventListener('click', function () { adjustRadarRadius(1); });
+document.getElementById('statHighestWrap').addEventListener('click', function () { if (STATE.statHighestIcao) selectAircraft(STATE.statHighestIcao); });
+document.getElementById('statFastestWrap').addEventListener('click', function () { if (STATE.statFastestIcao) selectAircraft(STATE.statFastestIcao); });
 document.getElementById('alertMinus').addEventListener('click', function () { adjustAlertRadius(-1); });
 document.getElementById('alertPlus').addEventListener('click', function () { adjustAlertRadius(1); });
 
