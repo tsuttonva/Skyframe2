@@ -82,7 +82,7 @@ async function rebuildMilDb(env) {
       return a[0] - b[0];
     });
   const record = { ranges: ranges, updated: new Date().toISOString() };
-  await env.SKYFRAME_KV.put(MIL_KV_KEY, JSON.stringify(record), {
+  await env.SKYFRAME2_KV.put(MIL_KV_KEY, JSON.stringify(record), {
     expirationTtl: MIL_KV_TTL_SECONDS,
   });
   milDb = { ranges: ranges, updated: record.updated, loadedAt: Date.now() };
@@ -96,7 +96,7 @@ async function ensureMilDb(env) {
 
   milLoadPromise = (async function () {
     try {
-      const stored = await env.SKYFRAME_KV.get(MIL_KV_KEY);
+      const stored = await env.SKYFRAME2_KV.get(MIL_KV_KEY);
       if (stored) {
         const record = JSON.parse(stored);
         milDb = { ranges: record.ranges || [], updated: record.updated, loadedAt: Date.now() };
@@ -233,7 +233,7 @@ function monthKey() {
 
 async function getUsage(env) {
   const cap = parseInt(env.AEROAPI_MONTHLY_CAP || '800', 10);
-  const raw = await env.SKYFRAME_KV.get(monthKey());
+  const raw = await env.SKYFRAME2_KV.get(monthKey());
   const count = raw ? parseInt(raw, 10) : 0;
   const percentage = cap > 0 ? Math.round((count / cap) * 1000) / 10 : 0;
   let status = 'OK';
@@ -266,24 +266,24 @@ async function sendUsageEmail(env, subject, body) {
 async function incrementUsageAndMaybeAlert(env) {
   const cap = parseInt(env.AEROAPI_MONTHLY_CAP || '800', 10);
   const key = monthKey();
-  const raw = await env.SKYFRAME_KV.get(key);
+  const raw = await env.SKYFRAME2_KV.get(key);
   const count = (raw ? parseInt(raw, 10) : 0) + 1;
-  await env.SKYFRAME_KV.put(key, String(count), { expirationTtl: 45 * 24 * 60 * 60 });
+  await env.SKYFRAME2_KV.put(key, String(count), { expirationTtl: 45 * 24 * 60 * 60 });
 
   const pct = (count / cap) * 100;
   const flagKey75 = key + ':emailed:75';
   const flagKey100 = key + ':emailed:100';
 
-  if (pct >= 100 && !(await env.SKYFRAME_KV.get(flagKey100))) {
-    await env.SKYFRAME_KV.put(flagKey100, '1', { expirationTtl: 45 * 24 * 60 * 60 });
+  if (pct >= 100 && !(await env.SKYFRAME2_KV.get(flagKey100))) {
+    await env.SKYFRAME2_KV.put(flagKey100, '1', { expirationTtl: 45 * 24 * 60 * 60 });
     await sendUsageEmail(
       env,
       'SkyFrame: AeroAPI monthly cap reached',
       'SkyFrame has used ' + count + '/' + cap + ' AeroAPI calls this month and has hit the hard cap. ' +
         'Route lookups will now use the free fallback source until next month.'
     );
-  } else if (pct >= 75 && !(await env.SKYFRAME_KV.get(flagKey75))) {
-    await env.SKYFRAME_KV.put(flagKey75, '1', { expirationTtl: 45 * 24 * 60 * 60 });
+  } else if (pct >= 75 && !(await env.SKYFRAME2_KV.get(flagKey75))) {
+    await env.SKYFRAME2_KV.put(flagKey75, '1', { expirationTtl: 45 * 24 * 60 * 60 });
     await sendUsageEmail(
       env,
       'SkyFrame: AeroAPI usage at 75%',

@@ -1,5 +1,5 @@
 {
-  "name": "skyframe-worker",
+  "name": "skyframe2-worker",
   "private": true,
   "version": "1.0.0",
   "scripts": {

@@ -110,14 +110,19 @@ The Worker needs a tiny database to cache things like the military
 aircraft list and the monthly API usage counter. Create it with:
 
 ```
-npx wrangler kv namespace create SKYFRAME_KV
+npx wrangler kv namespace create SKYFRAME2_KV
 ```
+
+(Named `SKYFRAME2_KV` rather than `SKYFRAME_KV` so this doesn't collide
+with — or get mixed up with — an existing earlier version of the app's
+namespace. If you've never deployed a prior version, this distinction
+doesn't matter, but it's harmless either way.)
 
 This prints something like:
 
 ```
 [[kv_namespaces]]
-binding = "SKYFRAME_KV"
+binding = "SKYFRAME2_KV"
 id = "a1b2c3d4e5f6..."
 ```
 
@@ -192,14 +197,14 @@ npm run deploy
 When it finishes, it prints a URL that looks like:
 
 ```
-https://skyframe-worker.YOUR_SUBDOMAIN.workers.dev
+https://skyframe2-worker.YOUR_SUBDOMAIN.workers.dev
 ```
 
 **Copy this URL** — you'll need it in the next part.
 
 ### 3.8 Verify it's running
 
-Visit `https://skyframe-worker.YOUR_SUBDOMAIN.workers.dev/health` in your
+Visit `https://skyframe2-worker.YOUR_SUBDOMAIN.workers.dev/health` in your
 browser (using your actual URL). You should see a small JSON response
 reporting the version and status. If you see an error page instead,
 double check Part 3.4 (the KV namespace ID) and re-run `npm run deploy`.
@@ -212,7 +217,7 @@ double check Part 3.4 (the KV namespace ID) and re-run `npm run deploy`.
 2. Search for this line near the top (in the `CONFIG` section):
 
    ```js
-   WORKER_URL: 'https://skyframe-worker.YOUR_SUBDOMAIN.workers.dev',
+   WORKER_URL: 'https://skyframe2-worker.YOUR_SUBDOMAIN.workers.dev',
    ```
 
 3. Replace the URL with the **real Worker URL** you copied in step 3.7.
