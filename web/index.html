@@ -44,16 +44,16 @@ body{display:flex;flex-direction:column;}
 #app[hidden]{display:none;}
 
 header#header{display:flex;align-items:center;gap:14px;padding:8px 10px;background:var(--panel);border-bottom:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;-webkit-overflow-scrolling:touch;}
-.stat{display:flex;flex-direction:column;align-items:center;min-width:54px;}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:54px;flex-shrink:0;}
 .stat .v{font-size:16px;font-weight:700;color:var(--primary);}
 .stat .l{font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
-.radiusCtl{display:flex;align-items:center;gap:4px;}
+.radiusCtl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
 .radiusCtl button{background:var(--panel-line);color:var(--primary);border:none;width:24px;height:24px;border-radius:4px;font-size:14px;line-height:1;}
 .radiusCtl .val{font-size:13px;min-width:54px;text-align:center;}
-#locLabel{font-size:12px;color:var(--primary);border:1px solid var(--panel-line);padding:6px 10px;border-radius:6px;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
-#searchBox{background:var(--panel);border:1px solid var(--panel-line);color:var(--text);padding:6px 8px;border-radius:6px;font-size:12px;width:110px;}
-#clock{display:flex;flex-direction:column;font-size:11px;color:var(--text-dim);font-family:var(--mono);}
-#versionTag{font-size:9px;color:var(--text-dim);opacity:0.7;}
+#locLabel{font-size:12px;color:var(--primary);border:1px solid var(--panel-line);padding:6px 10px;border-radius:6px;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+#searchBox{background:var(--panel);border:1px solid var(--panel-line);color:var(--text);padding:6px 8px;border-radius:6px;font-size:12px;width:110px;flex-shrink:0;}
+#clock{display:flex;flex-direction:column;font-size:11px;color:var(--text-dim);font-family:var(--mono);flex-shrink:0;}
+#versionTag{font-size:9px;color:var(--text-dim);opacity:0.7;flex-shrink:0;}
 
 main#main{flex:1;display:flex;min-height:0;}
 #radarWrap{position:relative;flex:1;min-width:0;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;}
@@ -189,7 +189,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.2',
+  VERSION: '1.0.3',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
