@@ -88,6 +88,10 @@ main#main{flex:1;display:flex;min-height:0;}
 footer#footer{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);border-top:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;}
 footer#footer button{background:var(--panel-line);color:var(--text);border:none;padding:7px 12px;border-radius:6px;font-size:12px;flex-shrink:0;}
 footer#footer button.active{background:var(--primary);color:#001a0a;}
+#refreshStatus{display:flex;flex-direction:column;font-size:11px;color:var(--text-dim);font-family:var(--mono);}
+#dataStateVal{font-weight:700;}
+#dataStateVal.live{color:var(--primary);}
+#dataStateVal.stale{color:var(--red);}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:50;}
 .modal[hidden]{display:none;}
@@ -163,9 +167,11 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
   <footer id="footer">
     <button id="chimeBtn">Chime: ON</button>
     <span class="val" id="footerAlertVal" style="font-size:11px;color:var(--text-dim);">Alert 15nm</span>
-    <button id="refreshBtn">REFRESH</button>
     <button id="demoBtn">DEMO</button>
     <button id="themeBtn">Theme</button>
+    <span id="dataStateVal" class="live">LIVE</span>
+    <div id="refreshStatus"><span id="lastRefreshedVal">Last refreshed --:--:--</span><span id="nextRefreshVal">Next refresh in --s</span></div>
+    <button id="refreshBtn">REFRESH</button>
     <button id="testAudioBtn">TEST</button>
   </footer>
 </div>
@@ -183,7 +189,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.1',
+  VERSION: '1.0.2',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -219,6 +225,8 @@ var STATE = {
   hasEverSucceeded: false,
   firstLoadRetryDone: false,
   refreshTimer: null,
+  lastRefreshedAt: null,
+  nextRefreshAt: null,
   source: { preferred: null, workerFails: 0 },
   lastGoodCount: 0,
   alertedSet: {},
@@ -659,6 +667,7 @@ function applyAircraftResult(aircraft, source) {
   STATE.aircraft = aircraft;
   STATE.stale = false;
   STATE.hasEverSucceeded = true;
+  STATE.lastRefreshedAt = new Date();
   if (typeof renderAll === 'function') renderAll();
   if (typeof checkAlerts === 'function') checkAlerts(aircraft);
 }
@@ -689,11 +698,20 @@ function handleFetchFailure() {
   if (typeof DemoEngine !== 'undefined') DemoEngine.enterFallback();
 }
 
+function startRefreshInterval(ms) {
+  if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
+  STATE.nextRefreshAt = Date.now() + ms;
+  STATE.refreshTimer = setInterval(function () {
+    STATE.nextRefreshAt = Date.now() + ms;
+    attemptRefresh();
+  }, ms);
+}
+
 function restartRefreshCycle() {
   if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
   if (STATE.demoMode === 'showcase') return;
   attemptRefresh();
-  STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.REFRESH_MS);
+  startRefreshInterval(CONFIG.REFRESH_MS);
 }
 
 /* ============================== RADAR DRAW ============================== */
@@ -1177,7 +1195,7 @@ function setRadarRadius(nm, isExpand) {
 function restartRefreshCycleNoFetch() {
   if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
   if (STATE.demoMode === 'showcase') return;
-  STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.REFRESH_MS);
+  startRefreshInterval(CONFIG.REFRESH_MS);
 }
 
 function adjustRadarRadius(dir) {
@@ -1197,6 +1215,22 @@ function updateClock() {
   document.getElementById('clockLocal').textContent = now.toLocaleTimeString();
   var z = now.toISOString().substr(11, 8) + 'Z';
   document.getElementById('clockZulu').textContent = z;
+  updateRefreshStatus();
+}
+
+function updateRefreshStatus() {
+  var showcase = STATE.demoMode === 'showcase';
+  var stateEl = document.getElementById('dataStateVal');
+  var statusEl = document.getElementById('refreshStatus');
+  stateEl.style.display = showcase ? 'none' : '';
+  statusEl.style.display = showcase ? 'none' : '';
+  if (showcase) return;
+  stateEl.textContent = STATE.stale ? 'STALE' : 'LIVE';
+  stateEl.className = STATE.stale ? 'stale' : 'live';
+  document.getElementById('lastRefreshedVal').textContent = 'Last refreshed ' +
+    (STATE.lastRefreshedAt ? STATE.lastRefreshedAt.toLocaleTimeString() : '--:--:--');
+  var secsLeft = STATE.nextRefreshAt ? Math.max(0, Math.ceil((STATE.nextRefreshAt - Date.now()) / 1000)) : 0;
+  document.getElementById('nextRefreshVal').textContent = 'Next refresh in ' + secsLeft + 's';
 }
 
 /* ============================== ALERTS ============================== */
@@ -1678,8 +1712,7 @@ var DemoEngine = {
     DemoEngine.aircraft = [];
     DemoEngine.populateAmbient(14);
     DemoEngine.startTick();
-    if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
-    STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.FALLBACK_DEMO_RETRY_MS);
+    startRefreshInterval(CONFIG.FALLBACK_DEMO_RETRY_MS);
   },
 
   exitFallback: function (alreadySucceeded) {
@@ -1690,8 +1723,7 @@ var DemoEngine = {
     DemoEngine.aircraft = [];
     document.getElementById('demoBanner').hidden = true;
     if (alreadySucceeded) {
-      if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
-      STATE.refreshTimer = setInterval(attemptRefresh, CONFIG.REFRESH_MS);
+      startRefreshInterval(CONFIG.REFRESH_MS);
     } else {
       restartRefreshCycle();
     }
@@ -1703,6 +1735,7 @@ var DemoEngine = {
     DemoEngine.mode = 'showcase';
     STATE.demoMode = 'showcase';
     if (STATE.refreshTimer) { clearInterval(STATE.refreshTimer); STATE.refreshTimer = null; }
+    updateRefreshStatus();
     var banner = document.getElementById('demoBanner');
     banner.hidden = false;
     banner.textContent = 'DEMO MODE';
@@ -1748,8 +1781,9 @@ function renderHeaderStats() {
   document.getElementById('statFastest').textContent = Math.round(fastest);
   document.getElementById('radarVal').textContent = STATE.radarRadiusNm + ' nm radar';
   document.getElementById('alertVal').textContent = STATE.alertRadiusNm + ' nm alert';
-  document.getElementById('footerAlertVal').textContent = 'Alert ' + STATE.alertRadiusNm + 'nm' + (STATE.stale ? ' (stale)' : '');
+  document.getElementById('footerAlertVal').textContent = 'Alert ' + STATE.alertRadiusNm + 'nm';
   document.getElementById('versionTag').textContent = 'v' + CONFIG.VERSION;
+  updateRefreshStatus();
 }
 
 /* ============================== SIDE LIST ============================== */
