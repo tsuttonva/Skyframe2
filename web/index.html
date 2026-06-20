@@ -196,7 +196,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.19',
+  VERSION: '1.0.20',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -453,6 +453,7 @@ var ICAO_TYPES = {
   AS50: 'AS350 Ecureuil', AS55: 'AS355 Twin Squirrel', AS65: 'AS365 Dauphin',
   B06: 'Bell 206 JetRanger', B407: 'Bell 407', H60: 'Sikorsky H-60', UH60: 'UH-60 Black Hawk',
   AW139: 'AgustaWestland AW139', AW169: 'AgustaWestland AW169',
+  F16: 'F-16 Fighting Falcon', F15: 'F-15 Eagle', F18: 'F/A-18 Hornet',
   U2: 'Lockheed U-2 Dragon Lady', TU2: 'Lockheed TU-2 Dragon Lady (trainer)',
   VC25: 'Boeing VC-25 (Air Force One)', B52: 'Boeing B-52 Stratofortress', B52H: 'Boeing B-52H Stratofortress',
   E3: 'Boeing E-3 Sentry (AWACS)', E3B: 'Boeing E-3B Sentry (AWACS)', E3C: 'Boeing E-3C Sentry (AWACS)',
@@ -1727,6 +1728,7 @@ var DEMO_AMBIENT_TYPES = ['B738', 'A320', 'B739', 'A321', 'E175', 'CRJ9', 'B737'
 var DEMO_CIVILIAN_PREFIXES = ['UAL', 'DAL', 'AAL', 'SWA', 'JBU', 'ASA', 'FFT', 'NKS', 'SKW', 'RPA', 'ENY', 'EDV'];
 var DEMO_MIL_PREFIXES = ['RCH', 'REACH', 'NAVY', 'ARMY', 'CNV', 'TANKER', 'VIPER', 'EAGLE', 'HAWK', 'SAM'];
 var DEMO_MIL_TRANSIT_TYPES = ['C130', 'KC35', 'C17', 'B737'];
+var DEMO_INTERCEPT_TYPES = ['F16', 'F15', 'F18'];
 var DEMO_LEGENDARY_PRESETS = {
   u2: { type: 'U2', altitude: 65000, velocity: 410 },
   af1: { type: 'VC25', altitude: 39000, velocity: 480, icao24: CONFIG.AF1_HEX, callsign: 'AF1' },
@@ -1766,18 +1768,26 @@ var DemoEngine = {
     return prefix + num;
   },
 
-  /* opts.distNm/opts.heading let callers place a spawn anywhere (used for
-     the initial scattered population); when omitted, the aircraft spawns
-     just outside the radar aimed roughly at the center, like a real new
-     arrival entering coverage. */
+  /* opts.lat/opts.lon place a spawn at an exact point (used to drop
+     intercept aircraft next to a hijacked target's current position).
+     Otherwise opts.distNm/opts.heading place it relative to home (used for
+     the initial scattered population); when none of those are given, the
+     aircraft spawns just outside the radar aimed roughly at the center,
+     like a real new arrival entering coverage. */
   spawn: function (opts) {
     opts = opts || {};
-    var angle = Math.random() * 360;
-    var spawnDistNm = (typeof opts.distNm === 'number') ? opts.distNm : STATE.radarRadiusNm * (1.0 + Math.random() * 0.15);
-    var spawnPt = destPoint(STATE.location.lat, STATE.location.lon, angle, nmToKm(spawnDistNm));
-    var aimAngle = bearingDeg(spawnPt.lat, spawnPt.lon, STATE.location.lat, STATE.location.lon);
-    var jitter = (Math.random() - 0.5) * 70;
-    var heading = (typeof opts.heading === 'number') ? opts.heading : (aimAngle + jitter + 360) % 360;
+    var spawnPt, heading;
+    if (typeof opts.lat === 'number' && typeof opts.lon === 'number') {
+      spawnPt = { lat: opts.lat, lon: opts.lon };
+      heading = (typeof opts.heading === 'number') ? opts.heading : Math.random() * 360;
+    } else {
+      var angle = Math.random() * 360;
+      var spawnDistNm = (typeof opts.distNm === 'number') ? opts.distNm : STATE.radarRadiusNm * (1.0 + Math.random() * 0.15);
+      spawnPt = destPoint(STATE.location.lat, STATE.location.lon, angle, nmToKm(spawnDistNm));
+      var aimAngle = bearingDeg(spawnPt.lat, spawnPt.lon, STATE.location.lat, STATE.location.lon);
+      var jitter = (Math.random() - 0.5) * 70;
+      heading = (typeof opts.heading === 'number') ? opts.heading : (aimAngle + jitter + 360) % 360;
+    }
 
     var ac = {
       icao24: opts.icao24 || DemoEngine.randomHex(),
@@ -1790,7 +1800,7 @@ var DemoEngine = {
       squawk: opts.squawk || '1200',
       aircraft_type: opts.type || DEMO_AMBIENT_TYPES[Math.floor(Math.random() * DEMO_AMBIENT_TYPES.length)],
       is_military: !!opts.military,
-      dist_km: nmToKm(spawnDistNm)
+      dist_km: haversineKm(STATE.location.lat, STATE.location.lon, spawnPt.lat, spawnPt.lon)
     };
     DemoEngine.aircraft.push(ac);
     return ac;
@@ -1801,6 +1811,13 @@ var DemoEngine = {
       if (isLegendary(getAircraftCategory(DemoEngine.aircraft[i]))) return true;
     }
     return false;
+  },
+
+  findByIcao: function (icao) {
+    for (var i = 0; i < DemoEngine.aircraft.length; i++) {
+      if (DemoEngine.aircraft[i].icao24 === icao) return DemoEngine.aircraft[i];
+    }
+    return null;
   },
 
   spawnMilitaryTransit: function (posOpts) {
@@ -1823,6 +1840,20 @@ var DemoEngine = {
       velocity: 8 + Math.floor(Math.random() * 12),
       vertRate: 0,
       distNm: pos.distNm, heading: pos.heading
+    });
+  },
+
+  /* Drops a fighter at an exact lat/lon (used to place intercepts next to
+     a hijacked target), heading back toward that point so it visibly
+     closes in rather than spawning already past it. */
+  spawnIntercept: function (lat, lon) {
+    var heading = bearingDeg(lat, lon, STATE.location.lat, STATE.location.lon);
+    DemoEngine.spawn({
+      military: true,
+      type: DEMO_INTERCEPT_TYPES[Math.floor(Math.random() * DEMO_INTERCEPT_TYPES.length)],
+      altitude: 20000 + Math.floor(Math.random() * 8000),
+      velocity: 350 + Math.floor(Math.random() * 150),
+      lat: lat, lon: lon, heading: heading
     });
   },
 
@@ -1881,9 +1912,31 @@ var DemoEngine = {
     var ac = candidates[Math.floor(Math.random() * candidates.length)];
     var codes = ['7700', '7600', '7500'];
     ac.squawk = codes[Math.floor(Math.random() * codes.length)];
+    var icao = ac.icao24;
     setTimeout(function () {
       if (DemoEngine.mode === 'showcase') ac.squawk = '1200';
     }, 18000);
+    if (ac.squawk === '7500') DemoEngine.scheduleHijackResponse(icao);
+  },
+
+  /* Real-world response to a hijack squawk takes a lot longer than this,
+     but demo viewers won't stick around for it -- 30-60s is long enough to
+     feel like a deliberate response, short enough that someone watching
+     the hijack actually sees the payoff. Looks up the target by icao at
+     callback time (not the object captured up front) so the intercepts
+     land next to wherever it's actually drifted to since the squawk. */
+  scheduleHijackResponse: function (icao) {
+    var delayMs = (30 + Math.random() * 30) * 1000;
+    DemoEngine.scheduleEvent(delayMs, function () {
+      var target = DemoEngine.findByIcao(icao);
+      if (!target) return;
+      for (var i = 0; i < 2; i++) {
+        var bearing = Math.random() * 360;
+        var distNm = 1.5 + Math.random() * 2;
+        var pt = destPoint(target.lat, target.lon, bearing, nmToKm(distNm));
+        DemoEngine.spawnIntercept(pt.lat, pt.lon);
+      }
+    });
   },
 
   startTick: function () {
