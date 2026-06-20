@@ -7,6 +7,7 @@
  *   GET  /aircraft?icao=            type/registration/description, 24h cache
  *   POST /route                     {callsign} -> origin/destination, 1h cache,
  *                                    paid API behind a hard monthly cap
+ *   GET  /weather?lat=&lon=         nearest METAR (aviationweather.gov), 10m cache
  *   GET  /health                    version + usage + military DB status
  *   GET  /usage                     paid API usage/limit/status
  *   GET  /refresh-mil-db            manually rebuild the military hex range DB
@@ -437,6 +438,103 @@ async function handleRoute(request, env) {
 }
 
 // ---------------------------------------------------------------------------
+// /weather (nearest METAR via aviationweather.gov -- free, unlimited, no key)
+// ---------------------------------------------------------------------------
+
+const WEATHER_CACHE_MS = 10 * 60 * 1000;
+const weatherCache = new Map();
+
+// AviationWeather.gov's classic ADDS-style METAR XML schema has been stable
+// for well over a decade and is far more predictable than the newer JSON
+// endpoint (whose field names have shifted between releases), so we parse
+// the flat <tag>value</tag> structure directly rather than adding an XML
+// parser dependency.
+function parseMetarXml(xml) {
+  const out = [];
+  const blocks = xml.split('<METAR>').slice(1);
+  for (let i = 0; i < blocks.length; i++) {
+    const body = blocks[i].split('</METAR>')[0];
+    const tag = function (name) {
+      const m = body.match(new RegExp('<' + name + '>([^<]*)</' + name + '>'));
+      return m ? m[1] : null;
+    };
+    const lat = parseFloat(tag('latitude'));
+    const lon = parseFloat(tag('longitude'));
+    if (isNaN(lat) || isNaN(lon)) continue;
+    const clouds = [];
+    const skyRe = /<sky_condition sky_cover="([^"]*)"(?:\s+cloud_base_ft_agl="([^"]*)")?/g;
+    let m;
+    while ((m = skyRe.exec(body))) {
+      clouds.push({ cover: m[1], base: m[2] ? parseInt(m[2], 10) : null });
+    }
+    const temp = parseFloat(tag('temp_c'));
+    const dewp = parseFloat(tag('dewpoint_c'));
+    const wdir = parseInt(tag('wind_dir_degrees'), 10);
+    const wspd = parseInt(tag('wind_speed_kt'), 10);
+    const wgst = parseInt(tag('wind_gust_kt'), 10);
+    const altim = parseFloat(tag('altim_in_hg'));
+    out.push({
+      stationId: tag('station_id'),
+      rawText: tag('raw_text'),
+      observationTime: tag('observation_time'),
+      lat: lat,
+      lon: lon,
+      tempC: isNaN(temp) ? null : temp,
+      dewpointC: isNaN(dewp) ? null : dewp,
+      windDirDeg: isNaN(wdir) ? null : wdir,
+      windSpeedKt: isNaN(wspd) ? null : wspd,
+      windGustKt: isNaN(wgst) ? null : wgst,
+      visibilityMi: tag('visibility_statute_mi'),
+      altimIn: isNaN(altim) ? null : altim,
+      flightCategory: tag('flight_category'),
+      wxString: tag('wx_string'),
+      clouds: clouds,
+    });
+  }
+  return out;
+}
+
+async function handleWeather(url) {
+  const lat = parseFloat(url.searchParams.get('lat'));
+  const lon = parseFloat(url.searchParams.get('lon'));
+  if (isNaN(lat) || isNaN(lon)) return json({ error: 'lat and lon are required' }, 400);
+
+  const cacheKey = lat.toFixed(2) + ',' + lon.toFixed(2);
+  const cached = weatherCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < WEATHER_CACHE_MS) {
+    return json(Object.assign({ cached: true }, cached.data));
+  }
+
+  // ~1 degree of latitude is ~60nm; widen the box generously since stations
+  // (especially towered/ASOS fields) can be sparse in rural areas, and we
+  // re-rank by actual distance below rather than trusting bbox proximity.
+  const margin = 1.0;
+  const bbox = (lat - margin) + ',' + (lon - margin) + ',' + (lat + margin) + ',' + (lon + margin);
+  const resp = await fetch('https://aviationweather.gov/api/data/metar?format=xml&bbox=' + bbox, {
+    headers: { 'User-Agent': 'SkyFrame-Worker' },
+  });
+  if (!resp.ok) return json({ error: 'upstream error', status: resp.status }, 502);
+  const xml = await resp.text();
+  const stations = parseMetarXml(xml);
+
+  let result;
+  if (!stations.length) {
+    result = { station: null, distanceNm: null };
+  } else {
+    let nearest = stations[0];
+    let nearestKm = haversineKm(lat, lon, nearest.lat, nearest.lon);
+    for (let i = 1; i < stations.length; i++) {
+      const d = haversineKm(lat, lon, stations[i].lat, stations[i].lon);
+      if (d < nearestKm) { nearest = stations[i]; nearestKm = d; }
+    }
+    result = { station: nearest, distanceNm: Math.round((nearestKm / 1.852) * 10) / 10 };
+  }
+
+  weatherCache.set(cacheKey, { data: result, at: Date.now() });
+  return json(Object.assign({ cached: false }, result));
+}
+
+// ---------------------------------------------------------------------------
 // /health, /usage, /refresh-mil-db
 // ---------------------------------------------------------------------------
 
@@ -474,6 +572,7 @@ export default {
       if (url.pathname === '/flights' && request.method === 'GET') return await handleFlights(url, env);
       if (url.pathname === '/aircraft' && request.method === 'GET') return await handleAircraft(url);
       if (url.pathname === '/route' && request.method === 'POST') return await handleRoute(request, env);
+      if (url.pathname === '/weather' && request.method === 'GET') return await handleWeather(url);
       if (url.pathname === '/health' && request.method === 'GET') return await handleHealth(env);
       if (url.pathname === '/usage' && request.method === 'GET') return await handleUsage(env);
       if (url.pathname === '/refresh-mil-db') return await handleRefreshMilDb(env);

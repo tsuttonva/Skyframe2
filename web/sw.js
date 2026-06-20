@@ -10,7 +10,7 @@
  * geocoding, the CDN-hosted TopoJSON libs -- is left completely untouched
  * (no respondWith), so live data is never served stale from a cache.
  */
-var CACHE_VERSION = '1.0.22';
+var CACHE_VERSION = '1.0.23';
 var CACHE_NAME = 'skyframe-' + CACHE_VERSION;
 
 var STATIC_ASSETS = [
