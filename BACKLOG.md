@@ -24,3 +24,89 @@ To do: remove the fallback-mode entry point and banner; when all sources
 fail, the existing STALE indicator + new last-error message (added in
 v1.0.8) should be the only failure UI. Showcase demo mode (the unrelated
 "DEMO" button feature) stays as-is.
+
+## Interpolate aircraft positions between polls
+
+Right now each aircraft icon jumps to its new lat/lon only when a refresh
+lands (every `CONFIG.REFRESH_MS`, currently 30s). Idea: dead-reckon each
+icon's screen position between polls using its last known `true_track`
+(heading, degrees) and `velocity` (knots), so a fast aircraft (e.g. an
+Airbus at 450kt) visibly glides further between refreshes than a slow one
+(e.g. a Cessna at 110kt) — same physics `DemoEngine`'s tick handler
+already uses internally to animate synthetic aircraft (see `destPoint(ac.lat,
+ac.lon, ac.true_track, stepKm)` around line 1871), just driven by a
+render-loop tick instead of by new poll data.
+
+Open questions:
+- Needs its own animation loop (`requestAnimationFrame` or a faster
+  `setInterval`) independent of the data-refresh timer, recomputing each
+  icon's interpolated position every frame and resetting to the real
+  reported position whenever a fresh poll lands (don't let drift compound
+  across refreshes).
+- Aircraft with no recent `velocity`/`true_track` (e.g. stale/0kt ground
+  traffic) should just sit still rather than drift on bad data.
+- Decide whether the side list's distance/bearing numbers update live with
+  the interpolation or only on actual poll refresh (live is more correct
+  but churns the list more).
+
+## Bluetooth-triggered physical alert lamp
+
+Idea: build a miniature replica of the taxiway-light lamp (yellow round
+base, yellow pole, blue light — pictured) using a small LED instead of a
+real taxiway bulb, and have it light up whenever any aircraft is inside
+the alert zone (mirrors the in-app alert state) and turn off when the zone
+is clear.
+
+**Key constraint to settle before designing further: Web Bluetooth is not
+supported in Safari, on iOS or macOS, at all** — and iOS is the stated
+primary use case. That rules out the browser talking directly to a BLE
+peripheral from this PWA on the platform that matters most. Realistic
+architectures instead:
+- **WiFi instead of Bluetooth**: a microcontroller (e.g. ESP32) joins the
+  same WiFi network and polls a small HTTP endpoint (or holds an
+  MQTT/WebSocket connection) for an "alert active" boolean, switching an
+  LED/relay accordingly. Works identically from iOS, macOS, or PC since
+  the browser isn't the thing connecting to the lamp — the lamp polls (or
+  subscribes to) a backend. Could piggyback on the existing
+  `skyframe2-worker` Cloudflare Worker (add a tiny status endpoint the app
+  PUTs to on every alert-state change, and the ESP32 GETs/polls or
+  subscribes to) or a lightweight MQTT broker.
+- **Bluetooth Classic / a companion app**: would sidestep the Web
+  Bluetooth gap but means writing a native iOS app or shortcut, which is a
+  much bigger lift than a WiFi microcontroller.
+- Recommendation once we pick this up: go WiFi-based; it's simpler, works
+  on every platform without browser API limitations, and the lamp doesn't
+  need to be physically near the phone.
+
+Component ideas for the miniature build: ESP32 dev board (has WiFi
+built-in, cheap, well-documented), a single blue LED (or a small
+WS2812/NeoPixel if we want brightness/color control later) driven directly
+from a GPIO (with resistor) or through a small MOSFET if using a brighter
+bulb, a small AC-to-5V or USB power supply, and a 3D-printed or
+hand-built miniature base/pole to match the reference lamp's look.
+
+## Make the flight list and detail card interactive
+
+Two related ideas:
+- Clicking a row in the side list (or a dedicated link/icon within it)
+  opens that aircraft's FlightAware tracking page in a new tab
+  (`https://flightaware.com/live/flight/<callsign>` style URL) so the user
+  can jump to real-time third-party tracking for a specific flight.
+- Show a small thumbnail photo of the aircraft (by ICAO24 hex or
+  registration) in both the side list row and the detail card, clickable
+  to view a larger version. Needs a photo source/API (e.g.
+  planespotters.net's public API keyed by ICAO24, or airport-data.com) —
+  need to check rate limits/licensing before wiring it in, and decide on a
+  placeholder for aircraft with no available photo.
+
+## Show airport locations on the radar
+
+Plot an icon at every airport within the radar's current radius, not just
+major commercial ones — needs a dataset that includes general-aviation
+fields and private strips, not just towered/airline airports. OurAirports
+(ourairports.com) publishes a free, regularly-updated CSV/JSON of every
+airport worldwide (type, lat/lon, ICAO/FAA identifier) and would cover GA
+fields the FAA's own commercial-only datasets miss. Likely shipped as a
+static `airports.json` bundled with the app (similar to the existing
+`fips.json`) rather than a live API call, filtered at render time to
+whatever's inside the current radar radius.
