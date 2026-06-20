@@ -195,7 +195,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.15',
+  VERSION: '1.0.16',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1432,6 +1432,11 @@ function playChimes(count, rapid) {
   var f1 = rapid ? 1200 : 880, f2 = rapid ? 900 : 660;
   return getAudioCtx().then(function (audioCtx) {
     if (!audioCtx) return;
+    // resume() can resolve without WebKit actually restoring audio output if
+    // it wasn't called from inside a real gesture (see unlockAudioOnce) --
+    // catch that case right here, where a real alert just went silent, rather
+    // than waiting for the next visibilitychange to notice.
+    if (typeof refreshAudioLockBanner === 'function') refreshAudioLockBanner();
     var t = audioCtx.currentTime;
     for (var i = 0; i < n; i++) {
       playTone(audioCtx, f1, f2, t + i * gap, dur);
@@ -1472,18 +1477,17 @@ var Speech = {
   }
 };
 
-/* On the very first user gesture, unlock both audio paths. On return to
-   foreground, proactively re-arm both rather than waiting for the next
-   click -- an alert can fire before any click on a backgrounded tab. */
+/* On the very first user gesture, unlock both audio paths. The listeners are
+   intentionally never removed: iOS can silently re-suspend the AudioContext
+   later (screen lock, a phone call, backgrounding) and a resume() call made
+   outside a real gesture (e.g. from visibilitychange below) does not actually
+   restore audio output on iOS even though the promise resolves -- so any
+   later tap needs to be able to re-unlock it too, not just the first one. */
 function unlockAudioOnce() {
   STATE.audioUnlocked = true;
   STATE.speechUnlocked = true;
-  getAudioCtx();
+  getAudioCtx().then(refreshAudioLockBanner);
   Speech.prime();
-  document.removeEventListener('pointerdown', unlockAudioOnce);
-  document.removeEventListener('touchstart', unlockAudioOnce);
-  document.removeEventListener('keydown', unlockAudioOnce);
-  document.getElementById('audioLockBanner').hidden = true;
 }
 document.addEventListener('pointerdown', unlockAudioOnce, { passive: true });
 document.addEventListener('touchstart', unlockAudioOnce, { passive: true });
@@ -1493,12 +1497,16 @@ document.addEventListener('keydown', unlockAudioOnce, { passive: true });
 // gesture -- a session where the user never touches the screen leaves chimes
 // and voice announcements silently no-op forever while the visual toast still
 // works fine. Surface that state instead of failing invisibly.
-document.getElementById('audioLockBanner').hidden = false;
+function refreshAudioLockBanner() {
+  var locked = !sharedAudioCtx || sharedAudioCtx.state !== 'running';
+  document.getElementById('audioLockBanner').hidden = !locked;
+}
+refreshAudioLockBanner();
 document.getElementById('audioLockBanner').addEventListener('click', unlockAudioOnce);
 
 document.addEventListener('visibilitychange', function () {
   if (document.visibilityState === 'visible') {
-    getAudioCtx();
+    getAudioCtx().then(refreshAudioLockBanner);
     Speech.prime();
     // Mobile browsers throttle/suspend timers while backgrounded, so the
     // regular refresh interval may not have ticked in a while -- refetch
