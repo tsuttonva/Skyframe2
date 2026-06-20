@@ -195,7 +195,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.14',
+  VERSION: '1.0.15',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -326,8 +326,18 @@ function debounce(fn, ms) {
 }
 
 /* ===================== AIRCRAFT CATEGORIES & ICONS ===================== */
-var MIL_CALLSIGN_PREFIXES = ['RCH', 'REACH', 'NAVY', 'ARMY', 'MARINE', 'CNV', 'GRZLY', 'AME',
-  'CONVOY', 'TANKER', 'NCHO', 'COBRA', 'KNIFE', 'VIPER', 'EAGLE', 'HAWK', 'PAT', 'SAM', 'AF1', 'AF2'];
+/* This is the *only* military signal for adsb.lol/airplanes.live/OpenSky data
+   (those sources don't supply an explicit military flag), checked against
+   every live aircraft's literal radio callsign -- so a false match here
+   isn't cosmetic, it makes a real civilian flight render gold and get
+   announced as "Military aircraft". Generic words that double as real-world
+   charter/medevac/corporate callsigns (EAGLE, HAWK, VIPER, TANKER, SAM, AME --
+   American Eagle/Envoy historically broadcast "EAGLE" as its literal
+   callsign word) were dropped for that reason; kept entries are squadron
+   nicknames / service branch names unlikely to be reused as a civilian
+   operator's callsign. */
+var MIL_CALLSIGN_PREFIXES = ['RCH', 'REACH', 'NAVY', 'ARMY', 'MARINE', 'CNV', 'GRZLY',
+  'CONVOY', 'NCHO', 'COBRA', 'KNIFE', 'PAT', 'AF1', 'AF2'];
 
 function isMilitaryCallsignFallback(callsign) {
   if (!callsign) return false;
@@ -351,12 +361,21 @@ var HELO_PREFIXES = ['EC', 'S76', 'S92', 'R22', 'R44', 'AS3', 'AW1', 'BK1', 'CH4
    their exact ICAO type codes are less standardized -- C5/C17 are confident,
    others (tankers especially) can be added once we see their real reported
    type codes in live data. */
-var HEAVY_PREFIXES = ['B74', 'B77', 'B78', 'B76', 'A34', 'A35', 'A33', 'A30', 'IL7', 'AN1', 'MD1'];
+/* This used to list 'AN1' for the Antonov An-124, but the An-124's real ICAO
+   type code is A124, not AN1xx -- 'AN1' only ever matched the much smaller
+   An-12 (not a Heavy by weight), so the An-124 went uncaught while the An-12
+   got wrongly tagged Heavy. Using the full code (A124) avoids the mismatch. */
+var HEAVY_PREFIXES = ['B74', 'B77', 'B78', 'B76', 'A34', 'A35', 'A33', 'A30', 'IL7', 'A124', 'MD1'];
 /* Exact-match only -- as *prefixes* these would also match Cessna GA/business
    jet type codes (C17 -> C172 Skyhawk, C5 -> C510/C525/C56X Citations),
    wrongly painting them white as if they were C-17s/C-5 Galaxies. */
 var HEAVY_EXACT = ['C17', 'C5', 'C5M'];
 var GA_PREFIXES = ['C1', 'C2', 'PA', 'SR2', 'BE3', 'BE4', 'BE5', 'BE6', 'M20', 'RV'];
+/* Exact-match only -- these are military turboprop transports that happen to
+   share the 'C1'/'C2' GA prefixes above (C130 Hercules, C212/C295 CASA
+   transports), which would otherwise paint them with the tiny GA Cessna
+   silhouette. Must be checked before GA_PREFIXES. */
+var GA_EXCLUDE_EXACT = ['C130', 'C212', 'C295'];
 var TURBO_PREFIXES = ['AT4', 'AT7', 'DH8', 'DHC', 'SF3', 'SB2', 'L41', 'BE19', 'BE20', 'PC1', 'JS3', 'JS4'];
 
 function getAircraftCategory(ac) {
@@ -375,6 +394,7 @@ function getAircraftCategory(ac) {
      tier above Heavy, distinct from the legendary one-off callsigns above. */
   if (type === 'A388') return 'super';
   if (startsWithAny(type, HEAVY_PREFIXES) || HEAVY_EXACT.indexOf(type) !== -1) return 'heavy';
+  if (GA_EXCLUDE_EXACT.indexOf(type) !== -1) return 'turbo';
   if (startsWithAny(type, GA_PREFIXES)) return 'ga';
   if (startsWithAny(type, TURBO_PREFIXES)) return 'turbo';
   return 'jet';
