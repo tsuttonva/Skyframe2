@@ -18,7 +18,7 @@
   --bg:#01040a; --panel:#04120a; --panel-line:#0d3b22;
   --primary:#39ff7a; --primary-dim:#1f6b3f; --text:#d9ffe9; --text-dim:#7fbf9a;
   --blue:#4ad1ff; --amber:#ffb84d; --gold:#ffd24a; --red:#ff3b3b;
-  --violet:#b388ff; --cyan:#66e0ff; --burnt:#cc6633; --brightgreen:#33ff66; --white:#ffffff;
+  --violet:#b388ff; --cyan:#66e0ff; --burnt:#cc6633; --brightgreen:#33ff66; --white:#ffffff; --maroon:#a83246;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: "SF Mono", "Courier New", monospace;
 }
@@ -26,7 +26,7 @@
   --bg:#070300; --panel:#1a0d00; --panel-line:#664400;
   --primary:#ffb000; --primary-dim:#996b00; --text:#ffe2a8; --text-dim:#bf8b3a;
   --blue:#ffb000; --amber:#ff8c00; --gold:#ffd24a; --red:#ff3b3b;
-  --violet:#ffb000; --cyan:#ffb000; --burnt:#cc6633; --brightgreen:#ffb000; --white:#ffb000;
+  --violet:#ffb000; --cyan:#ffb000; --burnt:#cc6633; --brightgreen:#ffb000; --white:#ffb000; --maroon:#ffb000;
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;}
@@ -195,7 +195,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.12',
+  VERSION: '1.0.13',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -346,7 +346,12 @@ function startsWithAny(str, prefixes) {
 }
 
 var HELO_PREFIXES = ['EC', 'S76', 'S92', 'R22', 'R44', 'AS3', 'AW1', 'BK1', 'CH4', 'CH5', 'UH6'];
-var HEAVY_PREFIXES = ['B74', 'B77', 'B78', 'B76', 'A38', 'A34', 'A35', 'A33', 'A30', 'IL7', 'AN1', 'MD1'];
+/* FAA wake-turbulence "Heavy" (MTOW > 300,000 lb) by ICAO type-code prefix.
+   Civilian widebodies are well covered; military heavies are spottier since
+   their exact ICAO type codes are less standardized -- C5/C17 are confident,
+   others (tankers especially) can be added once we see their real reported
+   type codes in live data. */
+var HEAVY_PREFIXES = ['B74', 'B77', 'B78', 'B76', 'A34', 'A35', 'A33', 'A30', 'IL7', 'AN1', 'MD1', 'C5', 'C17'];
 var GA_PREFIXES = ['C1', 'C2', 'PA', 'SR2', 'BE3', 'BE4', 'BE5', 'BE6', 'M20', 'RV'];
 var TURBO_PREFIXES = ['AT4', 'AT7', 'DH8', 'DHC', 'SF3', 'SB2', 'L41', 'BE19', 'BE20', 'PC1', 'JS3', 'JS4'];
 
@@ -362,6 +367,9 @@ function getAircraftCategory(ac) {
   if (type === 'B52' || type === 'B52H') return 'b52';
   if (type === 'E3' || type === 'E3B' || type === 'E3C' || type === 'E3CF' || type === 'E3TF') return 'awacs';
   if (type.indexOf('H') === 0 || startsWithAny(type, HELO_PREFIXES)) return 'helo';
+  /* A380 is the only aircraft in the FAA's "Super" wake category -- its own
+     tier above Heavy, distinct from the legendary one-off callsigns above. */
+  if (type === 'A388') return 'super';
   if (startsWithAny(type, HEAVY_PREFIXES)) return 'heavy';
   if (startsWithAny(type, GA_PREFIXES)) return 'ga';
   if (startsWithAny(type, TURBO_PREFIXES)) return 'turbo';
@@ -370,7 +378,8 @@ function getAircraftCategory(ac) {
 
 var CATEGORY_COLOR_VAR = {
   balloon: '--violet', u2: '--gold', af1: '--cyan', b52: '--burnt',
-  awacs: '--brightgreen', scherger: '--white', helo: null, heavy: null, ga: null, turbo: null, jet: null
+  awacs: '--brightgreen', scherger: '--maroon', super: '--white', heavy: '--white',
+  helo: null, ga: null, turbo: null, jet: null
 };
 
 function isLegendary(category) {
@@ -946,7 +955,7 @@ function drawGeoOutlines(cx, cy, maxR) {
   ctx.beginPath();
   ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
   ctx.clip();
-  ctx.strokeStyle = geoCache.mode === 'county' ? 'rgba(57,255,122,0.25)' : 'rgba(74,209,255,0.3)';
+  ctx.strokeStyle = 'rgba(74,209,255,0.3)';
   ctx.lineWidth = 1;
   for (var i = 0; i < geoCache.loops.length; i++) {
     var loop = geoCache.loops[i];
@@ -1048,6 +1057,10 @@ function colorForAircraft(ac) {
   if (isEmergency) return getCssVar('--red');
   if (ac.icao24 === STATE.selectedIcao) return getCssVar('--blue');
   if (ac.icao24 === STATE.trackedIcao) return getCssVar('--amber');
+  /* Military still reads as the more important signal than "this one's big"
+     -- a military heavy/super (e.g. C-17, military A380-derived transport)
+     stays gold rather than picking up the heavy/super white. */
+  if (ac.is_military && (category === 'heavy' || category === 'super')) return getCssVar('--gold');
   if (CATEGORY_COLOR_VAR[category]) {
     if (category === 'u2') {
       var pulse = (Math.sin(Date.now() / 260) + 1) / 2;
@@ -1066,7 +1079,7 @@ function drawAircraftIcon(x, y, headingDeg, category, color, size) {
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   ctx.lineWidth = 1.4;
-  var s = size;
+  var s = category === 'super' ? size * 1.3 : size;
 
   ctx.beginPath();
   if (category === 'balloon') {
@@ -1090,6 +1103,12 @@ function drawAircraftIcon(x, y, headingDeg, category, color, size) {
   } else if (category === 'heavy') {
     ctx.moveTo(0, -s); ctx.lineTo(-s * 1.0, s * 0.45); ctx.lineTo(-s * 0.22, s * 0.25); ctx.lineTo(0, s);
     ctx.lineTo(s * 0.22, s * 0.25); ctx.lineTo(s * 1.0, s * 0.45); ctx.closePath();
+  } else if (category === 'super') {
+    /* A380 only -- widest wingspan of any silhouette, plus a second hump
+       line on the fuselage hinting at the double-deck. */
+    ctx.moveTo(0, -s); ctx.lineTo(-s * 1.25, s * 0.5); ctx.lineTo(-s * 0.26, s * 0.28); ctx.lineTo(0, s);
+    ctx.lineTo(s * 0.26, s * 0.28); ctx.lineTo(s * 1.25, s * 0.5); ctx.closePath();
+    ctx.moveTo(-s * 0.14, -s * 0.25); ctx.lineTo(s * 0.14, -s * 0.25);
   } else if (category === 'ga') {
     ctx.moveTo(0, -s * 0.8); ctx.lineTo(-s * 0.55, s * 0.35); ctx.lineTo(-s * 0.12, s * 0.2); ctx.lineTo(0, s * 0.75);
     ctx.lineTo(s * 0.12, s * 0.2); ctx.lineTo(s * 0.55, s * 0.35); ctx.closePath();
@@ -1376,18 +1395,25 @@ function playTone(audioCtx, freq1, freq2, startAt, duration) {
   osc.stop(startAt + duration + 0.02);
 }
 
+/* Returns a promise that resolves once the chime has actually finished
+   playing. iOS/WebKit can silently drop a speechSynthesis.speak() call that
+   lands while a Web Audio tone is still sounding -- callers that also want
+   to speak should wait for this before calling Speech.speak(), so the two
+   audio outputs never fight for the same audio session. */
 function playChimes(count, rapid) {
-  if (!STATE.chimeOn) return;
+  if (!STATE.chimeOn) return Promise.resolve();
   var n = count || 1;
   var gap = rapid ? 0.18 : 0.45;
   var dur = rapid ? 0.12 : 0.22;
   var f1 = rapid ? 1200 : 880, f2 = rapid ? 900 : 660;
-  getAudioCtx().then(function (audioCtx) {
+  return getAudioCtx().then(function (audioCtx) {
     if (!audioCtx) return;
     var t = audioCtx.currentTime;
     for (var i = 0; i < n; i++) {
       playTone(audioCtx, f1, f2, t + i * gap, dur);
     }
+    var totalMs = Math.round((n * gap + dur) * 1000) + 80;
+    return new Promise(function (resolve) { setTimeout(resolve, totalMs); });
   });
 }
 
@@ -1530,15 +1556,16 @@ function playMilitaryEasterEgg(done) {
 }
 
 function fireStandardAlert(ac) {
-  playChimes(1, false);
   var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
   showToast((ac.callsign || ac.icao24 || 'Aircraft') +
     (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : '') + ' ' + fmtAlt(ac.baro_alt), false);
-  if (ac.is_military) {
-    playMilitaryEasterEgg(function () { Speech.speak(announceAircraft(ac)); });
-  } else {
-    Speech.speak(announceAircraft(ac));
-  }
+  playChimes(1, false).then(function () {
+    if (ac.is_military) {
+      playMilitaryEasterEgg(function () { Speech.speak(announceAircraft(ac)); });
+    } else {
+      Speech.speak(announceAircraft(ac));
+    }
+  });
 }
 
 var LEGENDARY_CONFIG = {
@@ -1566,25 +1593,26 @@ function fireLegendaryAlert(ac, category) {
   var cfg = LEGENDARY_CONFIG[category];
   if (!cfg) return;
   var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
-  playChimes(cfg.chimes, false);
   triggerShake(cfg.shakeClass);
   showToast((ac.callsign || ac.icao24 || category.toUpperCase()) +
     (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : '') + ' ' + fmtAlt(ac.baro_alt), true);
-  Speech.speak(cfg.line(distNm));
+  playChimes(cfg.chimes, false).then(function () { Speech.speak(cfg.line(distNm)); });
 }
 
 function fireBalloonAlert(ac) {
   var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
-  playChimes(1, false);
   showToast('Balloon spotted' + (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : ''), true);
-  Speech.speak('Balloon sighted' + (distNm !== null ? ', ' + Math.round(distNm) + ' miles out.' : '.'));
+  playChimes(1, false).then(function () {
+    Speech.speak('Balloon sighted' + (distNm !== null ? ', ' + Math.round(distNm) + ' miles out.' : '.'));
+  });
 }
 
 function fireSchergerAlert(ac, distNm) {
-  playChimes(2, false);
   triggerShake('shake-strong');
   showToast('Scherger sighting' + (distNm !== null ? ' — ' + fmtNum(distNm, 1) + ' nm' : '') + ' ' + fmtAlt(ac.baro_alt), true);
-  Speech.speak('Scherger sighting.' + (distNm !== null ? ' ' + Math.round(distNm) + ' miles out.' : ''));
+  playChimes(2, false).then(function () {
+    Speech.speak('Scherger sighting.' + (distNm !== null ? ' ' + Math.round(distNm) + ' miles out.' : ''));
+  });
 }
 
 /* Tracks presence rather than a one-shot alertedSet entry so the sighting
@@ -1609,13 +1637,14 @@ function checkSchergerSighting() {
 var EMERGENCY_NAMES = { '7700': 'general emergency', '7600': 'radio failure', '7500': 'hijack' };
 
 function fireEmergencyAlert(ac, distNm) {
-  playChimes(4, true);
   var name = EMERGENCY_NAMES[ac.squawk] || 'emergency';
   showToast('EMERGENCY ' + ac.squawk + ' — ' + (ac.callsign || ac.icao24 || 'Aircraft') +
     (distNm !== null ? ' ' + fmtNum(distNm, 1) + ' nm' : ''), false);
-  Speech.speak('Emergency squawk ' + ac.squawk + ', ' + name + '. ' +
-    (ac.callsign ? ac.callsign : 'Unidentified aircraft') +
-    (distNm !== null ? ', ' + Math.round(distNm) + ' miles out.' : '.'));
+  playChimes(4, true).then(function () {
+    Speech.speak('Emergency squawk ' + ac.squawk + ', ' + name + '. ' +
+      (ac.callsign ? ac.callsign : 'Unidentified aircraft') +
+      (distNm !== null ? ', ' + Math.round(distNm) + ' miles out.' : '.'));
+  });
 }
 
 function checkEmergencySquawk(ac, distNm) {
@@ -2143,8 +2172,9 @@ document.getElementById('demoBtn').addEventListener('click', function () {
 
 document.getElementById('testAudioBtn').addEventListener('click', function () {
   unlockAudioOnce();
-  playChimes(1, false);
-  Speech.speak('SkyFrame audio test. Radio check, one, two, three.');
+  playChimes(1, false).then(function () {
+    Speech.speak('SkyFrame audio test. Radio check, one, two, three.');
+  });
 });
 
 /* ============================== RENDER ALL ============================== */
