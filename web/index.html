@@ -79,6 +79,7 @@ main#main{flex:1;display:flex;min-height:0;}
 .flightRow:active,.flightRow.selected{background:rgba(57,255,122,0.12);}
 .flightRow .cs{font-weight:700;color:var(--primary);}
 .flightRow .mil{color:var(--gold);font-size:10px;border:1px solid var(--gold);border-radius:4px;padding:0 4px;margin-left:6px;}
+.flightRow .diverted{color:var(--amber);font-size:10px;border:1px solid var(--amber);border-radius:4px;padding:0 4px;margin-left:6px;animation:pulseBanner 1.6s ease-in-out infinite;}
 .flightRow .bell{margin-left:6px;font-size:11px;}
 .flightRow .sub{color:var(--text-dim);font-size:11px;margin-top:2px;}
 
@@ -196,7 +197,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.21',
+  VERSION: '1.0.22',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -212,6 +213,7 @@ var CONFIG = {
   WORKER_FAIL_THRESHOLD: 2,
   SUSPICIOUS_EMPTY_THRESHOLD: 20,
   COUNTY_ZOOM_NM: 75,
+  AIRPORT_LABEL_ZOOM_NM: 50,
   FIPS_CACHE_MS: 90 * 24 * 60 * 60 * 1000,
   US_ATLAS_COUNTIES: 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json',
   WORLD_ATLAS_COUNTRIES: 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json',
@@ -249,6 +251,7 @@ var STATE = {
   lastFetchError: null,
   alertedSet: {},
   emergencyActive: {},
+  divertedSet: {},
   enrichmentCache: {},
   routeCache: {},
   demoMode: null,
@@ -256,6 +259,7 @@ var STATE = {
   speechUnlocked: false,
   fips: null,
   countiesGeo: null,
+  airports: null,
   countriesGeo: null,
   highlightedFeature: null
 };
@@ -584,6 +588,7 @@ function onLocationChanged() {
   STATE.routeCache = {};
   STATE.alertedSet = {};
   STATE.emergencyActive = {};
+  STATE.divertedSet = {};
   STATE.source.preferred = null;
   STATE.source.workerFails = 0;
   STATE.hasEverSucceeded = false;
@@ -856,6 +861,7 @@ var canvas = document.getElementById('radar');
 var ctx = canvas.getContext('2d');
 var sweepAngle = 0;
 var geoCache = { key: null, loops: [], mode: null };
+var airportCache = { key: null, list: [] };
 
 function getCssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -1179,14 +1185,62 @@ function drawAircraftAll(cx, cy, maxR) {
     var category = getAircraftCategory(ac);
     var color = colorForAircraft(ac);
     var isEmergency = EMERGENCY_SQUAWKS.indexOf(ac.squawk) !== -1;
-    if (isEmergency && Math.floor(Date.now() / 400) % 2 === 0) color = '#330000';
+    var isDiverted = !isEmergency && !!STATE.divertedSet[ac.icao24];
+    var blinkOn = Math.floor(Date.now() / 400) % 2 === 0;
+    if (isEmergency && blinkOn) color = '#330000';
+    else if (isDiverted && blinkOn) color = getCssVar('--amber');
 
     drawAircraftIcon(pr.x, pr.y, ac.true_track || 0, category, color, 9);
 
     var label = (ac.callsign || ac.icao24 || '?').trim() + ' / ' + fmtAlt(ac.baro_alt) + trendArrow(ac.vert_rate) + ' ' + Math.round(ac.velocity || 0) + 'kt';
-    ctx.fillStyle = isEmergency ? getCssVar('--red') : color;
+    ctx.fillStyle = isEmergency ? getCssVar('--red') : (isDiverted ? getCssVar('--amber') : color);
     ctx.fillText(label, pr.x + 11, pr.y + 4);
   }
+}
+
+/* Filtering + projecting all ~16k airports against the current view is
+   only redone when location/radius/canvas size actually change (same
+   pattern as geoCache for county/country outlines) -- drawAirports itself
+   runs every animation frame via drawRadar, so re-scanning the full list
+   60x/sec would be wasteful. */
+function rebuildAirportCacheIfNeeded(cx, cy, maxR) {
+  if (!STATE.airports) return;
+  var key = STATE.location.lat.toFixed(3) + ',' + STATE.location.lon.toFixed(3) + ',' + STATE.radarRadiusNm + ',' + Math.round(maxR);
+  if (airportCache.key === key) return;
+  airportCache.key = key;
+  var radiusNm = STATE.radarRadiusNm;
+  var myLat = STATE.location.lat, myLon = STATE.location.lon;
+  var list = [];
+  for (var i = 0; i < STATE.airports.length; i++) {
+    var a = STATE.airports[i];
+    if (kmToNm(haversineKm(myLat, myLon, a[2], a[3])) > radiusNm) continue;
+    var pr = project(a[2], a[3], cx, cy, maxR);
+    list.push({ ident: a[0], type: a[1], x: pr.x, y: pr.y });
+  }
+  airportCache.list = list;
+}
+
+function drawAirports(cx, cy, maxR) {
+  if (!STATE.airports) return;
+  rebuildAirportCacheIfNeeded(cx, cy, maxR);
+  var list = airportCache.list;
+  var showLabels = STATE.radarRadiusNm <= CONFIG.AIRPORT_LABEL_ZOOM_NM;
+  var color = getCssVar('--text-dim');
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1.2;
+  ctx.font = '9px monospace';
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i];
+    var s = p.type === 'L' ? 5 : (p.type === 'M' ? 4 : 3);
+    ctx.beginPath();
+    ctx.moveTo(p.x - s, p.y); ctx.lineTo(p.x + s, p.y);
+    ctx.moveTo(p.x, p.y - s); ctx.lineTo(p.x, p.y + s);
+    ctx.stroke();
+    if (showLabels) ctx.fillText(p.ident, p.x + s + 2, p.y + 3);
+  }
+  ctx.restore();
 }
 
 function drawRadar() {
@@ -1195,6 +1249,7 @@ function drawRadar() {
   var maxR = size / 2 - 26;
   ctx.clearRect(0, 0, size, size);
   drawRadarChrome(cx, cy, maxR, size);
+  drawAirports(cx, cy, maxR);
   drawAircraftAll(cx, cy, maxR);
 }
 
@@ -1241,6 +1296,20 @@ function loadFipsNames() {
     Persist.set('fipsCache', data);
     Persist.set('fipsCacheAt', Date.now());
   }).catch(function () { STATE.fips = cached || {}; });
+}
+
+/* US airports (OurAirports data, large/medium/small only -- no closed
+   strips, heliports, or seaplane bases for now). Each entry is a compact
+   [ident, type, lat, lon, name, municipality] tuple rather than an object,
+   since this bundles ~16k rows and object keys would roughly double the
+   download size for no runtime benefit. Same-origin GET, so the service
+   worker's cache-first strategy covers it like fips.json -- no separate
+   localStorage cache needed here. */
+function loadAirports() {
+  fetch('airports.json').then(function (r) { return r.json(); }).then(function (data) {
+    STATE.airports = data;
+    airportCache.key = null;
+  }).catch(function () {});
 }
 
 function countyName(fipsId) {
@@ -1718,6 +1787,9 @@ function checkAlerts(aircraftList) {
   for (var icao in STATE.emergencyActive) {
     if (!seenIcaos[icao]) delete STATE.emergencyActive[icao];
   }
+  for (var icao2 in STATE.divertedSet) {
+    if (!seenIcaos[icao2]) delete STATE.divertedSet[icao2];
+  }
 }
 
 /* ============================== DEMO ENGINE ============================== */
@@ -1910,8 +1982,7 @@ var DemoEngine = {
     });
     if (!candidates.length) return;
     var ac = candidates[Math.floor(Math.random() * candidates.length)];
-    var codes = ['7700', '7600', '7500'];
-    ac.squawk = codes[Math.floor(Math.random() * codes.length)];
+    ac.squawk = EMERGENCY_SQUAWKS[Math.floor(Math.random() * EMERGENCY_SQUAWKS.length)];
     var icao = ac.icao24;
     setTimeout(function () {
       if (DemoEngine.mode === 'showcase') ac.squawk = '1200';
@@ -2083,6 +2154,7 @@ function renderSideList() {
     html += '<div class="flightRow' + selected + '" data-icao="' + ac.icao24 + '">' +
       '<span class="cs">' + (ac.callsign || ac.icao24) + '</span>' +
       (ac.is_military ? '<span class="mil">MIL</span>' : '') +
+      (STATE.divertedSet[ac.icao24] ? '<span class="diverted" title="Diverted">DIV</span>' : '') +
       (STATE.alertedSet[ac.icao24] ? '<span class="bell" title="Already alerted">🔔</span>' : '') +
       '<div class="sub">' + getTypeName(ac.aircraft_type) + ' &middot; ' + fmtAlt(ac.baro_alt) + ' &middot; ' +
       Math.round(ac.velocity || 0) + 'kt &middot; ' + fmtNum(kmToNm(ac.dist_km), 1) + 'nm</div></div>';
@@ -2202,11 +2274,34 @@ function applyRoute(icao, data) {
   } else {
     document.getElementById('detailTo').textContent = 'Unknown';
   }
-  if (data.status && NOTABLE_STATUSES.indexOf(data.status) !== -1) {
-    var note = document.getElementById('detailNote');
+  var note = document.getElementById('detailNote');
+  if (data.diverted) {
+    note.hidden = false;
+    note.textContent = data.divertedTo && data.divertedTo.code ?
+      'DIVERTED — now headed to ' + data.divertedTo.code + (data.divertedTo.city ? (' ' + data.divertedTo.city) : '') +
+        ' instead of ' + (data.destination && data.destination.code ? data.destination.code : 'planned destination') :
+      'DIVERTED from planned route';
+    markDiverted(icao);
+  } else if (data.status && NOTABLE_STATUSES.indexOf(data.status) !== -1) {
     note.hidden = false;
     note.textContent = 'Status: ' + data.status;
   }
+}
+
+/* Diversion is only known once a user opens the detail card and the route
+   lookup comes back -- we don't poll every aircraft's route on every
+   refresh (that would chew through the AeroAPI monthly cap), so the
+   flashing icon/badge only appears for aircraft someone has actually
+   inspected. markDiverted fires the alert once per aircraft per session. */
+function markDiverted(icao) {
+  if (STATE.divertedSet[icao]) return;
+  STATE.divertedSet[icao] = true;
+  var ac = findAircraft(icao);
+  var name = (ac && ac.callsign) ? ac.callsign : icao;
+  showToast('DIVERTED — ' + name, false);
+  playChimes(2, false).then(function () {
+    Speech.speak(name + ' has diverted from its planned route.');
+  });
 }
 
 document.getElementById('detailClose').addEventListener('click', function () {
@@ -2361,6 +2456,7 @@ function init() {
 
   loadFipsNames();
   loadGeoData();
+  loadAirports();
   Location.init();
 
   requestAnimationFrame(animationLoop);

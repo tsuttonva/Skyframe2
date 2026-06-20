@@ -140,14 +140,15 @@ Two related ideas:
   need to check rate limits/licensing before wiring it in, and decide on a
   placeholder for aircraft with no available photo.
 
-## Show airport locations on the radar
+## ~~Show airport locations on the radar~~ (done in v1.0.22)
 
-Plot an icon at every airport within the radar's current radius, not just
-major commercial ones — needs a dataset that includes general-aviation
-fields and private strips, not just towered/airline airports. OurAirports
-(ourairports.com) publishes a free, regularly-updated CSV/JSON of every
-airport worldwide (type, lat/lon, ICAO/FAA identifier) and would cover GA
-fields the FAA's own commercial-only datasets miss. Likely shipped as a
-static `airports.json` bundled with the app (similar to the existing
-`fips.json`) rather than a live API call, filtered at render time to
-whatever's inside the current radar radius.
+Plots an icon at every US large/medium/small airport within the radar's
+current radius (`web/airports.json`, sourced from OurAirports, 16,190
+entries) — covers GA fields and private strips, not just towered/airline
+airports. Bundled as a static, service-worker-cached file (same pattern as
+`fips.json`) rather than a live API call; filtered/projected at render time
+via `airportCache`, only recomputed when location/radius/canvas size change.
+Idents are labeled when zoomed in to 50nm or less (`CONFIG.AIRPORT_LABEL_ZOOM_NM`).
+
+Currently US-only and excludes heliports/seaplane bases/balloonports/closed
+strips — could expand scope later if wanted.

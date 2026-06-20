@@ -327,21 +327,43 @@ function pickCurrentFlight(flights) {
   return flights[0];
 }
 
+// When a flight diverts, AeroAPI represents it as two legs sharing the same
+// fa_flight_id -- the originally-filed leg (destination = filed plan) and a
+// second leg whose destination is wherever it actually headed instead. Both
+// legs come back in the same /flights/{ident} response we already fetched,
+// so finding the diverted-to airport costs zero extra AeroAPI calls (each
+// of which eats into the hard monthly cap).
+function findDivertedDestination(flights, flight) {
+  if (!flight.fa_flight_id) return null;
+  const sibling = flights.find(function (f) {
+    return f !== flight && f.fa_flight_id === flight.fa_flight_id &&
+      f.destination && f.destination.code &&
+      f.destination.code !== (flight.destination && flight.destination.code);
+  });
+  if (!sibling) return null;
+  const d = sibling.destination;
+  return { code: d.code || '', name: d.name || '', city: d.city || '' };
+}
+
 async function paidRouteLookup(callsign, env) {
   const resp = await fetch('https://aeroapi.flightaware.com/aeroapi/flights/' + encodeURIComponent(callsign) + '?max_pages=1', {
     headers: { 'x-apikey': env.FLIGHTAWARE_KEY },
   });
   if (!resp.ok) throw new Error('aeroapi error ' + resp.status);
   const data = await resp.json();
-  const flight = pickCurrentFlight(data && data.flights);
+  const flights = (data && data.flights) || [];
+  const flight = pickCurrentFlight(flights);
   if (!flight) return null;
   const origin = flight.origin || {};
   const dest = flight.destination || {};
+  const diverted = !!flight.diverted;
   return {
     source: 'aeroapi',
     origin: { code: origin.code || '', name: origin.name || '', city: origin.city || '' },
     destination: { code: dest.code || '', name: dest.name || '', city: dest.city || '' },
     status: flight.status || '',
+    diverted: diverted,
+    divertedTo: diverted ? findDivertedDestination(flights, flight) : null,
   };
 }
 
