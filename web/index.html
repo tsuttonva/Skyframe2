@@ -196,7 +196,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.18',
+  VERSION: '1.0.19',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1927,11 +1927,13 @@ var DemoEngine = {
 
   /* Ordinary military transports and balloons are now part of the routine
      population mix (see spawnForPopulation), so this only needs to handle
-     the two things that shouldn't just trickle in on a random per-spawn
-     roll: a near-guaranteed early legendary sighting (so something cool
-     shows up within seconds of opening demo mode, not minutes) and the
-     occasional emergency squawk. Short, fast-repeating cycle on purpose --
-     nobody is going to watch demo mode for 10 minutes waiting for a payoff. */
+     the near-guaranteed early legendary sighting (so something cool shows
+     up within seconds of opening demo mode, not minutes). Short,
+     fast-repeating cycle on purpose -- nobody is going to watch demo mode
+     for 10 minutes waiting for a payoff. Emergency squawks get their own
+     dedicated schedule below, since "rare but happens within any few
+     minutes of watching" needs a guaranteed interval, not a per-cycle coin
+     flip that could keep missing on bad luck. */
   scheduleShow: function () {
     var totalMs = (25 + Math.random() * 20) * 1000;
 
@@ -1940,11 +1942,21 @@ var DemoEngine = {
       var pick = kinds[Math.floor(Math.random() * kinds.length)];
       DemoEngine.scheduleEvent(3000 + Math.random() * 8000, function () { DemoEngine.spawnLegendary(pick); });
     }
-    if (Math.random() < 0.4) {
-      DemoEngine.scheduleEvent(Math.random() * totalMs * 0.8, function () { DemoEngine.triggerEmergency(); });
-    }
 
     DemoEngine.scheduleEvent(totalMs, function () { DemoEngine.scheduleShow(); });
+  },
+
+  /* 60-150s between emergencies -- rare enough to feel special, but short
+     enough that any ~3-minute look at demo mode is virtually guaranteed to
+     see one (worst case is starting to watch right after one just fired,
+     putting the next one at most 150s/2.5min later). Reschedules itself so
+     this keeps happening for as long as demo mode stays open. */
+  scheduleEmergency: function () {
+    var delayMs = (60 + Math.random() * 90) * 1000;
+    DemoEngine.scheduleEvent(delayMs, function () {
+      DemoEngine.triggerEmergency();
+      DemoEngine.scheduleEmergency();
+    });
   },
 
   enterShowcase: function () {
@@ -1962,6 +1974,7 @@ var DemoEngine = {
     DemoEngine.populateAmbient(DEMO_TARGET_COUNT, true);
     DemoEngine.startTick();
     DemoEngine.scheduleShow();
+    DemoEngine.scheduleEmergency();
   },
 
   exitShowcase: function () {
