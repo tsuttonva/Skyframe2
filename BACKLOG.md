@@ -1,6 +1,6 @@
 # Backlog
 
-## Remove "fail into demo mode" fallback
+## ~~Remove "fail into demo mode" fallback~~ (done in v1.0.9)
 
 When all data sources fail repeatedly with no aircraft yet loaded,
 `handleFetchFailure()` (`web/index.html`) calls `DemoEngine.enterFallback()`,

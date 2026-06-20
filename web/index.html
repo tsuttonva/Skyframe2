@@ -192,7 +192,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.8',
+  VERSION: '1.0.9',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -200,7 +200,6 @@ var CONFIG = {
   REFRESH_MS: 30000,
   FIRST_LOAD_RETRY_DELAY_MS: 2000,
   STALE_RETRY_DELAYS_MS: [3000, 6000],
-  FALLBACK_DEMO_RETRY_MS: 4000,
   WORKER_TIMEOUT_MS: 20000,
   DIRECT_TIMEOUT_MS: 10000,
   WORKER_FAIL_THRESHOLD: 2,
@@ -591,27 +590,43 @@ function fetchFromWorker(lat, lon, distNm) {
   });
 }
 
+/* adsb.lol and airplanes.live are both community feeder networks that expose
+   the same ADSBExchange-compatible v2/point response shape, just backed by
+   different (independent) sets of ground receivers -- share the normalizer. */
+function normalizeAdsbExchangeV2Aircraft(list, lat, lon) {
+  return list.map(function (ac) {
+    var hex = (ac.hex || '').toLowerCase();
+    var altBaro = typeof ac.alt_baro === 'number' ? ac.alt_baro : 0;
+    var vertRate = typeof ac.baro_rate === 'number' ? ac.baro_rate : (typeof ac.geom_rate === 'number' ? ac.geom_rate : 0);
+    var callsign = (ac.flight || '').trim();
+    return {
+      icao24: hex, callsign: callsign, lat: ac.lat, lon: ac.lon,
+      baro_alt: altBaro, velocity: typeof ac.gs === 'number' ? ac.gs : 0,
+      true_track: typeof ac.track === 'number' ? ac.track : 0, vert_rate: vertRate,
+      squawk: ac.squawk || '', aircraft_type: ac.t || '',
+      is_military: isMilitaryCallsignFallback(callsign),
+      dist_km: (typeof ac.lat === 'number' && typeof ac.lon === 'number') ? haversineKm(lat, lon, ac.lat, ac.lon) : null
+    };
+  }).filter(function (a) { return typeof a.lat === 'number' && typeof a.lon === 'number'; });
+}
+
 function fetchFromAdsbLolDirect(lat, lon, distNm) {
   var url = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + Math.min(250, Math.round(distNm));
   return fetchWithTimeout(url, {}, CONFIG.DIRECT_TIMEOUT_MS).then(function (r) {
     if (!r.ok) throw new Error('adsb.lol http ' + r.status);
     return r.json();
   }).then(function (data) {
-    var list = (data && data.ac) || [];
-    return list.map(function (ac) {
-      var hex = (ac.hex || '').toLowerCase();
-      var altBaro = typeof ac.alt_baro === 'number' ? ac.alt_baro : 0;
-      var vertRate = typeof ac.baro_rate === 'number' ? ac.baro_rate : (typeof ac.geom_rate === 'number' ? ac.geom_rate : 0);
-      var callsign = (ac.flight || '').trim();
-      return {
-        icao24: hex, callsign: callsign, lat: ac.lat, lon: ac.lon,
-        baro_alt: altBaro, velocity: typeof ac.gs === 'number' ? ac.gs : 0,
-        true_track: typeof ac.track === 'number' ? ac.track : 0, vert_rate: vertRate,
-        squawk: ac.squawk || '', aircraft_type: ac.t || '',
-        is_military: isMilitaryCallsignFallback(callsign),
-        dist_km: (typeof ac.lat === 'number' && typeof ac.lon === 'number') ? haversineKm(lat, lon, ac.lat, ac.lon) : null
-      };
-    }).filter(function (a) { return typeof a.lat === 'number' && typeof a.lon === 'number'; });
+    return normalizeAdsbExchangeV2Aircraft((data && data.ac) || [], lat, lon);
+  });
+}
+
+function fetchFromAirplanesLive(lat, lon, distNm) {
+  var url = 'https://api.airplanes.live/v2/point/' + lat + '/' + lon + '/' + Math.min(250, Math.round(distNm));
+  return fetchWithTimeout(url, {}, CONFIG.DIRECT_TIMEOUT_MS).then(function (r) {
+    if (!r.ok) throw new Error('airplanes.live http ' + r.status);
+    return r.json();
+  }).then(function (data) {
+    return normalizeAdsbExchangeV2Aircraft((data && data.ac) || [], lat, lon);
   });
 }
 
@@ -644,12 +659,21 @@ function fetchFromOpenSky(lat, lon, distNm) {
   });
 }
 
-var SOURCE_FETCHERS = { worker: fetchFromWorker, direct: fetchFromAdsbLolDirect, opensky: fetchFromOpenSky };
+var SOURCE_FETCHERS = {
+  worker: fetchFromWorker,
+  direct: fetchFromAdsbLolDirect,
+  airplanesLive: fetchFromAirplanesLive,
+  opensky: fetchFromOpenSky
+};
 
 function buildSourceOrder() {
+  // worker and direct both ultimately read from adsb.lol, so they aren't
+  // truly independent -- put airplanesLive (a separate feeder network)
+  // right after worker so an adsb.lol-side outage doesn't need two failed
+  // attempts before reaching a genuinely different upstream.
   var base = (STATE.source.workerFails >= CONFIG.WORKER_FAIL_THRESHOLD)
-    ? ['direct', 'opensky', 'worker']
-    : ['worker', 'direct', 'opensky'];
+    ? ['airplanesLive', 'direct', 'opensky', 'worker']
+    : ['worker', 'airplanesLive', 'direct', 'opensky'];
   if (STATE.source.preferred && base.indexOf(STATE.source.preferred) !== -1) {
     base = [STATE.source.preferred].concat(base.filter(function (s) { return s !== STATE.source.preferred; }));
   }
@@ -719,7 +743,6 @@ function attemptRefresh() {
     STATE.fetchInFlight = false;
     STATE.lastFetchError = null;
     applyAircraftResult(result.aircraft, result.source);
-    if (STATE.demoMode === 'fallback' && typeof DemoEngine !== 'undefined') DemoEngine.exitFallback(true);
   }).catch(function (err) {
     STATE.fetchInFlight = false;
     handleFetchFailure(err);
@@ -732,7 +755,6 @@ function attemptRefresh() {
 function handleFetchFailure(err) {
   STATE.lastFetchError = { message: (err && err.message) || 'unknown error', at: new Date() };
   if (typeof renderAll === 'function') renderAll();
-  if (STATE.demoMode === 'fallback') return;
   if (STATE.aircraft.length > 0) {
     markStale();
     var delay = CONFIG.STALE_RETRY_DELAYS_MS[STATE.staleRetryCount];
@@ -745,9 +767,7 @@ function handleFetchFailure(err) {
   if (!STATE.firstLoadRetryDone) {
     STATE.firstLoadRetryDone = true;
     setTimeout(attemptRefresh, CONFIG.FIRST_LOAD_RETRY_DELAY_MS);
-    return;
   }
-  if (typeof DemoEngine !== 'undefined') DemoEngine.enterFallback();
 }
 
 function startRefreshInterval(ms) {
@@ -1614,9 +1634,8 @@ function checkAlerts(aircraftList) {
 }
 
 /* ============================== DEMO ENGINE ============================== */
-/* Both fallback and showcase demo render through the exact same pipeline as
-   real data (STATE.aircraft + renderAll + checkAlerts) -- only the trigger,
-   content, and exit behavior differ. */
+/* The showcase demo renders through the exact same pipeline as real data
+   (STATE.aircraft + renderAll + checkAlerts). */
 
 var DEMO_AMBIENT_TYPES = ['B738', 'A320', 'B739', 'A321', 'E175', 'CRJ9', 'B737', 'A319', 'DH8D', 'PC12', 'C172', 'SR22'];
 var DEMO_CIVILIAN_PREFIXES = ['UAL', 'DAL', 'AAL', 'SWA', 'JBU', 'ASA', 'FFT', 'NKS', 'SKW', 'RPA', 'ENY', 'EDV'];
@@ -1793,36 +1812,8 @@ var DemoEngine = {
     DemoEngine.scheduleEvent(totalMs, function () { DemoEngine.scheduleShow(); });
   },
 
-  enterFallback: function () {
-    if (DemoEngine.mode) return;
-    DemoEngine.mode = 'fallback';
-    STATE.demoMode = 'fallback';
-    var banner = document.getElementById('demoBanner');
-    banner.hidden = false;
-    banner.textContent = 'DEMO MODE — Reconnecting…';
-    DemoEngine.aircraft = [];
-    DemoEngine.populateAmbient(14);
-    DemoEngine.startTick();
-    startRefreshInterval(CONFIG.FALLBACK_DEMO_RETRY_MS);
-  },
-
-  exitFallback: function (alreadySucceeded) {
-    if (DemoEngine.mode !== 'fallback') return;
-    DemoEngine.mode = null;
-    STATE.demoMode = null;
-    DemoEngine.stopTick();
-    DemoEngine.aircraft = [];
-    document.getElementById('demoBanner').hidden = true;
-    if (alreadySucceeded) {
-      startRefreshInterval(CONFIG.REFRESH_MS);
-    } else {
-      restartRefreshCycle();
-    }
-  },
-
   enterShowcase: function () {
     if (DemoEngine.mode === 'showcase') return;
-    if (DemoEngine.mode === 'fallback') DemoEngine.exitFallback(false);
     DemoEngine.mode = 'showcase';
     STATE.demoMode = 'showcase';
     if (STATE.refreshTimer) { clearInterval(STATE.refreshTimer); STATE.refreshTimer = null; }
