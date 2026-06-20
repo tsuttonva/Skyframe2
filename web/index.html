@@ -64,6 +64,8 @@ main#main{flex:1;display:flex;min-height:0;}
 #demoBanner{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,40,40,0.18);border:1px solid var(--red);color:#ff8a8a;padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:2px;animation:pulseBanner 1.6s ease-in-out infinite;z-index:5;}
 @keyframes pulseBanner{0%,100%{opacity:1;}50%{opacity:0.45;}}
 
+#audioLockBanner{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,200,40,0.16);border:1px solid var(--amber, #ffb300);color:#ffcf66;padding:6px 16px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.5px;z-index:5;cursor:pointer;}
+
 #toastWrap{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:6;pointer-events:none;}
 .toast{background:rgba(0,10,5,0.92);border:1px solid var(--primary-dim);color:var(--text);padding:8px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.4s;white-space:nowrap;text-align:center;}
 .toast.legendary{border-color:var(--gold);color:var(--gold);}
@@ -146,6 +148,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
     <div id="radarWrap">
       <canvas id="radar" width="800" height="800"></canvas>
       <div id="demoBanner" hidden>DEMO MODE</div>
+      <div id="audioLockBanner" hidden>🔇 Tap anywhere to enable audio alerts</div>
       <div id="toastWrap"></div>
       <div id="countyLabel" hidden></div>
       <div id="detailCard" hidden>
@@ -192,7 +195,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.10',
+  VERSION: '1.0.11',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1427,10 +1430,18 @@ function unlockAudioOnce() {
   document.removeEventListener('pointerdown', unlockAudioOnce);
   document.removeEventListener('touchstart', unlockAudioOnce);
   document.removeEventListener('keydown', unlockAudioOnce);
+  document.getElementById('audioLockBanner').hidden = true;
 }
 document.addEventListener('pointerdown', unlockAudioOnce, { passive: true });
 document.addEventListener('touchstart', unlockAudioOnce, { passive: true });
 document.addEventListener('keydown', unlockAudioOnce, { passive: true });
+// iOS/WebKit (including Chrome on iPhone, which is WebKit under the hood)
+// only unlocks AudioContext/SpeechSynthesis from inside a real tap/touch/key
+// gesture -- a session where the user never touches the screen leaves chimes
+// and voice announcements silently no-op forever while the visual toast still
+// works fine. Surface that state instead of failing invisibly.
+document.getElementById('audioLockBanner').hidden = false;
+document.getElementById('audioLockBanner').addEventListener('click', unlockAudioOnce);
 
 document.addEventListener('visibilitychange', function () {
   if (document.visibilityState === 'visible') {
