@@ -196,7 +196,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.20',
+  VERSION: '1.0.21',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -220,7 +220,7 @@ var CONFIG = {
   SCHERGER_HEX: 'a8f1ab'
 };
 
-var EMERGENCY_SQUAWKS = ['7500', '7600', '7700'];
+var EMERGENCY_SQUAWKS = ['7400', '7500', '7600', '7700'];
 
 /* ============================== STATE ============================== */
 var STATE = {
@@ -1654,7 +1654,7 @@ function checkSchergerSighting() {
   }
 }
 
-var EMERGENCY_NAMES = { '7700': 'general emergency', '7600': 'radio failure', '7500': 'hijack' };
+var EMERGENCY_NAMES = { '7700': 'general emergency', '7600': 'radio failure', '7500': 'hijack', '7400': 'lost link, unmanned aircraft' };
 
 function fireEmergencyAlert(ac, distNm) {
   var name = EMERGENCY_NAMES[ac.squawk] || 'emergency';
