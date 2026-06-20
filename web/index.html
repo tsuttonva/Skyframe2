@@ -192,7 +192,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.9',
+  VERSION: '1.0.10',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -202,6 +202,9 @@ var CONFIG = {
   STALE_RETRY_DELAYS_MS: [3000, 6000],
   WORKER_TIMEOUT_MS: 20000,
   DIRECT_TIMEOUT_MS: 10000,
+  // Comfortably above the worst-case legit cascade duration (worker 20s +
+  // 3 direct sources at 10s each = 50s) so it only fires on a genuine hang.
+  FETCH_WATCHDOG_MS: 65000,
   WORKER_FAIL_THRESHOLD: 2,
   SUSPICIOUS_EMPTY_THRESHOLD: 20,
   COUNTY_ZOOM_NM: 75,
@@ -739,11 +742,32 @@ function attemptRefresh() {
   if (STATE.demoMode === 'showcase') return;
   if (STATE.fetchInFlight) return;
   STATE.fetchInFlight = true;
+  var settled = false;
+  // The per-source network timeouts only cover getting a response back --
+  // once headers arrive, reading/parsing the body has no timeout of its own,
+  // so a connection that stalls mid-download can hang fetchAircraftOnce()'s
+  // promise forever. When that happens fetchInFlight never resets, and every
+  // future refresh tick (even though its own countdown keeps ticking) just
+  // silently no-ops -- the app looks permanently stuck until a manual reload
+  // resets the flag. This watchdog is the backstop: however a fetch attempt
+  // gets stuck, force it to give up and let the next attempt through.
+  var watchdog = setTimeout(function () {
+    if (settled) return;
+    settled = true;
+    STATE.fetchInFlight = false;
+    handleFetchFailure(new Error('watchdog: fetch attempt did not complete within ' + (CONFIG.FETCH_WATCHDOG_MS / 1000) + 's'));
+  }, CONFIG.FETCH_WATCHDOG_MS);
   fetchAircraftOnce().then(function (result) {
+    if (settled) return;
+    settled = true;
+    clearTimeout(watchdog);
     STATE.fetchInFlight = false;
     STATE.lastFetchError = null;
     applyAircraftResult(result.aircraft, result.source);
   }).catch(function (err) {
+    if (settled) return;
+    settled = true;
+    clearTimeout(watchdog);
     STATE.fetchInFlight = false;
     handleFetchFailure(err);
   });

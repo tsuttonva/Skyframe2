@@ -173,7 +173,16 @@ async function handleFlights(url, env) {
   const milDbNow = await ensureMilDb(env);
   const radiusNm = Math.max(1, Math.min(250, Math.round(dist)));
   const upstreamUrl = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm;
-  const resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
+  let resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
+  if (resp.status === 429) {
+    // adsb.lol rate-limits by source IP, and Cloudflare Workers share IP
+    // ranges across many unrelated tenants -- a 429 here is usually a brief,
+    // bursty window rather than a real outage, so one short retry often
+    // succeeds instead of forcing the client through its whole fallback
+    // cascade for a transient block.
+    await new Promise(function (resolve) { setTimeout(resolve, 750); });
+    resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
+  }
   if (!resp.ok) return json({ error: 'upstream error', status: resp.status }, 502);
   const data = await resp.json();
   const list = data && data.ac ? data.ac : [];
