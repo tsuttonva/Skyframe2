@@ -1,0 +1,28 @@
+{
+  "manifest": {
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "name": "SkyFrame",
+          "summary": "Personal live aircraft radar reports for your home location.",
+          "description": "SkyFrame reports live nearby aircraft using ADS-B data. Personal/developer-console skill, not published to the Alexa Skills Store.",
+          "examplePhrases": [
+            "Alexa, ask sky frame what planes are near me",
+            "Alexa, ask sky frame what planes are within 10 miles"
+          ]
+        }
+      },
+      "isAvailableWorldwide": false,
+      "category": "AIRPORT_INFORMATION",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "REPLACE_WITH_LAMBDA_FUNCTION_ARN"
+        }
+      }
+    }
+  }
+}

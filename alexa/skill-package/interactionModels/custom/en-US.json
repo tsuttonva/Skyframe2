@@ -1,0 +1,36 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "sky frame",
+      "intents": [
+        { "name": "AMAZON.CancelIntent", "samples": [] },
+        { "name": "AMAZON.HelpIntent", "samples": [] },
+        { "name": "AMAZON.StopIntent", "samples": [] },
+        { "name": "AMAZON.NavigateHomeIntent", "samples": [] },
+        { "name": "AMAZON.FallbackIntent", "samples": [] },
+        {
+          "name": "PlanesNearMeIntent",
+          "slots": [
+            { "name": "Distance", "type": "AMAZON.NUMBER" }
+          ],
+          "samples": [
+            "what planes are near me",
+            "what's near me",
+            "what's flying near me",
+            "are there any planes nearby",
+            "what's in the sky",
+            "give me a sky report",
+            "check the sky",
+            "what planes are around",
+            "what planes are within {Distance} miles",
+            "what planes are within {Distance} miles of me",
+            "what planes are within {Distance} nautical miles",
+            "what planes are within {Distance} nautical miles of me",
+            "what's flying within {Distance} miles",
+            "check {Distance} miles around me"
+          ]
+        }
+      ]
+    }
+  }
+}

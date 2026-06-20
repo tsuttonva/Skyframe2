@@ -1,0 +1,31 @@
+name: Deploy Alexa Lambda
+
+on:
+  push:
+    branches: [claude/cross-platform-app-build-vtwr2l]
+    paths:
+      - 'alexa/lambda/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alexa-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip Lambda
+        run: cd alexa/lambda && zip -r ../../function.zip .
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy to Lambda
+        run: aws lambda update-function-code --function-name skyframe-alexa --zip-file fileb://function.zip
