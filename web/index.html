@@ -28,6 +28,12 @@
   --blue:#ffb000; --amber:#ff8c00; --gold:#ffd24a; --red:#ff3b3b;
   --violet:#ffb000; --cyan:#ffb000; --burnt:#cc6633; --brightgreen:#ffb000; --white:#ffb000; --maroon:#ffb000;
 }
+[data-theme="pink"]{
+  --bg:#1a0014; --panel:#33002b; --panel-line:#ff4fd8;
+  --primary:#ff5fd1; --primary-dim:#b8338f; --text:#ffe1f6; --text-dim:#ff9fe3;
+  --blue:#ff8cf0; --amber:#ffb6f0; --gold:#ff9ce6; --red:#ff3b6b;
+  --violet:#e069ff; --cyan:#ff7fe9; --burnt:#ff66b3; --brightgreen:#ff5fd1; --white:#ffffff; --maroon:#c2185b;
+}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;}
 body{display:flex;flex-direction:column;}
@@ -224,7 +230,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.23',
+  VERSION: '1.0.24',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -2487,8 +2493,8 @@ document.getElementById('weatherModalClose').addEventListener('click', function 
 /* ============================== THEME ============================== */
 function applyTheme(theme) {
   STATE.theme = theme;
-  if (theme === 'retro') {
-    document.documentElement.setAttribute('data-theme', 'retro');
+  if (theme === 'retro' || theme === 'pink') {
+    document.documentElement.setAttribute('data-theme', theme);
   } else {
     document.documentElement.removeAttribute('data-theme');
   }
@@ -2496,7 +2502,8 @@ function applyTheme(theme) {
 }
 
 document.getElementById('themeBtn').addEventListener('click', function () {
-  applyTheme(STATE.theme === 'retro' ? 'modern' : 'retro');
+  var next = STATE.theme === 'modern' ? 'retro' : (STATE.theme === 'retro' ? 'pink' : 'modern');
+  applyTheme(next);
 });
 
 /* ============================== FOOTER CONTROLS ============================== */
