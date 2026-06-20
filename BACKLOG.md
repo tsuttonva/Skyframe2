@@ -152,3 +152,16 @@ Idents are labeled when zoomed in to 50nm or less (`CONFIG.AIRPORT_LABEL_ZOOM_NM
 
 Currently US-only and excludes heliports/seaplane bases/balloonports/closed
 strips — could expand scope later if wanted.
+
+## Indicate when route data is degraded (free fallback / cap reached)
+
+`/route` (`worker/src/index.js`) silently falls back from paid AeroAPI to the
+free adsb.lol routeset source once the monthly cap is reached (or a paid call
+errors). The free source never returns flight `status` or `diverted` info, so
+status notes and diversion detection (flashing icon, DIV badge, announcement)
+just stop appearing with no explanation. The frontend already receives a
+`source` field (`'aeroapi'` / `'free'` / `'none'`) on every route response but
+currently discards it. Low priority — not expected to be noticeable in
+practice — but if a user ever asks "why did diversion alerts stop working,"
+the fix is to surface `source` somewhere (e.g. a small note in the detail
+card) when it's `'free'` or `'none'`.
