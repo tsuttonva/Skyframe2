@@ -196,7 +196,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.17',
+  VERSION: '1.0.18',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1551,7 +1551,7 @@ var AIRLINE_NAMES = {
 };
 
 function spokenIdentity(ac) {
-  if (!ac.callsign) return ac.is_military ? 'Military aircraft' : 'Unidentified aircraft';
+  if (!ac.callsign) return 'Unidentified aircraft';
   var cs = ac.callsign.trim().toUpperCase();
   var m = cs.match(/^([A-Z]{3})(\d+)/);
   if (m && AIRLINE_NAMES[m[1]]) {
@@ -1559,7 +1559,6 @@ function spokenIdentity(ac) {
     var grouped = num.length > 2 ? (num.slice(0, num.length - 2) + ' ' + num.slice(-2)) : num;
     return AIRLINE_NAMES[m[1]] + ' ' + grouped;
   }
-  if (ac.is_military) return 'Military aircraft, ' + cs;
   return cs;
 }
 
@@ -1574,23 +1573,6 @@ function announceAircraft(ac) {
   return parts.join(' ');
 }
 
-/* Military aircraft play a fun audio easter-egg before the informative
-   announcement; the easter egg alone is never enough on its own. */
-function playMilitaryEasterEgg(done) {
-  var finished = false;
-  function finish() { if (finished) return; finished = true; done(); }
-  var el;
-  try { el = new Audio('military.mp3'); } catch (e) { el = null; }
-  if (!el) { Speech.speak('Military aircraft inbound.'); finish(); return; }
-  el.addEventListener('ended', finish);
-  el.addEventListener('error', function () { Speech.speak('Military aircraft inbound.'); finish(); });
-  var playPromise = el.play();
-  if (playPromise && typeof playPromise.catch === 'function') {
-    playPromise.catch(function () { Speech.speak('Military aircraft inbound.'); finish(); });
-  }
-  setTimeout(finish, 4000);
-}
-
 /* No toast here -- the side list's bell icon (STATE.alertedSet, set by the
    caller) is the visual record that this aircraft was already alerted, so a
    toast that's long gone by the time you glance at the screen doesn't leave
@@ -1598,7 +1580,7 @@ function playMilitaryEasterEgg(done) {
 function fireStandardAlert(ac) {
   playChimes(1, false).then(function () {
     if (ac.is_military) {
-      playMilitaryEasterEgg(function () { Speech.speak(announceAircraft(ac)); });
+      Speech.speak('America, fuck yeah. Military aircraft detected. ' + announceAircraft(ac));
     } else {
       Speech.speak(announceAircraft(ac));
     }
@@ -1751,6 +1733,9 @@ var DEMO_LEGENDARY_PRESETS = {
   b52: { type: 'B52H', altitude: 45000, velocity: 440 },
   awacs: { type: 'E3C', altitude: 32000, velocity: 360 }
 };
+/* Trimmed from 16 -- fewer aircraft on a small radar means fewer of them
+   converge into the alert radius at the same moment. */
+var DEMO_TARGET_COUNT = 10;
 
 var DemoEngine = {
   mode: null,
@@ -1781,14 +1766,18 @@ var DemoEngine = {
     return prefix + num;
   },
 
+  /* opts.distNm/opts.heading let callers place a spawn anywhere (used for
+     the initial scattered population); when omitted, the aircraft spawns
+     just outside the radar aimed roughly at the center, like a real new
+     arrival entering coverage. */
   spawn: function (opts) {
     opts = opts || {};
     var angle = Math.random() * 360;
-    var spawnDistNm = STATE.radarRadiusNm * (1.0 + Math.random() * 0.15);
+    var spawnDistNm = (typeof opts.distNm === 'number') ? opts.distNm : STATE.radarRadiusNm * (1.0 + Math.random() * 0.15);
     var spawnPt = destPoint(STATE.location.lat, STATE.location.lon, angle, nmToKm(spawnDistNm));
     var aimAngle = bearingDeg(spawnPt.lat, spawnPt.lon, STATE.location.lat, STATE.location.lon);
     var jitter = (Math.random() - 0.5) * 70;
-    var heading = (aimAngle + jitter + 360) % 360;
+    var heading = (typeof opts.heading === 'number') ? opts.heading : (aimAngle + jitter + 360) % 360;
 
     var ac = {
       icao24: opts.icao24 || DemoEngine.randomHex(),
@@ -1807,36 +1796,80 @@ var DemoEngine = {
     return ac;
   },
 
-  populateAmbient: function (target) {
-    while (DemoEngine.aircraft.length < target) DemoEngine.spawn({});
+  legendaryPresent: function () {
+    for (var i = 0; i < DemoEngine.aircraft.length; i++) {
+      if (isLegendary(getAircraftCategory(DemoEngine.aircraft[i]))) return true;
+    }
+    return false;
   },
 
-  spawnMilitaryTransit: function () {
+  spawnMilitaryTransit: function (posOpts) {
+    var pos = posOpts || {};
     DemoEngine.spawn({
       military: true,
       type: DEMO_MIL_TRANSIT_TYPES[Math.floor(Math.random() * DEMO_MIL_TRANSIT_TYPES.length)],
       altitude: 18000 + Math.floor(Math.random() * 15000),
-      velocity: 280 + Math.floor(Math.random() * 120)
+      velocity: 280 + Math.floor(Math.random() * 120),
+      distNm: pos.distNm, heading: pos.heading
     });
   },
 
-  spawnBalloon: function () {
+  spawnBalloon: function (posOpts) {
+    var pos = posOpts || {};
     DemoEngine.spawn({
       callsign: 'HBAL' + (300 + Math.floor(Math.random() * 600)),
       type: 'BALL',
       altitude: 45000 + Math.floor(Math.random() * 15000),
       velocity: 8 + Math.floor(Math.random() * 12),
-      vertRate: 0
+      vertRate: 0,
+      distNm: pos.distNm, heading: pos.heading
     });
   },
 
-  spawnLegendary: function (kind) {
+  spawnLegendary: function (kind, posOpts) {
     var preset = DEMO_LEGENDARY_PRESETS[kind];
     if (!preset) return;
+    var pos = posOpts || {};
     DemoEngine.spawn({
       military: true, type: preset.type, altitude: preset.altitude, velocity: preset.velocity,
-      icao24: preset.icao24, callsign: preset.callsign
+      icao24: preset.icao24, callsign: preset.callsign,
+      distNm: pos.distNm, heading: pos.heading
     });
+  },
+
+  /* Rolls one population slot: ~80% ordinary civilian traffic, ~20% a
+     "special" -- mostly mundane military transports, occasionally a
+     balloon, rarely a legendary (never a 2nd legendary at once, since
+     af1 etc. are unique named aircraft). posOpts (distNm/heading), when
+     given, scatters the spawn instead of placing it at the radar edge. */
+  spawnForPopulation: function (posOpts) {
+    var roll = Math.random();
+    if (roll < 0.03 && !DemoEngine.legendaryPresent()) {
+      var kinds = ['u2', 'af1', 'b52', 'awacs'];
+      DemoEngine.spawnLegendary(kinds[Math.floor(Math.random() * kinds.length)], posOpts);
+    } else if (roll < 0.08) {
+      DemoEngine.spawnBalloon(posOpts);
+    } else if (roll < 0.20) {
+      DemoEngine.spawnMilitaryTransit(posOpts);
+    } else {
+      DemoEngine.spawn(posOpts || {});
+    }
+  },
+
+  /* scattered=true places new aircraft at random points across the whole
+     visible disc with independent random headings (used to fill the radar
+     immediately on entering demo mode); scattered=false (ongoing
+     replenishment) spawns one at a time at the edge, aimed inward, like a
+     real new arrival -- so traffic doesn't arrive in a synchronized wave
+     and isn't invisible off-radar while it closes in. */
+  populateAmbient: function (target, scattered) {
+    while (DemoEngine.aircraft.length < target) {
+      var posOpts = scattered ? {
+        distNm: Math.random() * STATE.radarRadiusNm * 1.05,
+        heading: Math.random() * 360
+      } : null;
+      DemoEngine.spawnForPopulation(posOpts);
+    }
   },
 
   triggerEmergency: function () {
@@ -1874,8 +1907,7 @@ var DemoEngine = {
       if (kmToNm(ac.dist_km) <= STATE.radarRadiusNm * 1.6) stillAlive.push(ac);
     }
     DemoEngine.aircraft = stillAlive;
-    var targetCount = DemoEngine.mode === 'showcase' ? 16 : 14;
-    DemoEngine.populateAmbient(targetCount);
+    DemoEngine.populateAmbient(DEMO_TARGET_COUNT, false);
     STATE.aircraft = DemoEngine.aircraft;
     if (typeof checkAlerts === 'function') checkAlerts(DemoEngine.aircraft);
     if (typeof renderAll === 'function') renderAll();
@@ -1893,24 +1925,23 @@ var DemoEngine = {
     DemoEngine.scheduledTimers = [];
   },
 
+  /* Ordinary military transports and balloons are now part of the routine
+     population mix (see spawnForPopulation), so this only needs to handle
+     the two things that shouldn't just trickle in on a random per-spawn
+     roll: a near-guaranteed early legendary sighting (so something cool
+     shows up within seconds of opening demo mode, not minutes) and the
+     occasional emergency squawk. Short, fast-repeating cycle on purpose --
+     nobody is going to watch demo mode for 10 minutes waiting for a payoff. */
   scheduleShow: function () {
-    var totalMs = (180 + Math.random() * 120) * 1000;
+    var totalMs = (25 + Math.random() * 20) * 1000;
 
-    DemoEngine.scheduleEvent(Math.random() * totalMs * 0.5, function () { DemoEngine.spawnMilitaryTransit(); });
-
-    if (Math.random() < 0.6) {
-      DemoEngine.scheduleEvent(totalMs * 0.5 + Math.random() * totalMs * 0.45, function () { DemoEngine.spawnMilitaryTransit(); });
-    }
-    if (Math.random() < 0.5) {
-      DemoEngine.scheduleEvent(Math.random() * totalMs * 0.8, function () { DemoEngine.spawnBalloon(); });
-    }
-    if (Math.random() < 0.35) {
+    if (Math.random() < 0.6 && !DemoEngine.legendaryPresent()) {
       var kinds = ['u2', 'af1', 'b52', 'awacs'];
       var pick = kinds[Math.floor(Math.random() * kinds.length)];
-      DemoEngine.scheduleEvent(totalMs * 0.1 + Math.random() * totalMs * 0.7, function () { DemoEngine.spawnLegendary(pick); });
+      DemoEngine.scheduleEvent(3000 + Math.random() * 8000, function () { DemoEngine.spawnLegendary(pick); });
     }
-    if (Math.random() < 0.25) {
-      DemoEngine.scheduleEvent(Math.random() * totalMs * 0.7, function () { DemoEngine.triggerEmergency(); });
+    if (Math.random() < 0.4) {
+      DemoEngine.scheduleEvent(Math.random() * totalMs * 0.8, function () { DemoEngine.triggerEmergency(); });
     }
 
     DemoEngine.scheduleEvent(totalMs, function () { DemoEngine.scheduleShow(); });
@@ -1928,7 +1959,7 @@ var DemoEngine = {
     var btn = document.getElementById('demoBtn');
     if (btn) btn.textContent = 'EXIT DEMO';
     DemoEngine.aircraft = [];
-    DemoEngine.populateAmbient(16);
+    DemoEngine.populateAmbient(DEMO_TARGET_COUNT, true);
     DemoEngine.startTick();
     DemoEngine.scheduleShow();
   },
