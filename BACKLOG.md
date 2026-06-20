@@ -85,6 +85,47 @@ from a GPIO (with resistor) or through a small MOSFET if using a brighter
 bulb, a small AC-to-5V or USB power supply, and a 3D-printed or
 hand-built miniature base/pole to match the reference lamp's look.
 
+**Scope for now: the miniature model only.** Controlling the real 120V
+taxiway lamp (mains relay/switching, safety enclosure, etc.) is a
+separate, later project and is intentionally out of scope here — noted
+below only so the architecture doesn't accidentally paint us into a
+corner if we ever do pick it up.
+
+### Architecture: why "same WiFi network" isn't actually needed
+
+The ESP32 and the phone running SkyFrame never need to talk to each other
+directly, and don't need to be on the same network. Both sides talk
+through a small cloud relay instead (e.g. a couple of new endpoints on the
+existing `skyframe2-worker` Cloudflare Worker, or a separate tiny worker):
+
+- The ESP32 just needs *any* WiFi network with internet access. One-time
+  setup: flash it with that network's SSID/password, or have it run a
+  "first boot" captive portal (broadcast its own temporary WiFi so it can
+  be configured from a phone, the way smart plugs do) if it'll ever move
+  networks.
+- It polls a tiny cloud endpoint every 1-2 seconds: "what state should I
+  be in?" (or holds a persistent connection for push, see below).
+- SkyFrame writes to that same endpoint whenever `STATE.alertedSet`
+  becomes non-empty / goes back to empty: "set device `alert-lamp` to
+  ON/OFF."
+
+Recommend starting with simple HTTP polling (1-2s interval) rather than
+MQTT/WebSockets — far simpler to build and debug, and that latency is
+invisible for a zone-entry indicator. Only move to push (MQTT) later if
+polling ever feels too slow.
+
+### Building it as a reusable "named lamp" component, not a one-off
+
+If the cloud relay is built generically — a named device/topic
+(`device_id -> state`) rather than one hardcoded "alert lamp" — the exact
+same ESP32 firmware and relay design extends to unrelated personal uses
+later (e.g. a separate physical lamp somewhere else that a different
+controller toggles on/off) for free, since nothing in the design assumes
+the controller and the device share a network or even talk to each other
+directly. Worth keeping the endpoint/device-ID generic from the start for
+that reason, even though right now SkyFrame is the only controller and
+the model lamp is the only device.
+
 ## Make the flight list and detail card interactive
 
 Two related ideas:
