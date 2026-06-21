@@ -230,7 +230,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.24',
+  VERSION: '1.0.25',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -246,7 +246,10 @@ var CONFIG = {
   WORKER_FAIL_THRESHOLD: 2,
   SUSPICIOUS_EMPTY_THRESHOLD: 20,
   COUNTY_ZOOM_NM: 75,
-  AIRPORT_LABEL_ZOOM_NM: 50,
+  // Below this radius there are only a handful of fields in view; above it
+  // the full OurAirports set (incl. small private strips) overlaps into an
+  // unreadable wall of crosses and labels, so the overlay just hides itself.
+  AIRPORT_MAX_RADIUS_NM: 10,
   // A single METAR station is only representative of conditions within a few
   // miles of the field -- once the radar is showing 25nm+ no single report
   // is meaningful for the whole view, so the badge just hides itself.
@@ -1252,20 +1255,22 @@ function rebuildAirportCacheIfNeeded(cx, cy, maxR) {
   var radiusNm = STATE.radarRadiusNm;
   var myLat = STATE.location.lat, myLon = STATE.location.lon;
   var list = [];
-  for (var i = 0; i < STATE.airports.length; i++) {
-    var a = STATE.airports[i];
-    if (kmToNm(haversineKm(myLat, myLon, a[2], a[3])) > radiusNm) continue;
-    var pr = project(a[2], a[3], cx, cy, maxR);
-    list.push({ ident: a[0], type: a[1], x: pr.x, y: pr.y });
+  if (radiusNm <= CONFIG.AIRPORT_MAX_RADIUS_NM) {
+    for (var i = 0; i < STATE.airports.length; i++) {
+      var a = STATE.airports[i];
+      if (kmToNm(haversineKm(myLat, myLon, a[2], a[3])) > radiusNm) continue;
+      var pr = project(a[2], a[3], cx, cy, maxR);
+      list.push({ ident: a[0], type: a[1], x: pr.x, y: pr.y });
+    }
   }
   airportCache.list = list;
 }
 
 function drawAirports(cx, cy, maxR) {
   if (!STATE.airports) return;
+  if (STATE.radarRadiusNm > CONFIG.AIRPORT_MAX_RADIUS_NM) return;
   rebuildAirportCacheIfNeeded(cx, cy, maxR);
   var list = airportCache.list;
-  var showLabels = STATE.radarRadiusNm <= CONFIG.AIRPORT_LABEL_ZOOM_NM;
   var color = getCssVar('--text-dim');
   ctx.save();
   ctx.strokeStyle = color;
@@ -1279,7 +1284,7 @@ function drawAirports(cx, cy, maxR) {
     ctx.moveTo(p.x - s, p.y); ctx.lineTo(p.x + s, p.y);
     ctx.moveTo(p.x, p.y - s); ctx.lineTo(p.x, p.y + s);
     ctx.stroke();
-    if (showLabels) ctx.fillText(p.ident, p.x + s + 2, p.y + 3);
+    ctx.fillText(p.ident, p.x + s + 2, p.y + 3);
   }
   ctx.restore();
 }
