@@ -248,7 +248,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.32',
+  VERSION: '1.0.33',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1893,8 +1893,9 @@ function checkEmergencySquawk(ac, distNm) {
   var icao = ac.icao24;
   if (!icao) return;
   var isEmergency = EMERGENCY_SQUAWKS.indexOf(ac.squawk) !== -1;
+  var onRadar = distNm === null || distNm <= STATE.radarRadiusNm;
   var activeSquawk = STATE.emergencyActive[icao];
-  if (isEmergency && activeSquawk !== ac.squawk) {
+  if (isEmergency && onRadar && activeSquawk !== ac.squawk) {
     STATE.emergencyActive[icao] = ac.squawk;
     fireEmergencyAlert(ac, distNm);
   } else if (!isEmergency && activeSquawk) {
@@ -1904,7 +1905,9 @@ function checkEmergencySquawk(ac, distNm) {
 
 /* Per-aircraft alertedSet makes each aircraft alert only once per session;
    it expires with ~1.2x hysteresis on the way out to avoid boundary flapping.
-   Legendary/balloon sightings always fire once regardless of alert radius. */
+   Legendary/balloon sightings ignore the (usually tighter) alert radius, but
+   like every other alert they're still capped to the radar radius -- never
+   narrate something the user didn't ask to see on screen. */
 function checkAlerts(aircraftList) {
   var alertNm = STATE.alertRadiusNm;
   var hystNm = alertNm * CONFIG.ALERT_HYSTERESIS;
@@ -1915,17 +1918,18 @@ function checkAlerts(aircraftList) {
     if (!ac.icao24) continue;
     seenIcaos[ac.icao24] = true;
     var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+    var onRadar = distNm === null || distNm <= STATE.radarRadiusNm;
     var category = getAircraftCategory(ac);
     var legendary = isLegendary(category);
     var isBalloon = category === 'balloon';
     var alreadyAlerted = !!STATE.alertedSet[ac.icao24];
 
-    if ((legendary || isBalloon) && !alreadyAlerted) {
+    if ((legendary || isBalloon) && !alreadyAlerted && onRadar) {
       STATE.alertedSet[ac.icao24] = true;
       if (legendary) fireLegendaryAlert(ac, category);
       else fireBalloonAlert(ac);
     } else if (!legendary && !isBalloon) {
-      var withinAlert = distNm !== null && distNm <= alertNm;
+      var withinAlert = onRadar && distNm !== null && distNm <= alertNm;
       if (withinAlert && !alreadyAlerted) {
         STATE.alertedSet[ac.icao24] = true;
         fireStandardAlert(ac);
