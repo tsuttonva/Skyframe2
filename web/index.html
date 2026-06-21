@@ -248,7 +248,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.33',
+  VERSION: '1.0.34',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1619,6 +1619,24 @@ function updateRefreshStatus() {
    resume must be awaited before scheduling sound -- iOS suspends the
    context aggressively and a beep scheduled too early is silently lost. */
 var sharedAudioCtx = null;
+var militaryClipAudio = null;
+
+/* Plays audio/america.mp3 to completion (falling back to a fixed delay if
+   playback fails/is blocked), then resolves so the caller can speak the
+   announcement right after the clip ends rather than talking over it. */
+function playMilitaryClip() {
+  if (!STATE.chimeOn) return Promise.resolve();
+  return new Promise(function (resolve) {
+    try {
+      if (!militaryClipAudio) militaryClipAudio = new Audio('audio/america.mp3');
+      else militaryClipAudio.currentTime = 0;
+      militaryClipAudio.onended = resolve;
+      militaryClipAudio.onerror = resolve;
+      var playPromise = militaryClipAudio.play();
+      if (playPromise && playPromise.catch) playPromise.catch(resolve);
+    } catch (e) { resolve(); }
+  });
+}
 function getAudioCtx() {
   var AudioCtor = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtor) return Promise.resolve(null);
@@ -1801,13 +1819,15 @@ function announceAircraft(ac) {
    toast that's long gone by the time you glance at the screen doesn't leave
    you unsure whether the alert actually fired. */
 function fireStandardAlert(ac) {
-  playChimes(1, false).then(function () {
-    if (ac.is_military) {
-      Speech.speak('America, fuck yeah. Military aircraft detected. ' + announceAircraft(ac));
-    } else {
+  if (ac.is_military) {
+    playMilitaryClip().then(function () {
+      Speech.speak('Military aircraft in alert zone. ' + announceAircraft(ac));
+    });
+  } else {
+    playChimes(1, false).then(function () {
       Speech.speak(announceAircraft(ac));
-    }
-  });
+    });
+  }
 }
 
 var LEGENDARY_CONFIG = {
