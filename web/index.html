@@ -104,6 +104,11 @@ main#main{flex:1;display:flex;min-height:0;}
 #detailCard .row b{color:var(--text);font-weight:600;}
 #detailCard .closeBtn{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--text-dim);}
 #detailCard .note{margin-top:8px;padding:6px;border-radius:6px;background:rgba(255,80,80,0.12);color:#ff9a9a;font-size:11px;}
+#detailCard .linkish{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+#detailThumb{display:block;width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;cursor:pointer;}
+#detailThumbCredit{display:block;font-size:9px;color:var(--text-dim);margin:-6px 0 8px;text-align:right;}
+#detailCard .btnRow{display:flex;gap:6px;margin-top:10px;}
+#detailCard .btnRow button{flex:1;padding:7px;background:var(--primary-dim);color:var(--text);border:none;border-radius:6px;font-size:11px;}
 
 footer#footer{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);border-top:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;}
 footer#footer button{background:var(--panel-line);color:var(--text);border:none;padding:7px 12px;border-radius:6px;font-size:12px;flex-shrink:0;}
@@ -174,7 +179,9 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
       <div id="detailCard" hidden>
         <span class="closeBtn" id="detailClose">&times;</span>
         <h3 id="detailTitle">Callsign</h3>
-        <div class="row"><span>Type</span><b id="detailType">-</b></div>
+        <img id="detailThumb" hidden>
+        <span id="detailThumbCredit" hidden></span>
+        <div class="row"><span>Type</span><b id="detailType" class="linkish">-</b></div>
         <div class="row"><span>From</span><b id="detailFrom">-</b></div>
         <div class="row"><span>To</span><b id="detailTo">-</b></div>
         <div class="row"><span>Reg</span><b id="detailReg">-</b></div>
@@ -184,7 +191,10 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
         <div class="row"><span>Vert rate</span><b id="detailVrate">-</b></div>
         <div class="row"><span>Squawk</span><b id="detailSquawk">-</b></div>
         <div id="detailNote" class="note" hidden></div>
-        <button id="trackBtn" style="width:100%;margin-top:10px;padding:7px;background:var(--primary-dim);color:var(--text);border:none;border-radius:6px;">Track</button>
+        <div class="btnRow">
+          <button id="trackBtn">Track</button>
+          <button id="flightAwareBtn">FlightAware &#8599;</button>
+        </div>
       </div>
     </div>
     <aside id="sideList"></aside>
@@ -231,7 +241,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.27',
+  VERSION: '1.0.28',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -298,6 +308,7 @@ var STATE = {
   divertedSet: {},
   enrichmentCache: {},
   routeCache: {},
+  photoCache: {},
   demoMode: null,
   audioUnlocked: false,
   speechUnlocked: false,
@@ -2326,9 +2337,52 @@ function openDetailCard(icao) {
   document.getElementById('detailNote').hidden = true;
   document.getElementById('trackBtn').textContent = (STATE.trackedIcao === icao) ? 'Untrack' : 'Track';
 
+  var faBtn = document.getElementById('flightAwareBtn');
+  faBtn.disabled = !ac.callsign;
+  faBtn.style.opacity = ac.callsign ? '1' : '0.4';
+
+  document.getElementById('detailThumb').hidden = true;
+  document.getElementById('detailThumbCredit').hidden = true;
+  fetchThumbnail(icao);
+
   var category = getAircraftCategory(ac);
   enrichAircraft(ac, category);
   lookupRoute(ac, category);
+}
+
+function fetchThumbnail(icao) {
+  var cached = STATE.photoCache[icao];
+  if (cached !== undefined) { applyThumbnail(icao, cached); return; }
+  fetch('https://api.planespotters.net/pub/photos/hex/' + icao)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var photo = data && data.photos && data.photos[0];
+      var result = null;
+      if (photo) {
+        var thumb = photo.thumbnail_large || photo.thumbnail;
+        result = { src: thumb ? thumb.src : null, link: photo.link, photographer: photo.photographer };
+      }
+      STATE.photoCache[icao] = result;
+      applyThumbnail(icao, result);
+    }).catch(function () {
+      STATE.photoCache[icao] = null;
+    });
+}
+
+function applyThumbnail(icao, result) {
+  if (STATE.selectedIcao !== icao) return;
+  var img = document.getElementById('detailThumb');
+  var credit = document.getElementById('detailThumbCredit');
+  if (result && result.src) {
+    img.src = result.src;
+    img.hidden = false;
+    img.onclick = function () { window.open(result.link, '_blank', 'noopener'); };
+    credit.textContent = 'Photo: ' + (result.photographer || 'planespotters.net');
+    credit.hidden = false;
+  } else {
+    img.hidden = true;
+    credit.hidden = true;
+  }
 }
 
 function char_deg() { return String.fromCharCode(176); }
@@ -2438,6 +2492,18 @@ document.getElementById('trackBtn').addEventListener('click', function () {
   if (!STATE.selectedIcao) return;
   STATE.trackedIcao = (STATE.trackedIcao === STATE.selectedIcao) ? null : STATE.selectedIcao;
   this.textContent = STATE.trackedIcao ? 'Untrack' : 'Track';
+});
+
+document.getElementById('flightAwareBtn').addEventListener('click', function () {
+  var ac = findAircraft(STATE.selectedIcao);
+  if (!ac || !ac.callsign) return;
+  window.open('https://flightaware.com/live/flight/' + encodeURIComponent(ac.callsign.trim()), '_blank', 'noopener');
+});
+
+document.getElementById('detailType').addEventListener('click', function () {
+  var text = this.textContent;
+  if (!text || text === '-' || text === 'Looking up...') return;
+  window.open('https://en.wikipedia.org/w/index.php?search=' + encodeURIComponent(text + ' aircraft'), '_blank', 'noopener');
 });
 
 /* ============================== SEARCH ============================== */

@@ -126,19 +126,16 @@ directly. Worth keeping the endpoint/device-ID generic from the start for
 that reason, even though right now SkyFrame is the only controller and
 the model lamp is the only device.
 
-## Make the flight list and detail card interactive
+## ~~Make the detail card interactive~~ (done in v1.0.28)
 
-Two related ideas:
-- Clicking a row in the side list (or a dedicated link/icon within it)
-  opens that aircraft's FlightAware tracking page in a new tab
-  (`https://flightaware.com/live/flight/<callsign>` style URL) so the user
-  can jump to real-time third-party tracking for a specific flight.
-- Show a small thumbnail photo of the aircraft (by ICAO24 hex or
-  registration) in both the side list row and the detail card, clickable
-  to view a larger version. Needs a photo source/API (e.g.
-  planespotters.net's public API keyed by ICAO24, or airport-data.com) —
-  need to check rate limits/licensing before wiring it in, and decide on a
-  placeholder for aircraft with no available photo.
+Detail card now has: a clickable aircraft type name that opens a Wikipedia
+search for that type in a new tab; a thumbnail photo (via planespotters.net's
+public API keyed by ICAO24 hex, clickable through to the full photo page,
+silently hidden if no photo exists); and a "FlightAware ↗" button that opens
+that flight's live tracking page using its callsign.
+
+Not done: the side list rows themselves are still not clickable for
+FlightAware/thumbnail (only the detail card) — pick back up if wanted.
 
 ## ~~Show airport locations on the radar~~ (done in v1.0.22)
 
