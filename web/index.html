@@ -248,7 +248,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.34',
+  VERSION: '1.0.35',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1270,7 +1270,17 @@ function drawAircraftAll(cx, cy, maxR) {
 
     var label = (ac.callsign || ac.icao24 || '?').trim() + ' / ' + fmtAlt(ac.baro_alt) + trendArrow(ac.vert_rate) + ' ' + Math.round(ac.velocity || 0) + 'kt';
     ctx.fillStyle = isEmergency ? getCssVar('--red') : (isDiverted ? getCssVar('--amber') : color);
-    ctx.fillText(label, pr.x + 11, pr.y + 4);
+    /* Labels always sat to the right of the icon, but anything near the
+       right edge of the visible radius (only ~15px from the canvas edge)
+       ran straight off-canvas and got clipped. Flip to the left/right-aligned
+       side based on which half of the circle the icon is in. */
+    if (pr.x > cx) {
+      ctx.textAlign = 'right';
+      ctx.fillText(label, pr.x - 11, pr.y + 4);
+      ctx.textAlign = 'left';
+    } else {
+      ctx.fillText(label, pr.x + 11, pr.y + 4);
+    }
   }
 }
 
