@@ -97,7 +97,7 @@ main#main{flex:1;display:flex;min-height:0;}
 .flightRow .bell{margin-left:6px;font-size:11px;}
 .flightRow .sub{color:var(--text-dim);font-size:11px;margin-top:2px;}
 
-#detailCard{position:absolute;right:10px;top:10px;width:260px;background:rgba(2,16,8,0.96);border:1px solid var(--primary-dim);border-radius:10px;padding:12px;font-size:12px;z-index:8;}
+#detailCard{position:absolute;right:10px;top:10px;width:260px;max-height:calc(100% - 20px);overflow-y:auto;background:rgba(2,16,8,0.96);border:1px solid var(--primary-dim);border-radius:10px;padding:12px;font-size:12px;z-index:8;}
 #detailCard[hidden]{display:none;}
 #detailCard h3{margin:0 0 8px;color:var(--primary);font-size:15px;}
 #detailCard .row{display:flex;justify-content:space-between;margin:3px 0;color:var(--text-dim);}
@@ -241,7 +241,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.28',
+  VERSION: '1.0.29',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
