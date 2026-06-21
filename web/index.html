@@ -106,7 +106,9 @@ main#main{flex:1;display:flex;min-height:0;}
 #detailCard .note{margin-top:8px;padding:6px;border-radius:6px;background:rgba(255,80,80,0.12);color:#ff9a9a;font-size:11px;}
 #detailCard .linkish{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
 #detailThumb{display:block;width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;cursor:pointer;}
+#detailThumb[hidden]{display:none;}
 #detailThumbCredit{display:block;font-size:9px;color:var(--text-dim);margin:-6px 0 8px;text-align:right;}
+#detailThumbCredit[hidden]{display:none;}
 #detailCard .btnRow{display:flex;gap:6px;margin-top:10px;}
 #detailCard .btnRow button{flex:1;padding:7px;background:var(--primary-dim);color:var(--text);border:none;border-radius:6px;font-size:11px;}
 
@@ -241,7 +243,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.29',
+  VERSION: '1.0.30',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -2341,7 +2343,9 @@ function openDetailCard(icao) {
   faBtn.disabled = !ac.callsign;
   faBtn.style.opacity = ac.callsign ? '1' : '0.4';
 
-  document.getElementById('detailThumb').hidden = true;
+  var thumbEl = document.getElementById('detailThumb');
+  thumbEl.hidden = true;
+  thumbEl.removeAttribute('src');
   document.getElementById('detailThumbCredit').hidden = true;
   fetchThumbnail(icao);
 
