@@ -210,6 +210,11 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
         <div class="row"><span>City</span><b id="fieldCity">-</b></div>
         <div class="row"><span>Size</span><b id="fieldType">-</b></div>
         <div class="row"><span>Lat/Lon</span><b id="fieldLatLon">-</b></div>
+        <div class="row"><span>Use</span><b id="fieldUse">-</b></div>
+        <div class="row"><span>Elevation</span><b id="fieldElev">-</b></div>
+        <div class="row"><span>ARTCC</span><b id="fieldArtcc">-</b></div>
+        <div class="row"><span>FSS</span><b id="fieldFss">-</b></div>
+        <div class="row"><span>Activated</span><b id="fieldActivation">-</b></div>
         <div class="btnRow">
           <button id="fieldAirNavBtn">AirNav &#8599;</button>
         </div>
@@ -259,7 +264,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.40',
+  VERSION: '1.0.41',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -306,6 +311,8 @@ var STATE = {
   aircraft: [],
   selectedIcao: null,
   selectedField: null,
+  airportNasr: null,
+  airportNasrLoading: false,
   trackedIcao: null,
   stale: false,
   hasEverSucceeded: false,
@@ -2411,6 +2418,49 @@ function selectField(field) {
   document.getElementById('fieldType').textContent = field.type === 'L' ? 'Large' : (field.type === 'M' ? 'Medium' : 'Small');
   document.getElementById('fieldLatLon').textContent = field.lat.toFixed(4) + ', ' + field.lon.toFixed(4);
   document.getElementById('fieldCard').hidden = false;
+  document.getElementById('fieldUse').textContent = '-';
+  document.getElementById('fieldElev').textContent = '-';
+  document.getElementById('fieldArtcc').textContent = '-';
+  document.getElementById('fieldFss').textContent = '-';
+  document.getElementById('fieldActivation').textContent = '-';
+  if (STATE.airportNasr) {
+    renderFieldNasr(field);
+  } else {
+    loadAirportNasr();
+  }
+}
+
+/* FAA NASR (28-day AIRAC) data -- airport use, elevation, ARTCC, FSS, and
+   activation date -- isn't in the OurAirports-derived airports.json, so it's
+   a separate lazy-loaded asset fetched only once a field is tapped (it's
+   ~1.3MB, no need to pay that cost on every page load). */
+function loadAirportNasr() {
+  if (STATE.airportNasr || STATE.airportNasrLoading) return;
+  STATE.airportNasrLoading = true;
+  fetch('airports_nasr.json').then(function (r) { return r.json(); }).then(function (data) {
+    STATE.airportNasr = data;
+    STATE.airportNasrLoading = false;
+    if (STATE.selectedField) renderFieldNasr(STATE.selectedField);
+  }).catch(function () { STATE.airportNasrLoading = false; });
+}
+
+var NASR_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function renderFieldNasr(field) {
+  if (STATE.selectedField !== field || !STATE.airportNasr) return;
+  var rec = STATE.airportNasr[field.ident];
+  if (!rec) return;
+  document.getElementById('fieldUse').textContent = rec[0] || '-';
+  document.getElementById('fieldElev').textContent = (rec[1] !== null && rec[1] !== undefined) ? (rec[1] + ' ft') : '-';
+  document.getElementById('fieldArtcc').textContent = rec[2] || '-';
+  document.getElementById('fieldFss').textContent = rec[3] || '-';
+  if (rec[4]) {
+    var parts = rec[4].split('/');
+    var y = parts[0], m = parseInt(parts[1], 10);
+    document.getElementById('fieldActivation').textContent = (m >= 1 && m <= 12 ? NASR_MONTHS[m - 1] + ' ' : '') + y;
+  } else {
+    document.getElementById('fieldActivation').textContent = '-';
+  }
 }
 
 function openDetailCard(icao) {
