@@ -210,6 +210,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
         <div class="row"><span>City</span><b id="fieldCity">-</b></div>
         <div class="row"><span>Size</span><b id="fieldType">-</b></div>
         <div class="row"><span>Lat/Lon</span><b id="fieldLatLon">-</b></div>
+        <div class="row" id="fieldWeatherRow" hidden><span>Weather</span><b id="fieldWeatherLink" class="linkish"><span id="fieldWeatherCatChip" class="weatherCat"></span> <span id="fieldWeatherSummary"></span></b></div>
         <div class="row"><span>Use</span><b id="fieldUse">-</b></div>
         <div class="row"><span>Elevation</span><b id="fieldElev">-</b></div>
         <div class="row"><span>ARTCC</span><b id="fieldArtcc">-</b></div>
@@ -264,7 +265,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.42',
+  VERSION: '1.0.43',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -313,6 +314,7 @@ var STATE = {
   selectedField: null,
   airportNasr: null,
   airportNasrLoading: false,
+  fieldWeatherCache: {},
   trackedIcao: null,
   stale: false,
   hasEverSucceeded: false,
@@ -1485,8 +1487,41 @@ function renderWeatherBadge() {
     metarWindText(s) + ' · ' + metarVisText(s) + ' · ' + (s.tempC !== null ? (Math.round(s.tempC) + '°C') : '-');
 }
 
-function openWeatherModal() {
-  var s = STATE.weather;
+/* A field's own weather is only worth showing if a METAR station is
+   genuinely close to that airport -- not just close to wherever the user's
+   radar happens to be centered -- so this is a separate lookup per field
+   (gated to FIELD_WEATHER_MAX_NM) rather than reusing STATE.weather. */
+var FIELD_WEATHER_MAX_NM = 10;
+
+function loadFieldWeather(field) {
+  if (STATE.fieldWeatherCache[field.ident] !== undefined) {
+    renderFieldWeather(field);
+    return;
+  }
+  fetch(CONFIG.WORKER_URL + '/weather?lat=' + field.lat + '&lon=' + field.lon)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var ok = data && data.station && data.distanceNm !== null && data.distanceNm <= FIELD_WEATHER_MAX_NM;
+      STATE.fieldWeatherCache[field.ident] = ok ? data.station : null;
+      renderFieldWeather(field);
+    }).catch(function () { STATE.fieldWeatherCache[field.ident] = null; });
+}
+
+function renderFieldWeather(field) {
+  if (STATE.selectedField !== field) return;
+  var s = STATE.fieldWeatherCache[field.ident];
+  var row = document.getElementById('fieldWeatherRow');
+  if (!s) { row.hidden = true; return; }
+  row.hidden = false;
+  var cat = s.flightCategory || 'VFR';
+  var chip = document.getElementById('fieldWeatherCatChip');
+  chip.textContent = cat;
+  chip.className = 'weatherCat cat-' + cat;
+  document.getElementById('fieldWeatherSummary').textContent = metarWindText(s) + ' · ' + metarVisText(s);
+}
+
+function openWeatherModal(s) {
+  s = s || STATE.weather;
   if (!s) return;
   document.getElementById('weatherModalStation').textContent = 'Weather — ' + (s.stationId || 'Unknown');
   var cat = s.flightCategory || 'VFR';
@@ -2435,6 +2470,8 @@ function selectField(field) {
   document.getElementById('fieldArtcc').textContent = '-';
   document.getElementById('fieldFss').textContent = '-';
   document.getElementById('fieldActivation').textContent = '-';
+  document.getElementById('fieldWeatherRow').hidden = true;
+  loadFieldWeather(field);
   if (STATE.airportNasr) {
     renderFieldNasr(field);
   } else {
@@ -2765,7 +2802,11 @@ document.getElementById('locInput').addEventListener('keydown', function (evt) {
   if (evt.key === 'Enter') submitLocationInput();
 });
 
-document.getElementById('weatherBadge').addEventListener('click', openWeatherModal);
+document.getElementById('weatherBadge').addEventListener('click', function () { openWeatherModal(); });
+document.getElementById('fieldWeatherLink').addEventListener('click', function () {
+  if (!STATE.selectedField) return;
+  openWeatherModal(STATE.fieldWeatherCache[STATE.selectedField.ident]);
+});
 document.getElementById('weatherModalClose').addEventListener('click', function () {
   document.getElementById('weatherModal').hidden = true;
 });
