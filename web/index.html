@@ -211,7 +211,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
         <div class="row"><span>Size</span><b id="fieldType">-</b></div>
         <div class="row"><span>Lat/Lon</span><b id="fieldLatLon">-</b></div>
         <div class="btnRow">
-          <button id="fieldFlightAwareBtn">FlightAware &#8599;</button>
+          <button id="fieldAirNavBtn">AirNav &#8599;</button>
         </div>
       </div>
     </div>
@@ -259,7 +259,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.39',
+  VERSION: '1.0.40',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -2640,9 +2640,9 @@ document.getElementById('fieldClose').addEventListener('click', function () {
   STATE.selectedField = null;
 });
 
-document.getElementById('fieldFlightAwareBtn').addEventListener('click', function () {
+document.getElementById('fieldAirNavBtn').addEventListener('click', function () {
   if (!STATE.selectedField) return;
-  window.open('https://flightaware.com/live/airport/' + encodeURIComponent(STATE.selectedField.ident), '_blank', 'noopener');
+  window.open('https://airnav.com/airport/' + encodeURIComponent(STATE.selectedField.ident), '_blank', 'noopener');
 });
 
 document.getElementById('detailType').addEventListener('click', function () {
