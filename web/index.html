@@ -264,7 +264,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.41',
+  VERSION: '1.0.42',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -384,6 +384,12 @@ function bearingDeg(lat1, lon1, lat2, lon2) {
   var y = Math.sin(dLon) * Math.cos(phi2);
   var x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLon);
   return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+var COMPASS_POINTS = ['north', 'northeast', 'east', 'southeast', 'south', 'southwest', 'west', 'northwest'];
+
+function compassDirection(bearing) {
+  return COMPASS_POINTS[Math.round(bearing / 45) % 8];
 }
 
 function destPoint(lat, lon, bearing, distKm) {
@@ -1849,11 +1855,17 @@ function spokenIdentity(ac) {
 
 function announceAircraft(ac) {
   var distNm = (ac.dist_km !== null && ac.dist_km !== undefined) ? kmToNm(ac.dist_km) : null;
+  var dir = (STATE.location && typeof ac.lat === 'number' && typeof ac.lon === 'number') ?
+    compassDirection(bearingDeg(STATE.location.lat, STATE.location.lon, ac.lat, ac.lon)) : null;
   var typeName = getTypeName(ac.aircraft_type);
   var alt = Math.round(ac.baro_alt || 0);
   var parts = [spokenIdentity(ac) + ','];
   if (typeName && typeName !== '-') parts.push(typeName + ',');
-  if (distNm !== null) parts.push(Math.round(distNm) + (Math.round(distNm) === 1 ? ' mile,' : ' miles,'));
+  if (distNm !== null) {
+    parts.push(Math.round(distNm) + (Math.round(distNm) === 1 ? ' mile' : ' miles') + (dir ? ' ' + dir + ',' : ','));
+  } else if (dir) {
+    parts.push(dir + ',');
+  }
   parts.push(alt + ' feet.');
   return parts.join(' ');
 }
