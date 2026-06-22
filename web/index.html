@@ -99,22 +99,22 @@ main#main{flex:1;display:flex;min-height:0;}
 .flightRow .bell{margin-left:6px;font-size:11px;}
 .flightRow .sub{color:var(--text-dim);font-size:11px;margin-top:2px;}
 
-#detailCard{position:absolute;right:10px;top:10px;width:260px;max-height:calc(100% - 20px);overflow-y:auto;background:rgba(2,16,8,0.96);border:1px solid var(--primary-dim);border-radius:10px;padding:12px;font-size:12px;z-index:8;}
-#detailCard[hidden]{display:none;}
-#detailCard h3{margin:0 0 8px;color:var(--primary);font-size:15px;}
-#detailCard .row{display:flex;justify-content:space-between;margin:3px 0;color:var(--text-dim);}
-#detailCard .row b{color:var(--text);font-weight:600;}
-#detailCard .closeBtn{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--text-dim);}
-#detailCard .note{margin-top:8px;padding:6px;border-radius:6px;background:rgba(255,80,80,0.12);color:#ff9a9a;font-size:11px;}
-#detailCard .emergencyNote{margin:0 0 8px;font-weight:700;font-size:12px;text-align:center;animation:pulseBanner 1.6s ease-in-out infinite;}
-#detailCard .squawkEmergency{color:var(--red);font-weight:700;}
-#detailCard .linkish{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
+.detailCard{position:absolute;right:10px;top:10px;width:260px;max-height:calc(100% - 20px);overflow-y:auto;background:rgba(2,16,8,0.96);border:1px solid var(--primary-dim);border-radius:10px;padding:12px;font-size:12px;z-index:8;}
+.detailCard[hidden]{display:none;}
+.detailCard h3{margin:0 0 8px;color:var(--primary);font-size:15px;}
+.detailCard .row{display:flex;justify-content:space-between;margin:3px 0;color:var(--text-dim);}
+.detailCard .row b{color:var(--text);font-weight:600;}
+.detailCard .closeBtn{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--text-dim);}
+.detailCard .note{margin-top:8px;padding:6px;border-radius:6px;background:rgba(255,80,80,0.12);color:#ff9a9a;font-size:11px;}
+.detailCard .emergencyNote{margin:0 0 8px;font-weight:700;font-size:12px;text-align:center;animation:pulseBanner 1.6s ease-in-out infinite;}
+.detailCard .squawkEmergency{color:var(--red);font-weight:700;}
+.detailCard .linkish{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;}
 #detailThumb{display:block;width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px;cursor:pointer;}
 #detailThumb[hidden]{display:none;}
 #detailThumbCredit{display:block;font-size:9px;color:var(--text-dim);margin:-6px 0 8px;text-align:right;}
 #detailThumbCredit[hidden]{display:none;}
-#detailCard .btnRow{display:flex;gap:6px;margin-top:10px;}
-#detailCard .btnRow button{flex:1;padding:7px;background:var(--primary-dim);color:var(--text);border:none;border-radius:6px;font-size:11px;}
+.detailCard .btnRow{display:flex;gap:6px;margin-top:10px;}
+.detailCard .btnRow button{flex:1;padding:7px;background:var(--primary-dim);color:var(--text);border:none;border-radius:6px;font-size:11px;}
 
 footer#footer{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--panel);border-top:1px solid var(--panel-line);overflow-x:auto;white-space:nowrap;flex-shrink:0;}
 footer#footer button{background:var(--panel-line);color:var(--text);border:none;padding:7px 12px;border-radius:6px;font-size:12px;flex-shrink:0;}
@@ -182,7 +182,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
       <div id="audioLockBanner" hidden>🔇 Tap anywhere to enable audio alerts</div>
       <div id="toastWrap"></div>
       <div id="countyLabel" hidden></div>
-      <div id="detailCard" hidden>
+      <div id="detailCard" class="detailCard" hidden>
         <span class="closeBtn" id="detailClose">&times;</span>
         <div id="detailEmergencyNote" class="note emergencyNote" hidden></div>
         <h3 id="detailTitle">Callsign</h3>
@@ -201,6 +201,17 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
         <div class="btnRow">
           <button id="trackBtn">Track</button>
           <button id="flightAwareBtn">FlightAware &#8599;</button>
+        </div>
+      </div>
+      <div id="fieldCard" class="detailCard" hidden>
+        <span class="closeBtn" id="fieldClose">&times;</span>
+        <h3 id="fieldTitle">Airport</h3>
+        <div class="row"><span>ICAO</span><b id="fieldIdent">-</b></div>
+        <div class="row"><span>City</span><b id="fieldCity">-</b></div>
+        <div class="row"><span>Size</span><b id="fieldType">-</b></div>
+        <div class="row"><span>Lat/Lon</span><b id="fieldLatLon">-</b></div>
+        <div class="btnRow">
+          <button id="fieldFlightAwareBtn">FlightAware &#8599;</button>
         </div>
       </div>
     </div>
@@ -248,7 +259,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.38',
+  VERSION: '1.0.39',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -294,6 +305,7 @@ var STATE = {
   fieldsOn: true,
   aircraft: [],
   selectedIcao: null,
+  selectedField: null,
   trackedIcao: null,
   stale: false,
   hasEverSucceeded: false,
@@ -1307,7 +1319,7 @@ function rebuildAirportCacheIfNeeded(cx, cy, maxR) {
     if (distNm > radiusNm) continue;
     if (a[1] === 'S' && distNm > CONFIG.AIRPORT_SMALL_RADIUS_NM) continue;
     var pr = project(a[2], a[3], cx, cy, maxR);
-    list.push({ ident: a[0], type: a[1], x: pr.x, y: pr.y });
+    list.push({ ident: a[0], type: a[1], lat: a[2], lon: a[3], name: a[4], city: a[5], x: pr.x, y: pr.y });
   }
   airportCache.list = list;
 }
@@ -1513,6 +1525,17 @@ canvas.addEventListener('click', function (evt) {
     if (d < 14) {
       selectAircraft(list[i].icao24);
       return;
+    }
+  }
+
+  if (STATE.fieldsOn && airportCache.list) {
+    var fields = airportCache.list;
+    for (var j = 0; j < fields.length; j++) {
+      var fd = Math.sqrt((fields[j].x - pt.x) * (fields[j].x - pt.x) + (fields[j].y - pt.y) * (fields[j].y - pt.y));
+      if (fd < 9) {
+        selectField(fields[j]);
+        return;
+      }
     }
   }
 
@@ -2372,9 +2395,22 @@ function findAircraft(icao) {
 }
 
 function selectAircraft(icao) {
+  document.getElementById('fieldCard').hidden = true;
   STATE.selectedIcao = icao;
   renderAll();
   openDetailCard(icao);
+}
+
+function selectField(field) {
+  document.getElementById('detailCard').hidden = true;
+  STATE.selectedIcao = null;
+  STATE.selectedField = field;
+  document.getElementById('fieldTitle').textContent = field.name || field.ident;
+  document.getElementById('fieldIdent').textContent = field.ident;
+  document.getElementById('fieldCity').textContent = field.city || '-';
+  document.getElementById('fieldType').textContent = field.type === 'L' ? 'Large' : (field.type === 'M' ? 'Medium' : 'Small');
+  document.getElementById('fieldLatLon').textContent = field.lat.toFixed(4) + ', ' + field.lon.toFixed(4);
+  document.getElementById('fieldCard').hidden = false;
 }
 
 function openDetailCard(icao) {
@@ -2597,6 +2633,16 @@ document.getElementById('flightAwareBtn').addEventListener('click', function () 
   var ac = findAircraft(STATE.selectedIcao);
   if (!ac || !ac.callsign) return;
   window.open('https://flightaware.com/live/flight/' + encodeURIComponent(ac.callsign.trim()), '_blank', 'noopener');
+});
+
+document.getElementById('fieldClose').addEventListener('click', function () {
+  document.getElementById('fieldCard').hidden = true;
+  STATE.selectedField = null;
+});
+
+document.getElementById('fieldFlightAwareBtn').addEventListener('click', function () {
+  if (!STATE.selectedField) return;
+  window.open('https://flightaware.com/live/airport/' + encodeURIComponent(STATE.selectedField.ident), '_blank', 'noopener');
 });
 
 document.getElementById('detailType').addEventListener('click', function () {
