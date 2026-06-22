@@ -208,7 +208,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
   </main>
 
   <footer id="footer">
-    <button id="chimeBtn">Chime: ON</button>
+    <button id="audioBtn">Audio: ON</button>
     <span class="val" id="footerAlertVal" style="font-size:11px;color:var(--text-dim);">Alert 15nm</span>
     <button id="demoBtn">DEMO</button>
     <button id="themeBtn">Theme</button>
@@ -248,7 +248,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.37',
+  VERSION: '1.0.38',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -290,7 +290,7 @@ var STATE = {
   radarRadiusNm: CONFIG.RADAR_DEFAULT_NM,
   alertRadiusNm: CONFIG.ALERT_DEFAULT_NM,
   theme: 'modern',
-  chimeOn: true,
+  audioOn: true,
   fieldsOn: true,
   aircraft: [],
   selectedIcao: null,
@@ -1639,7 +1639,7 @@ var militaryClipAudio = null;
    playback fails/is blocked), then resolves so the caller can speak the
    announcement right after the clip ends rather than talking over it. */
 function playMilitaryClip() {
-  if (!STATE.chimeOn) return Promise.resolve();
+  if (!STATE.audioOn) return Promise.resolve();
   return new Promise(function (resolve) {
     try {
       if (!militaryClipAudio) militaryClipAudio = new Audio('audio/america.mp3');
@@ -1684,7 +1684,7 @@ function playTone(audioCtx, freq1, freq2, startAt, duration) {
    to speak should wait for this before calling Speech.speak(), so the two
    audio outputs never fight for the same audio session. */
 function playChimes(count, rapid) {
-  if (!STATE.chimeOn) return Promise.resolve();
+  if (!STATE.audioOn) return Promise.resolve();
   var n = count || 1;
   var gap = rapid ? 0.18 : 0.45;
   var dur = rapid ? 0.12 : 0.22;
@@ -1711,7 +1711,7 @@ var Speech = {
   queue: [],
   busy: false,
   speak: function (text) {
-    if (!('speechSynthesis' in window) || !text) return;
+    if (!('speechSynthesis' in window) || !text || !STATE.audioOn) return;
     Speech.queue.push(text);
     Speech.drain();
   },
@@ -2679,10 +2679,10 @@ document.getElementById('themeBtn').addEventListener('click', function () {
 });
 
 /* ============================== FOOTER CONTROLS ============================== */
-document.getElementById('chimeBtn').addEventListener('click', function () {
-  STATE.chimeOn = !STATE.chimeOn;
-  Persist.set('chimeOn', STATE.chimeOn);
-  this.textContent = 'Chime: ' + (STATE.chimeOn ? 'ON' : 'OFF');
+document.getElementById('audioBtn').addEventListener('click', function () {
+  STATE.audioOn = !STATE.audioOn;
+  Persist.set('audioOn', STATE.audioOn);
+  this.textContent = 'Audio: ' + (STATE.audioOn ? 'ON' : 'OFF');
 });
 
 document.getElementById('fieldsBtn').addEventListener('click', function () {
@@ -2738,8 +2738,8 @@ function init() {
 
   STATE.radarRadiusNm = clamp(Persist.get('radarRadius', CONFIG.RADAR_DEFAULT_NM), CONFIG.RADAR_MIN_NM, CONFIG.RADAR_MAX_NM);
   STATE.alertRadiusNm = clamp(Persist.get('alertRadius', CONFIG.ALERT_DEFAULT_NM), CONFIG.ALERT_MIN_NM, Math.min(CONFIG.ALERT_MAX_NM, STATE.radarRadiusNm));
-  STATE.chimeOn = Persist.get('chimeOn', true);
-  document.getElementById('chimeBtn').textContent = 'Chime: ' + (STATE.chimeOn ? 'ON' : 'OFF');
+  STATE.audioOn = Persist.get('audioOn', Persist.get('chimeOn', true));
+  document.getElementById('audioBtn').textContent = 'Audio: ' + (STATE.audioOn ? 'ON' : 'OFF');
   STATE.fieldsOn = Persist.get('fieldsOn', true);
   document.getElementById('fieldsBtn').textContent = 'Fields: ' + (STATE.fieldsOn ? 'ON' : 'OFF');
   applyTheme(Persist.get('theme', 'modern'));
