@@ -33,8 +33,8 @@ struct ContentView: View {
                 Task { await model.refresh() }
             }
         }
-        .onChange(of: model.locationService.coordinate) { _, _ in
-            if model.customLocation == nil {
+        .onChange(of: model.locationService.coordinate?.latitude) { _, lat in
+            if lat != nil, model.customLocation == nil {
                 Task { await model.refresh() }
             }
         }
