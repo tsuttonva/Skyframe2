@@ -265,7 +265,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.43',
+  VERSION: '1.0.44',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
@@ -1705,6 +1705,7 @@ function updateRefreshStatus() {
    context aggressively and a beep scheduled too early is silently lost. */
 var sharedAudioCtx = null;
 var militaryClipAudio = null;
+var militaryClipUnlocked = false;
 
 /* Plays audio/america.mp3 to completion (falling back to a fixed delay if
    playback fails/is blocked), then resolves so the caller can speak the
@@ -1818,6 +1819,17 @@ function unlockAudioOnce() {
   STATE.speechUnlocked = true;
   getAudioCtx().then(refreshAudioLockBanner);
   Speech.prime();
+  // HTMLAudioElement (america.mp3) is separate from AudioContext and must be
+  // unlocked independently via a play/pause inside a real user gesture --
+  // otherwise play() from the setInterval tick is rejected by autoplay policy.
+  if (!militaryClipUnlocked) {
+    if (!militaryClipAudio) militaryClipAudio = new Audio('audio/america.mp3');
+    militaryClipAudio.play().then(function () {
+      militaryClipAudio.pause();
+      militaryClipAudio.currentTime = 0;
+      militaryClipUnlocked = true;
+    }).catch(function () {});
+  }
 }
 document.addEventListener('pointerdown', unlockAudioOnce, { passive: true });
 document.addEventListener('touchstart', unlockAudioOnce, { passive: true });
