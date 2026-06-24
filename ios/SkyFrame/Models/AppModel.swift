@@ -48,6 +48,7 @@ class AppModel: ObservableObject {
 
     private let flightService = FlightService()
     private var refreshTask: Task<Void, Never>?
+    private var locationCancellable: AnyCancellable?
     private var alertedIcaos: Set<String> = []
     private var refreshInterval: TimeInterval = 30
 
@@ -84,6 +85,17 @@ class AppModel: ObservableObject {
         }
 
         locationService.requestPermission()
+
+        // Trigger first fetch as soon as GPS arrives — the auto-refresh loop
+        // starts immediately but returns early when location is still nil.
+        locationCancellable = locationService.$coordinate
+            .compactMap { $0 }
+            .first()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { await self.refresh() }
+            }
+
         startAutoRefresh()
     }
 
