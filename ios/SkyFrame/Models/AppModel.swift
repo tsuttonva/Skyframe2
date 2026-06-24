@@ -110,18 +110,24 @@ class AppModel: ObservableObject {
     }
 
     func refresh() async {
-        guard let loc = effectiveLocation else { return }
+        guard let loc = effectiveLocation else {
+            print("[SkyFrame] refresh skipped — no location")
+            return
+        }
+        print("[SkyFrame] fetching lat=\(loc.latitude) lon=\(loc.longitude) dist=\(radarRadiusNm)nm")
         isLoading = true
         errorMessage = nil
         do {
             let newAircraft = try await flightService.fetchFlights(
                 lat: loc.latitude, lon: loc.longitude, distNm: radarRadiusNm
             )
+            print("[SkyFrame] got \(newAircraft.count) aircraft")
             aircraft = newAircraft.sorted { $0.distNm < $1.distNm }
             lastUpdated = Date()
             checkAlerts()
         } catch {
-            errorMessage = "Fetch failed — retrying"
+            print("[SkyFrame] fetch error: \(error)")
+            errorMessage = "\(error.localizedDescription)"
         }
         isLoading = false
     }

@@ -88,8 +88,10 @@ struct ContentView: View {
                     .buttonStyle(.bordered)
                     .tint(.green)
             } else {
-                Text("No aircraft in range")
-                    .foregroundColor(.secondary)
+                Text(model.errorMessage ?? "No aircraft in range")
+                    .foregroundColor(model.errorMessage != nil ? .red : .secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
             }
             Spacer()
         }
