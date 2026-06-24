@@ -50,6 +50,7 @@ targets:
         CFBundleDisplayName: SkyFrame
         WKCompanionAppBundleIdentifier: com.tsutton.skyframe
         WKWatchOnly: false
+        WKApplication: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.tsutton.skyframe.watchkitapp
