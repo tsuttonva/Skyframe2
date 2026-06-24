@@ -65,8 +65,8 @@ class AppModel: ObservableObject {
     }
 
     var militaryCount: Int { aircraft.filter(\.isMilitary).count }
-    var highestAlt: Int { aircraft.map(\.baroAlt).max() ?? 0 }
-    var fastestSpeed: Int { aircraft.map(\.velocity).max() ?? 0 }
+    var highestAlt: Int { Int(aircraft.map(\.baroAlt).max() ?? 0) }
+    var fastestSpeed: Int { Int(aircraft.map(\.velocity).max() ?? 0) }
 
     init() {
         radarRadiusNm = UserDefaults.standard.double(forKey: "radarRadius").nonZero ?? 50
@@ -183,7 +183,7 @@ class AppModel: ObservableObject {
         if !ac.callsign.isEmpty { parts.append(ac.callsign) }
         if !ac.aircraftType.isEmpty { parts.append(ac.aircraftType) }
         parts.append("\(Int(ac.distNm)) miles out")
-        if ac.baroAlt > 0 { parts.append("altitude \(ac.baroAlt / 100) hundred feet") }
+        if ac.baroAlt > 0 { parts.append("altitude \(Int(ac.baroAlt) / 100) hundred feet") }
         return parts.joined(separator: ". ")
     }
 }

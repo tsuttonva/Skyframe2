@@ -70,7 +70,7 @@ struct WatchAircraftRow: View {
                         .cornerRadius(2)
                 }
             }
-            Text(String(format: "%.1f nm · %@", aircraft.distNm, aircraft.altitudeDisplay))
+            Text(String(format: "%.1fnm · %@", aircraft.distNm, aircraft.altitudeDisplay))
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundColor(.secondary)
         }
@@ -99,7 +99,7 @@ struct WatchDetailView: View {
                 detailRow("Dist", String(format: "%.1f nm", aircraft.distNm))
                 detailRow("Alt", aircraft.altitudeDisplay)
                 if aircraft.velocity > 0 {
-                    detailRow("Speed", "\(aircraft.velocity) kt")
+                    detailRow("Speed", "\(Int(aircraft.velocity)) kt")
                 }
                 detailRow("Hdg", "\(Int(aircraft.trueTrack))°")
                 if aircraft.isMilitary {

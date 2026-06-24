@@ -50,7 +50,7 @@ struct AircraftRow: View {
                         .font(.system(size: 11, design: .monospaced))
                         .foregroundColor(.secondary)
                     if aircraft.velocity > 0 {
-                        Text("\(aircraft.velocity)kt")
+                        Text("\(Int(aircraft.velocity))kt")
                             .font(.system(size: 11, design: .monospaced))
                             .foregroundColor(.secondary)
                     }

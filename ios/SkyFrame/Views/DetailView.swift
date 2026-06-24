@@ -26,10 +26,10 @@ struct DetailView: View {
                 }
 
                 Section("Altitude & Speed") {
-                    row("Altitude", aircraft.baroAlt > 0 ? "\(aircraft.baroAlt) ft (\(aircraft.altitudeDisplay))" : "On ground")
-                    row("Speed", aircraft.velocity > 0 ? "\(aircraft.velocity) kt" : "—")
+                    row("Altitude", aircraft.baroAlt > 0 ? "\(Int(aircraft.baroAlt)) ft (\(aircraft.altitudeDisplay))" : "On ground")
+                    row("Speed", aircraft.velocity > 0 ? "\(Int(aircraft.velocity)) kt" : "—")
                     if aircraft.vertRate != 0 {
-                        row("Vert Rate", "\(aircraft.vertRate > 0 ? "+" : "")\(aircraft.vertRate) fpm")
+                        row("Vert Rate", "\(aircraft.vertRate > 0 ? "+" : "")\(Int(aircraft.vertRate)) fpm")
                     }
                 }
 

@@ -5,10 +5,10 @@ struct Aircraft: Identifiable, Decodable, Equatable {
     let callsign: String
     let lat: Double
     let lon: Double
-    let baroAlt: Int
-    let velocity: Int
+    let baroAlt: Double
+    let velocity: Double
     let trueTrack: Double
-    let vertRate: Int
+    let vertRate: Double
     let squawk: String
     let aircraftType: String
     let isMilitary: Bool
@@ -17,7 +17,6 @@ struct Aircraft: Identifiable, Decodable, Equatable {
     var id: String { icao24 }
     var distNm: Double { distKm / 1.852 }
 
-    // Emergency transponder squawks
     var isEmergency: Bool {
         ["7500", "7600", "7700"].contains(squawk)
     }
@@ -27,7 +26,7 @@ struct Aircraft: Identifiable, Decodable, Equatable {
     }
 
     var altitudeDisplay: String {
-        baroAlt > 0 ? "FL\(baroAlt / 100)" : "GND"
+        baroAlt > 0 ? "FL\(Int(baroAlt) / 100)" : "GND"
     }
 
     enum CodingKeys: String, CodingKey {
