@@ -1,0 +1,56 @@
+name: SkyFrame
+options:
+  bundleIdPrefix: com.tsutton
+  deploymentTarget:
+    iOS: "17.0"
+    watchOS: "10.0"
+  xcodeVersion: "15"
+
+targets:
+  SkyFrame:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: SkyFrame
+        excludes:
+          - "**/.DS_Store"
+    dependencies:
+      - target: "SkyFrame Watch App"
+        embed: true
+    info:
+      path: SkyFrame/Info.plist
+      properties:
+        CFBundleDisplayName: SkyFrame
+        NSLocationWhenInUseUsageDescription: "SkyFrame uses your location to show nearby aircraft."
+        UILaunchScreen:
+          UIColorName: ""
+        UIRequiresFullScreen: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tsutton.skyframe
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1,2"
+
+  "SkyFrame Watch App":
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: "SkyFrame Watch App"
+        excludes:
+          - "**/.DS_Store"
+    info:
+      path: "SkyFrame Watch App/Info.plist"
+      properties:
+        CFBundleDisplayName: SkyFrame
+        WKCompanionAppBundleIdentifier: com.tsutton.skyframe
+        WKWatchOnly: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tsutton.skyframe.watchkitapp
+        SWIFT_VERSION: "5.9"
