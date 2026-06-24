@@ -16,7 +16,6 @@ class AudioService: NSObject {
     override private init() {
         super.init()
         configureSession()
-        startEngine()
         loadAmericaClip()
     }
 
