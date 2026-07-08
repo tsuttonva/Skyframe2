@@ -18,6 +18,7 @@
   --bg:#0f0904; --panel:#1c1208; --panel-line:#3a2a12;
   --primary:#e6a636; --primary-dim:#8a6423; --text:#f5e9d6; --text-dim:#b8a284;
   --excellent:#4caf50; --great:#8bc97a; --questionable:#e6a636; --sketchy:#e0453f;
+  --orange:#ff8c3d; --violet:#b388ff; --maroon:#a83246;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: "SF Mono", "Courier New", monospace;
 }
@@ -76,6 +77,11 @@ main#main{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
 .score-1{background:rgba(230,166,54,0.2);color:var(--questionable);}
 .score-0{background:rgba(224,69,63,0.2);color:var(--sketchy);}
 
+#dayDetails{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px;}
+.ddTile{flex:1 1 26%;min-width:90px;background:rgba(0,0,0,0.2);border:1px solid var(--panel-line);border-radius:10px;padding:8px 6px;text-align:center;}
+.ddLabel{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.ddValue{font-size:13px;font-weight:700;}
+
 #errBox{margin-top:14px;background:rgba(224,69,63,0.12);border:1px solid var(--sketchy);color:#ffb3b0;border-radius:10px;padding:12px;font-size:13px;text-align:center;}
 #errBox[hidden]{display:none;}
 #errBox button{margin-top:8px;background:var(--panel-line);color:var(--text);border:none;padding:7px 14px;border-radius:6px;font-size:12px;}
@@ -88,6 +94,11 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 .modalBox{background:var(--panel);border:1px solid var(--panel-line);border-radius:12px;padding:18px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto;position:relative;}
 .modalBox h3{margin:0 0 12px;color:var(--primary);font-size:16px;}
 .modalBox .closeX{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--text-dim);font-size:18px;}
+#favoritesList{margin-bottom:8px;}
+.favRow{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border:1px solid var(--panel-line);border-radius:6px;margin-bottom:6px;cursor:pointer;font-size:13px;}
+.favRow:active{background:rgba(230,166,54,0.12);}
+.favRow .favRemove{color:var(--text-dim);padding:0 6px;cursor:pointer;font-size:15px;}
+#favToggleBtn{width:100%;background:transparent;color:var(--primary);font-weight:700;border:1px solid var(--panel-line);padding:8px;border-radius:6px;font-size:12px;cursor:pointer;margin-bottom:14px;}
 #locationInput{width:100%;background:var(--bg);border:1px solid var(--panel-line);color:var(--text);padding:9px 10px;border-radius:6px;font-size:14px;margin-bottom:10px;}
 #locationSearchBtn{width:100%;background:var(--primary-dim);color:#1a1206;font-weight:700;border:none;padding:10px;border-radius:6px;font-size:13px;cursor:pointer;}
 #locOrDivider{text-align:center;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:12px 0;}
@@ -112,7 +123,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.5</div>
+  <div class="loadVersion" id="loadVersion">v0.0.6</div>
 </div>
 
 <div id="app" hidden>
@@ -121,7 +132,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.5</span>
+    <span id="versionTag">v0.0.6</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -132,6 +143,13 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
       <div id="ratingBadge">-</div>
       <div id="ratingSummary">-</div>
       <div id="factorList"></div>
+      <div id="dayDetails">
+        <div class="ddTile"><div class="ddLabel">Sunrise</div><div class="ddValue" id="ddSunrise">-</div></div>
+        <div class="ddTile"><div class="ddLabel">Sunset</div><div class="ddValue" id="ddSunset">-</div></div>
+        <div class="ddTile"><div class="ddLabel">Daylight</div><div class="ddValue" id="ddDaylight">-</div></div>
+        <div class="ddTile"><div class="ddLabel">UV Index</div><div class="ddValue" id="ddUv">-</div></div>
+        <div class="ddTile"><div class="ddLabel">Air Quality</div><div class="ddValue" id="ddAqi">-</div></div>
+      </div>
     </div>
     <div id="errBox" hidden>
       <div id="errText">Couldn't load the forecast.</div>
@@ -153,6 +171,8 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="modalBox">
     <span class="closeX" id="locationModalClose">&times;</span>
     <h3>Change location</h3>
+    <div id="favoritesList"></div>
+    <button id="favToggleBtn">☆ Save current location as favorite</button>
     <input id="locationInput" placeholder="City, State or ZIP code" autocomplete="off">
     <button id="locationSearchBtn">Search</button>
     <div id="locOrDivider">or</div>
@@ -177,15 +197,23 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <p><b>Heat/Cold:</b> heat index under 85&deg;F is Good, 85-95&deg;F is
     a caution tier, over 95&deg;F is Extreme. Highs under 32&deg;F are
     flagged cold; under 20&deg;F is Extreme.</p>
+    <p><b>Frost/Ice:</b> looks at the overnight low separately from the
+    daytime high above, since a mild day can still frost hard at dawn.
+    Under 33&deg;F is Frost likely; under 33&deg;F following rain the day
+    before is an Icy footing risk (refreezing wet ground); under 20&deg;F is
+    a Hard freeze.</p>
     <p><b>Rain that day:</b> under 0.02&quot; is Dry, up to 0.1&quot; Slight
     chance, up to 0.5&quot; Wet, over 0.5&quot; a Washout.</p>
     <p><b>Storms:</b> any thunderstorms, freezing rain, or heavy snow in the
     forecast forces the day to Sketchy.</p>
     <p>The overall rating is set by the single worst factor that day &mdash;
     it's always named in the breakdown below the rating.</p>
+    <p>Sunrise/sunset, daylight length, UV index, and air quality are shown
+    for reference below the rating but don't affect it &mdash; they're
+    informational, not safety factors for the ride itself.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.5 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.6 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
@@ -194,18 +222,20 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.5',
+  VERSION: '0.0.6',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
   PAST_DAYS_FETCH: 5,
   FORECAST_DAYS_FETCH: 16,
   WEATHER_URL: 'https://api.open-meteo.com/v1/forecast',
+  AIR_QUALITY_URL: 'https://air-quality-api.open-meteo.com/v1/air-quality',
   GEOCODE_URL: 'https://geocoding-api.open-meteo.com/v1/search',
   ZIP_URL: 'https://api.zippopotam.us/us/',
   REVERSE_GEOCODE_URL: 'https://nominatim.openstreetmap.org/reverse',
   GEOLOCATION_TIMEOUT_MS: 8000,
   LOCATION_STORAGE_KEY: 'hoofcast_location_v1',
+  FAVORITES_STORAGE_KEY: 'hoofcast_favorites_v1',
   RATING_NAMES: { 3: 'EXCELLENT', 2: 'GREAT', 1: 'QUESTIONABLE', 0: 'SKETCHY' },
   // Fixed reference point for the fact-of-the-day rotation. Never change this
   // once shipped -- it would shift every future date onto a different fact.
@@ -234,7 +264,8 @@ var STATE = {
   days: [],
   todayStr: null,
   selectedDate: null,
-  ratings: {}
+  ratings: {},
+  aqiByDate: {}
 };
 
 /* ============================== HELPERS ============================== */
@@ -439,6 +470,7 @@ function fetchWeather(lat, lon, onOk, onErr) {
   var url = CONFIG.WEATHER_URL +
     '?latitude=' + lat + '&longitude=' + lon +
     '&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code' +
+    '&daily=sunrise,sunset,uv_index_max' +
     '&timezone=auto' +
     '&past_days=' + CONFIG.PAST_DAYS_FETCH +
     '&forecast_days=' + CONFIG.FORECAST_DAYS_FETCH +
@@ -457,6 +489,17 @@ function fetchWeather(lat, lon, onOk, onErr) {
 
 function buildDailyRecords(data) {
   var hourly = data.hourly;
+  var daily = data.daily || {};
+  var dailyByDate = {};
+  if (daily.time) {
+    for (var d = 0; d < daily.time.length; d++) {
+      dailyByDate[daily.time[d]] = {
+        sunrise: daily.sunrise ? daily.sunrise[d] : null,
+        sunset: daily.sunset ? daily.sunset[d] : null,
+        uvIndexMax: daily.uv_index_max ? daily.uv_index_max[d] : null
+      };
+    }
+  }
   var byDate = {};
   var order = [];
 
@@ -494,6 +537,7 @@ function buildDailyRecords(data) {
     var precipSum = rec.precs.reduce(function (a, b) { return a + b; }, 0);
     var heatIdxSource = rec.afternoonHI.length ? rec.afternoonHI : rec.temps;
     var tempMax = Math.max.apply(null, rec.temps);
+    var dd = dailyByDate[date] || {};
     return {
       date: date,
       tempMax: tempMax,
@@ -502,13 +546,45 @@ function buildDailyRecords(data) {
       precipSum: precipSum,
       windMax: Math.max.apply(null, rec.winds),
       heatIndexMax: Math.max.apply(null, heatIdxSource),
-      stormFlag: rec.daytimeCodes.some(isSevereCode)
+      stormFlag: rec.daytimeCodes.some(isSevereCode),
+      sunrise: dd.sunrise || null,
+      sunset: dd.sunset || null,
+      uvIndexMax: (dd.uvIndexMax === null || dd.uvIndexMax === undefined) ? null : dd.uvIndexMax
     };
   });
 
   var todayStr = data.current_weather ? data.current_weather.time.substring(0, 10) : days[CONFIG.PAST_DAYS_FETCH].date;
 
   return { days: days, todayStr: todayStr };
+}
+
+// Air quality is purely informational (see renderDayDetails), so it never
+// blocks or errors the main forecast: any failure just resolves to {} and
+// the UI shows "N/A" for that day. The free Air Quality API's forecast
+// window is also shorter than the main weather forecast, so dates past its
+// coverage are expected to come back missing, not wrong.
+function fetchAirQuality(lat, lon, onOk) {
+  var url = CONFIG.AIR_QUALITY_URL + '?latitude=' + lat + '&longitude=' + lon + '&hourly=us_aqi&timezone=auto';
+  fetch(url).then(function (r) {
+    if (!r.ok) throw new Error('air-quality-failed');
+    return r.json();
+  }).then(function (data) {
+    var byDate = {};
+    var hourly = data.hourly;
+    if (hourly && hourly.time && hourly.us_aqi) {
+      for (var i = 0; i < hourly.time.length; i++) {
+        var val = hourly.us_aqi[i];
+        if (val === null || val === undefined) continue;
+        var date = hourly.time[i].substring(0, 10);
+        var hour = parseInt(hourly.time[i].substring(11, 13), 10);
+        if (hour < 6 || hour > 20) continue;
+        if (!(date in byDate) || val > byDate[date]) byDate[date] = val;
+      }
+    }
+    onOk(byDate);
+  }).catch(function () {
+    onOk({});
+  });
 }
 
 /* ============================== RATING ============================== */
@@ -570,6 +646,21 @@ function rateDay(days, targetDate) {
     heat = { score: 3, label: 'Comfortable', detail: 'Comfortable temps, heat index near ' + Math.round(hi) + '°F.' };
   }
 
+  // --- Frost / ice (overnight low, distinct from the daytime Heat/Cold factor
+  // above -- a day can have a comfortable high but still frost hard overnight) ---
+  var tmin = today.tempMin;
+  var prevPrecip = (idx - 1 >= 0) ? days[idx - 1].precipSum : 0;
+  var frost;
+  if (tmin < 20) {
+    frost = { score: 0, label: 'Hard freeze', detail: 'Overnight low near ' + Math.round(tmin) + '°F — hard freeze, expect frozen ground and water troughs early.' };
+  } else if (tmin < 33 && prevPrecip > 0.05) {
+    frost = { score: 0, label: 'Icy footing risk', detail: 'Overnight low near ' + Math.round(tmin) + '°F after recent rain — refreezing ground can leave icy patches early.' };
+  } else if (tmin < 33) {
+    frost = { score: 1, label: 'Frost likely', detail: 'Overnight low near ' + Math.round(tmin) + '°F — expect frost early; should clear as the day warms.' };
+  } else {
+    frost = { score: 3, label: 'None', detail: 'Overnight low near ' + Math.round(tmin) + '°F — no frost risk.' };
+  }
+
   // --- Rain that day ---
   var p = today.precipSum;
   var rain;
@@ -592,6 +683,7 @@ function rateDay(days, targetDate) {
     { key: 'footing', name: 'Footing', data: footing },
     { key: 'wind', name: 'Wind', data: wind },
     { key: 'heat', name: 'Heat / Cold', data: heat },
+    { key: 'frost', name: 'Frost / Ice', data: frost },
     { key: 'rain', name: 'Rain that day', data: rain },
     { key: 'storm', name: 'Storms', data: storm }
   ];
@@ -684,6 +776,77 @@ function renderRating() {
       '<div class="frDetail">' + escapeHtml(f.data.detail) + '</div>';
     list.appendChild(row);
   });
+
+  var dayIdx = findDayIndex(STATE.days, STATE.selectedDate);
+  renderDayDetails(dayIdx === -1 ? null : STATE.days[dayIdx]);
+}
+
+/* ============================== DAY DETAILS (informational, not scored) ============================== */
+function formatTime12h(isoLocal) {
+  if (!isoLocal) return '-';
+  var hour = parseInt(isoLocal.substring(11, 13), 10);
+  var minute = isoLocal.substring(14, 16);
+  var period = hour >= 12 ? 'PM' : 'AM';
+  var h12 = hour % 12;
+  if (h12 === 0) h12 = 12;
+  return h12 + ':' + minute + ' ' + period;
+}
+
+function daylightDurationLabel(sunriseIso, sunsetIso) {
+  if (!sunriseIso || !sunsetIso) return '-';
+  var sh = parseInt(sunriseIso.substring(11, 13), 10), sm = parseInt(sunriseIso.substring(14, 16), 10);
+  var eh = parseInt(sunsetIso.substring(11, 13), 10), em = parseInt(sunsetIso.substring(14, 16), 10);
+  var totalMin = (eh * 60 + em) - (sh * 60 + sm);
+  if (totalMin < 0) totalMin += 24 * 60;
+  return Math.floor(totalMin / 60) + 'h ' + (totalMin % 60) + 'm';
+}
+
+// Standard EPA/WHO UV Index categories.
+function uvCategory(uv) {
+  if (uv >= 11) return { label: 'Extreme', colorVar: 'var(--violet)' };
+  if (uv >= 8) return { label: 'Very High', colorVar: 'var(--sketchy)' };
+  if (uv >= 6) return { label: 'High', colorVar: 'var(--orange)' };
+  if (uv >= 3) return { label: 'Moderate', colorVar: 'var(--questionable)' };
+  return { label: 'Low', colorVar: 'var(--excellent)' };
+}
+
+// Standard US EPA AQI categories.
+function aqiCategory(aqi) {
+  if (aqi > 300) return { label: 'Hazardous', colorVar: 'var(--violet)' };
+  if (aqi > 200) return { label: 'Very Unhealthy', colorVar: 'var(--maroon)' };
+  if (aqi > 150) return { label: 'Unhealthy', colorVar: 'var(--sketchy)' };
+  if (aqi > 100) return { label: 'Unhealthy (Sensitive)', colorVar: 'var(--orange)' };
+  if (aqi > 50) return { label: 'Moderate', colorVar: 'var(--questionable)' };
+  return { label: 'Good', colorVar: 'var(--excellent)' };
+}
+
+function renderDayDetails(day) {
+  if (!day) return;
+
+  qs('ddSunrise').textContent = formatTime12h(day.sunrise);
+  qs('ddSunset').textContent = formatTime12h(day.sunset);
+  qs('ddDaylight').textContent = daylightDurationLabel(day.sunrise, day.sunset);
+
+  var uvEl = qs('ddUv');
+  if (day.uvIndexMax === null || day.uvIndexMax === undefined) {
+    uvEl.textContent = 'N/A';
+    uvEl.style.color = '';
+  } else {
+    var uvCat = uvCategory(day.uvIndexMax);
+    uvEl.textContent = Math.round(day.uvIndexMax) + ' (' + uvCat.label + ')';
+    uvEl.style.color = uvCat.colorVar;
+  }
+
+  var aqiEl = qs('ddAqi');
+  var aqi = STATE.aqiByDate ? STATE.aqiByDate[day.date] : undefined;
+  if (aqi === undefined || aqi === null) {
+    aqiEl.textContent = 'N/A';
+    aqiEl.style.color = '';
+  } else {
+    var aqiCat = aqiCategory(aqi);
+    aqiEl.textContent = Math.round(aqi) + ' (' + aqiCat.label + ')';
+    aqiEl.style.color = aqiCat.colorVar;
+  }
 }
 
 function showError(msg) {
@@ -723,6 +886,7 @@ function renderFact() {
 function loadWeatherForLocation() {
   qs('loading').hidden = false;
   qs('loadStatus').textContent = 'Loading forecast for ' + STATE.location.label + '…';
+  STATE.aqiByDate = {};
 
   fetchWeather(STATE.location.lat, STATE.location.lon, function (result) {
     STATE.days = result.days;
@@ -745,6 +909,93 @@ function loadWeatherForLocation() {
     qs('app').hidden = false;
     showError('Couldn’t load the forecast for ' + STATE.location.label + '. Check your connection and try again.');
   });
+
+  // Fetched independently -- air quality is informational only, so it never
+  // gates the main forecast, and its result just refreshes whatever's
+  // already on screen once it (eventually) arrives.
+  var requestedLat = STATE.location.lat, requestedLon = STATE.location.lon;
+  fetchAirQuality(requestedLat, requestedLon, function (aqiByDate) {
+    if (STATE.location.lat !== requestedLat || STATE.location.lon !== requestedLon) return;
+    STATE.aqiByDate = aqiByDate;
+    if (STATE.selectedDate) renderRating();
+  });
+}
+
+/* ============================== FAVORITES ============================== */
+function loadFavorites() {
+  try {
+    var raw = localStorage.getItem(CONFIG.FAVORITES_STORAGE_KEY);
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFavorites(favs) {
+  try {
+    localStorage.setItem(CONFIG.FAVORITES_STORAGE_KEY, JSON.stringify(favs));
+  } catch (e) { /* ignore -- just won't persist across visits */ }
+}
+
+function locationsMatch(a, b) {
+  return Math.abs(a.lat - b.lat) < 0.01 && Math.abs(a.lon - b.lon) < 0.01;
+}
+
+function isFavorited(loc) {
+  var favs = loadFavorites();
+  for (var i = 0; i < favs.length; i++) {
+    if (locationsMatch(favs[i], loc)) return true;
+  }
+  return false;
+}
+
+function toggleFavorite() {
+  var favs = loadFavorites();
+  var loc = STATE.location;
+  var idx = -1;
+  for (var i = 0; i < favs.length; i++) {
+    if (locationsMatch(favs[i], loc)) { idx = i; break; }
+  }
+  if (idx === -1) {
+    favs.push({ lat: loc.lat, lon: loc.lon, label: loc.label });
+  } else {
+    favs.splice(idx, 1);
+  }
+  saveFavorites(favs);
+  renderFavoritesList();
+}
+
+function renderFavoritesList() {
+  var favs = loadFavorites();
+  var box = qs('favoritesList');
+  box.innerHTML = '';
+  favs.forEach(function (fav) {
+    var row = document.createElement('div');
+    row.className = 'favRow';
+    var labelSpan = document.createElement('span');
+    labelSpan.textContent = '★ ' + fav.label;
+    var removeSpan = document.createElement('span');
+    removeSpan.className = 'favRemove';
+    removeSpan.textContent = '×';
+    row.appendChild(labelSpan);
+    row.appendChild(removeSpan);
+    row.addEventListener('click', function () {
+      applyLocation({ lat: fav.lat, lon: fav.lon, label: fav.label });
+      closeLocationModal();
+    });
+    removeSpan.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var updated = loadFavorites().filter(function (f) { return !locationsMatch(f, fav); });
+      saveFavorites(updated);
+      renderFavoritesList();
+    });
+    box.appendChild(row);
+  });
+
+  qs('favToggleBtn').textContent = isFavorited(STATE.location) ?
+    '★ Remove current location from favorites' :
+    '☆ Save current location as favorite';
 }
 
 /* ============================== LOCATION MODAL ============================== */
@@ -754,6 +1005,7 @@ function openLocationModal() {
   qs('locationInput').value = '';
   qs('locationModal').hidden = false;
   qs('locationInput').focus();
+  renderFavoritesList();
 }
 
 function closeLocationModal() {
@@ -823,6 +1075,7 @@ function init() {
     if (e.key === 'Enter') runLocationSearch();
   });
   qs('useGeoBtn').addEventListener('click', runUseGeolocation);
+  qs('favToggleBtn').addEventListener('click', toggleFavorite);
   qs('infoBtn').addEventListener('click', function () { qs('infoModal').hidden = false; });
   qs('infoModalClose').addEventListener('click', function () { qs('infoModal').hidden = true; });
   qs('retryBtn').addEventListener('click', loadWeatherForLocation);

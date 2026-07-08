@@ -66,9 +66,24 @@ heat/humidity, cold, rain that day, or storms/ice) drove the rating.
   temperature), a 💨 wind icon when that day's sustained wind tops 15 mph,
   and the midday (noon local) temperature, alongside the existing
   rating-color dot.
+- **Favorite locations**: a ☆/★ toggle in the location modal saves the
+  current location to a quick-switch list (`localStorage`, independent of
+  the single "default on load" location), each with a one-tap switch and a
+  remove button.
+- **Frost/Ice** is now its own scored factor, separate from the daytime
+  Heat/Cold factor: it looks at the overnight low specifically, so a mild
+  afternoon with a hard morning frost (or icy refreeze after rain the day
+  before) still caps the rating, which a daytime-high-only check would miss.
+- **Sunrise, sunset, daylight length, UV index, and air quality (US AQI)**
+  are shown for the selected day in an informational panel below the rating
+  breakdown — these don't affect the rating itself, just context for
+  planning the ride. UV/AQI come from Open-Meteo's daily forecast and
+  separate [Air Quality API](https://open-meteo.com/en/docs/air-quality-api)
+  respectively; both degrade to "N/A" gracefully (never an error state) if
+  a day falls outside either API's coverage.
 - Versioned independently from SkyFrame via `CONFIG.VERSION` in
   `hoofcast/index.html` (kept in lockstep with `CACHE_VERSION` in
-  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.5 — an
+  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.6 — an
   early MVP; rating thresholds are expected to be tuned before a v1.0.
 - Local preview: `cd hoofcast && python3 -m http.server 8766`, then open
   `http://localhost:8766/index.html`.
