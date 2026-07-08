@@ -2,7 +2,7 @@ name: Deploy Pages
 
 on:
   push:
-    branches: [claude/cross-platform-app-build-vtwr2l]
+    branches: [claude/cross-platform-app-build-vtwr2l, claude/horse-riding-conditions-app-b0adbr]
 
 permissions:
   contents: read
@@ -21,8 +21,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Assemble combined site (SkyFrame at /, HoofCast at /hoofcast)
+        run: |
+          mkdir -p dist
+          cp -r web/. dist/
+          mkdir -p dist/hoofcast
+          cp -r hoofcast/. dist/hoofcast/
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web
+          path: dist
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches: [claude/cross-platform-app-build-vtwr2l, claude/horse-riding-conditions-app-b0adbr]
+  pull_request:
+    branches: [claude/cross-platform-app-build-vtwr2l, claude/horse-riding-conditions-app-b0adbr]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check SkyFrame syntax (iOS 12 Safari compatibility gate)
+        run: node scripts/check-syntax.js web/index.html
+      - name: Check HoofCast syntax (iOS 12 Safari compatibility gate)
+        run: node scripts/check-syntax.js hoofcast/index.html
