@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>HoofCast</title>
+<meta name="theme-color" content="#0f0904">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HoofCast">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/favicon-16.png" sizes="16x16">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{
+  --bg:#0f0904; --panel:#1c1208; --panel-line:#3a2a12;
+  --primary:#e6a636; --primary-dim:#8a6423; --text:#f5e9d6; --text-dim:#b8a284;
+  --excellent:#4caf50; --great:#8bc97a; --questionable:#e6a636; --sketchy:#e0453f;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", "Courier New", monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font);overflow:hidden;}
+body{display:flex;flex-direction:column;}
+
+#loading{position:fixed;inset:0;background:#000;color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:var(--mono);text-align:center;padding:20px;}
+#loading[hidden]{display:none;}
+#loading .spinner{width:46px;height:46px;border-radius:50%;border:3px solid var(--primary-dim);border-top-color:var(--primary);animation:spin 1s linear infinite;margin-bottom:18px;}
+#loading .loadTitle{font-size:22px;letter-spacing:3px;margin-bottom:6px;}
+#loading .loadStatus{font-size:13px;color:var(--text-dim);}
+#loading .loadVersion{position:absolute;bottom:14px;font-size:11px;color:var(--text-dim);letter-spacing:1px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+#app{display:flex;flex-direction:column;height:100%;width:100%;}
+#app[hidden]{display:none;}
+
+header#header{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--panel-line);flex-shrink:0;}
+#appTitle{font-size:16px;font-weight:700;color:var(--primary);letter-spacing:1px;flex-shrink:0;}
+#locLabel{font-size:12px;color:var(--primary);border:1px solid var(--panel-line);padding:6px 10px;border-radius:6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;flex-shrink:1;}
+#headerSpacer{flex:1;}
+#infoBtn{background:var(--panel-line);color:var(--text);border:none;width:26px;height:26px;border-radius:50%;font-size:13px;cursor:pointer;flex-shrink:0;}
+#versionTag{font-size:9px;color:var(--text-dim);opacity:0.7;flex-shrink:0;}
+
+#dateStrip{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border-bottom:1px solid var(--panel-line);flex-shrink:0;}
+.dateChip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid var(--panel-line);background:transparent;cursor:pointer;color:var(--text);min-width:52px;}
+.dateChip .dow{font-size:10px;color:var(--text-dim);letter-spacing:0.5px;text-transform:uppercase;}
+.dateChip .dom{font-size:14px;font-weight:700;}
+.dateChip .dot{width:8px;height:8px;border-radius:50%;}
+.dateChip.selected{border-color:var(--primary);background:rgba(230,166,54,0.12);}
+
+main#main{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
+
+#ratingCard{background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;padding:18px;text-align:center;}
+#ratingDate{font-size:13px;color:var(--text-dim);margin-bottom:10px;}
+#ratingBadge{display:inline-block;font-size:26px;font-weight:800;letter-spacing:1px;padding:10px 26px;border-radius:12px;margin-bottom:10px;}
+#ratingBadge.rate-EXCELLENT{background:rgba(76,175,80,0.18);color:var(--excellent);border:2px solid var(--excellent);}
+#ratingBadge.rate-GREAT{background:rgba(139,201,122,0.18);color:var(--great);border:2px solid var(--great);}
+#ratingBadge.rate-QUESTIONABLE{background:rgba(230,166,54,0.18);color:var(--questionable);border:2px solid var(--questionable);}
+#ratingBadge.rate-SKETCHY{background:rgba(224,69,63,0.18);color:var(--sketchy);border:2px solid var(--sketchy);}
+#ratingSummary{font-size:13px;color:var(--text-dim);margin-bottom:4px;}
+
+#factorList{margin-top:18px;text-align:left;display:flex;flex-direction:column;gap:10px;}
+.factorRow{background:rgba(0,0,0,0.2);border:1px solid var(--panel-line);border-radius:10px;padding:10px 12px;}
+.factorRow.limiting{border-color:var(--primary);}
+.factorRow .frTop{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.factorRow .frName{font-size:13px;font-weight:700;}
+.factorRow .frScore{font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;}
+.factorRow .frDetail{font-size:12px;color:var(--text-dim);line-height:1.4;}
+.score-3{background:rgba(76,175,80,0.2);color:var(--excellent);}
+.score-2{background:rgba(139,201,122,0.2);color:var(--great);}
+.score-1{background:rgba(230,166,54,0.2);color:var(--questionable);}
+.score-0{background:rgba(224,69,63,0.2);color:var(--sketchy);}
+
+#errBox{margin-top:14px;background:rgba(224,69,63,0.12);border:1px solid var(--sketchy);color:#ffb3b0;border-radius:10px;padding:12px;font-size:13px;text-align:center;}
+#errBox[hidden]{display:none;}
+#errBox button{margin-top:8px;background:var(--panel-line);color:var(--text);border:none;padding:7px 14px;border-radius:6px;font-size:12px;}
+
+footer#footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:var(--panel);border-top:1px solid var(--panel-line);flex-shrink:0;font-size:11px;color:var(--text-dim);}
+footer#footer button{background:var(--panel-line);color:var(--text);border:none;padding:7px 12px;border-radius:6px;font-size:12px;cursor:pointer;}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px;}
+.modal[hidden]{display:none;}
+.modalBox{background:var(--panel);border:1px solid var(--panel-line);border-radius:12px;padding:18px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto;position:relative;}
+.modalBox h3{margin:0 0 12px;color:var(--primary);font-size:16px;}
+.modalBox .closeX{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--text-dim);font-size:18px;}
+#locationInput{width:100%;background:var(--bg);border:1px solid var(--panel-line);color:var(--text);padding:9px 10px;border-radius:6px;font-size:14px;margin-bottom:10px;}
+#locationSearchBtn{width:100%;background:var(--primary-dim);color:#1a1206;font-weight:700;border:none;padding:10px;border-radius:6px;font-size:13px;cursor:pointer;}
+#locationResults{margin-top:10px;}
+.locResultRow{padding:9px 10px;border:1px solid var(--panel-line);border-radius:6px;margin-bottom:6px;cursor:pointer;font-size:13px;}
+.locResultRow:active{background:rgba(230,166,54,0.12);}
+#locationError{margin-top:10px;color:#ffb3b0;font-size:12px;}
+#locationError:empty{display:none;}
+#infoModal .modalBox{max-width:420px;}
+#infoModal p{font-size:13px;color:var(--text-dim);line-height:1.5;}
+#infoModal b{color:var(--text);}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loadTitle">HOOFCAST</div>
+  <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
+  <div class="loadVersion" id="loadVersion">v0.0.1</div>
+</div>
+
+<div id="app" hidden>
+  <header id="header">
+    <span id="appTitle">HoofCast</span>
+    <span id="locLabel">Warrenton, VA</span>
+    <span id="headerSpacer"></span>
+    <button id="infoBtn" title="How ratings work">?</button>
+    <span id="versionTag">v0.0.1</span>
+  </header>
+
+  <div id="dateStrip"></div>
+
+  <main id="main">
+    <div id="ratingCard">
+      <div id="ratingDate">-</div>
+      <div id="ratingBadge">-</div>
+      <div id="ratingSummary">-</div>
+      <div id="factorList"></div>
+    </div>
+    <div id="errBox" hidden>
+      <div id="errText">Couldn't load the forecast.</div>
+      <button id="retryBtn">Retry</button>
+    </div>
+  </main>
+
+  <footer id="footer">
+    <button id="changeLocBtn">Change location</button>
+    <span id="credit">Weather: Open-Meteo</span>
+  </footer>
+</div>
+
+<div class="modal" id="locationModal" hidden>
+  <div class="modalBox">
+    <span class="closeX" id="locationModalClose">&times;</span>
+    <h3>Change location</h3>
+    <input id="locationInput" placeholder="City, State or ZIP code" autocomplete="off">
+    <button id="locationSearchBtn">Search</button>
+    <div id="locationResults"></div>
+    <div id="locationError"></div>
+  </div>
+</div>
+
+<div class="modal" id="infoModal" hidden>
+  <div class="modalBox">
+    <span class="closeX" id="infoModalClose">&times;</span>
+    <h3>How ratings work</h3>
+    <p>Each day's rating looks at two things: <b>trail footing</b> (built from
+    rainfall over the 3-5 days before the ride) and <b>day-of conditions</b>
+    (wind, heat/humidity, cold, active rain, and storms/ice).</p>
+    <p><b>Footing:</b> under 0.1&quot; of rain in the 3 days prior is Good;
+    0.1-0.5&quot; is Fair (soft); over 0.5&quot; total, or any single day over
+    1&quot;, is Poor (muddy).</p>
+    <p><b>Wind:</b> under 10 mph is Good, 10-15 Fair, 15-20 Poor, over 20 mph
+    Extreme.</p>
+    <p><b>Heat/Cold:</b> heat index under 85&deg;F is Good, 85-95&deg;F is
+    a caution tier, over 95&deg;F is Extreme. Highs under 32&deg;F are
+    flagged cold; under 20&deg;F is Extreme.</p>
+    <p><b>Rain that day:</b> under 0.02&quot; is Dry, up to 0.1&quot; Slight
+    chance, up to 0.5&quot; Wet, over 0.5&quot; a Washout.</p>
+    <p><b>Storms:</b> any thunderstorms, freezing rain, or heavy snow in the
+    forecast forces the day to Sketchy.</p>
+    <p>The overall rating is set by the single worst factor that day &mdash;
+    it's always named in the breakdown below the rating.</p>
+    <p>Forecast and recent-rain data from
+    <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
+    a free open weather API. This is a v0.0.1 MVP &mdash; thresholds are
+    tunable and will keep improving.</p>
+  </div>
+</div>
+
+<script>
+/* ============================== CONFIG ============================== */
+var CONFIG = {
+  VERSION: '0.0.1',
+  DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
+  FORECAST_DAYS_AHEAD: 10,
+  LOOKBACK_DAYS: 5,
+  PAST_DAYS_FETCH: 5,
+  FORECAST_DAYS_FETCH: 16,
+  WEATHER_URL: 'https://api.open-meteo.com/v1/forecast',
+  GEOCODE_URL: 'https://geocoding-api.open-meteo.com/v1/search',
+  ZIP_URL: 'https://api.zippopotam.us/us/',
+  RATING_NAMES: { 3: 'EXCELLENT', 2: 'GREAT', 1: 'QUESTIONABLE', 0: 'SKETCHY' }
+};
+
+var US_STATE_ABBR = {
+  ALABAMA:'AL', ALASKA:'AK', ARIZONA:'AZ', ARKANSAS:'AR', CALIFORNIA:'CA',
+  COLORADO:'CO', CONNECTICUT:'CT', DELAWARE:'DE', FLORIDA:'FL', GEORGIA:'GA',
+  HAWAII:'HI', IDAHO:'ID', ILLINOIS:'IL', INDIANA:'IN', IOWA:'IA',
+  KANSAS:'KS', KENTUCKY:'KY', LOUISIANA:'LA', MAINE:'ME', MARYLAND:'MD',
+  MASSACHUSETTS:'MA', MICHIGAN:'MI', MINNESOTA:'MN', MISSISSIPPI:'MS',
+  MISSOURI:'MO', MONTANA:'MT', NEBRASKA:'NE', NEVADA:'NV',
+  'NEW HAMPSHIRE':'NH', 'NEW JERSEY':'NJ', 'NEW MEXICO':'NM', 'NEW YORK':'NY',
+  'NORTH CAROLINA':'NC', 'NORTH DAKOTA':'ND', OHIO:'OH', OKLAHOMA:'OK',
+  OREGON:'OR', PENNSYLVANIA:'PA', 'RHODE ISLAND':'RI', 'SOUTH CAROLINA':'SC',
+  'SOUTH DAKOTA':'SD', TENNESSEE:'TN', TEXAS:'TX', UTAH:'UT', VERMONT:'VT',
+  VIRGINIA:'VA', WASHINGTON:'WA', 'WEST VIRGINIA':'WV', WISCONSIN:'WI',
+  WYOMING:'WY', 'DISTRICT OF COLUMBIA':'DC'
+};
+
+/* ============================== STATE ============================== */
+var STATE = {
+  location: { lat: CONFIG.DEFAULT_LOCATION.lat, lon: CONFIG.DEFAULT_LOCATION.lon, label: CONFIG.DEFAULT_LOCATION.label },
+  days: [],
+  todayStr: null,
+  selectedDate: null,
+  ratings: {}
+};
+
+/* ============================== HELPERS ============================== */
+function qs(id) { return document.getElementById(id); }
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function round1(n) { return Math.round(n * 10) / 10; }
+
+function addDaysToDateStr(dateStr, n) {
+  var parts = dateStr.split('-');
+  var d = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().substring(0, 10);
+}
+
+function formatDateLabel(dateStr, opts) {
+  var parts = dateStr.split('-');
+  var d = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+  return d.toLocaleDateString('en-US', opts);
+}
+
+function heatIndex(tempF, rh) {
+  if (tempF < 80) return tempF;
+  var T = tempF, R = rh;
+  var HI = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R -
+    0.00683783 * T * T - 0.05481717 * R * R + 0.00122874 * T * T * R +
+    0.00085282 * T * R * R - 0.00000199 * T * T * R * R;
+  return HI;
+}
+
+function isSevereCode(code) {
+  // WMO weather codes: 95/96/99 thunderstorm, 66/67 freezing rain, 75/86 heavy snow.
+  return code === 95 || code === 96 || code === 99 || code === 66 || code === 67 || code === 75 || code === 86;
+}
+
+/* ============================== GEOCODING ============================== */
+function geocodeZip(zip, onOk, onErr) {
+  fetch(CONFIG.ZIP_URL + encodeURIComponent(zip)).then(function (r) {
+    if (!r.ok) throw new Error('zip-not-found');
+    return r.json();
+  }).then(function (data) {
+    var place = data.places && data.places[0];
+    if (!place) throw new Error('zip-not-found');
+    onOk([{
+      lat: parseFloat(place.latitude),
+      lon: parseFloat(place.longitude),
+      label: place['place name'] + ', ' + place['state abbreviation']
+    }]);
+  }).catch(function () {
+    onErr('No location found for that ZIP code.');
+  });
+}
+
+function geocodeCity(query, onOk, onErr) {
+  var parts = query.split(',');
+  var namePart = parts[0].trim();
+  var statePart = parts.length > 1 ? parts[1].trim().toUpperCase() : null;
+
+  fetch(CONFIG.GEOCODE_URL + '?name=' + encodeURIComponent(namePart) + '&count=10&language=en&format=json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var results = data.results || [];
+      if (statePart) {
+        results = results.filter(function (r) {
+          var admin1 = (r.admin1 || '').toUpperCase();
+          var abbr = US_STATE_ABBR[admin1] || null;
+          return admin1 === statePart || abbr === statePart;
+        });
+      }
+      if (results.length === 0) {
+        onErr('No location found for "' + query + '".');
+        return;
+      }
+      var mapped = results.map(function (r) {
+        var admin1 = r.admin1 ? r.admin1 : '';
+        var country = r.country_code ? r.country_code : (r.country || '');
+        var labelBits = [r.name];
+        if (admin1) labelBits.push(admin1);
+        if (country) labelBits.push(country);
+        return { lat: r.latitude, lon: r.longitude, label: labelBits.join(', ') };
+      });
+      onOk(mapped);
+    })
+    .catch(function () {
+      onErr('Location search failed. Check your connection and try again.');
+    });
+}
+
+function geocode(query, onOk, onErr) {
+  var trimmed = query.trim();
+  if (/^\d{5}$/.test(trimmed)) {
+    geocodeZip(trimmed, onOk, onErr);
+  } else {
+    geocodeCity(trimmed, onOk, onErr);
+  }
+}
+
+/* ============================== WEATHER ============================== */
+function fetchWeather(lat, lon, onOk, onErr) {
+  var url = CONFIG.WEATHER_URL +
+    '?latitude=' + lat + '&longitude=' + lon +
+    '&hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code' +
+    '&timezone=auto' +
+    '&past_days=' + CONFIG.PAST_DAYS_FETCH +
+    '&forecast_days=' + CONFIG.FORECAST_DAYS_FETCH +
+    '&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch' +
+    '&current_weather=true';
+
+  fetch(url).then(function (r) {
+    if (!r.ok) throw new Error('weather-fetch-failed');
+    return r.json();
+  }).then(function (data) {
+    onOk(buildDailyRecords(data));
+  }).catch(function () {
+    onErr();
+  });
+}
+
+function buildDailyRecords(data) {
+  var hourly = data.hourly;
+  var byDate = {};
+  var order = [];
+
+  for (var i = 0; i < hourly.time.length; i++) {
+    var dt = hourly.time[i];
+    var date = dt.substring(0, 10);
+    var hour = parseInt(dt.substring(11, 13), 10);
+
+    if (!byDate[date]) {
+      byDate[date] = { temps: [], precs: [], winds: [], afternoonHI: [], daytimeCodes: [] };
+      order.push(date);
+    }
+    var rec = byDate[date];
+    var temp = hourly.temperature_2m[i];
+    var hum = hourly.relative_humidity_2m[i];
+    var prec = hourly.precipitation[i];
+    var wind = hourly.wind_speed_10m[i];
+    var code = hourly.weather_code[i];
+
+    rec.temps.push(temp);
+    rec.precs.push(prec);
+    rec.winds.push(wind);
+
+    if (hour >= 6 && hour <= 20) {
+      rec.afternoonHI.push(heatIndex(temp, hum));
+      rec.daytimeCodes.push(code);
+    }
+  }
+
+  order.sort();
+
+  var days = order.map(function (date) {
+    var rec = byDate[date];
+    var precipSum = rec.precs.reduce(function (a, b) { return a + b; }, 0);
+    var heatIdxSource = rec.afternoonHI.length ? rec.afternoonHI : rec.temps;
+    return {
+      date: date,
+      tempMax: Math.max.apply(null, rec.temps),
+      tempMin: Math.min.apply(null, rec.temps),
+      precipSum: precipSum,
+      windMax: Math.max.apply(null, rec.winds),
+      heatIndexMax: Math.max.apply(null, heatIdxSource),
+      stormFlag: rec.daytimeCodes.some(isSevereCode)
+    };
+  });
+
+  var todayStr = data.current_weather ? data.current_weather.time.substring(0, 10) : days[CONFIG.PAST_DAYS_FETCH].date;
+
+  return { days: days, todayStr: todayStr };
+}
+
+/* ============================== RATING ============================== */
+function findDayIndex(days, dateStr) {
+  for (var i = 0; i < days.length; i++) {
+    if (days[i].date === dateStr) return i;
+  }
+  return -1;
+}
+
+function rateDay(days, targetDate) {
+  var idx = findDayIndex(days, targetDate);
+  if (idx === -1) return null;
+  var today = days[idx];
+
+  // --- Footing (trailing rain) ---
+  var rain3 = 0, maxSingle5 = 0;
+  for (var k = 1; k <= CONFIG.LOOKBACK_DAYS; k++) {
+    var pIdx = idx - k;
+    if (pIdx < 0) continue;
+    var p = days[pIdx].precipSum;
+    if (k <= 3) rain3 += p;
+    if (p > maxSingle5) maxSingle5 = p;
+  }
+  var footing;
+  if (maxSingle5 > 1.0 || rain3 > 0.5) {
+    footing = { score: 0, label: 'Poor', detail: round1(rain3) + '" of rain in the prior 3 days (heaviest single day ' + round1(maxSingle5) + '") — trails are likely muddy and soft underfoot.' };
+  } else if (rain3 > 0.1) {
+    footing = { score: 2, label: 'Fair', detail: round1(rain3) + '" of rain in the prior 3 days — footing may be soft in low spots.' };
+  } else {
+    footing = { score: 3, label: 'Good', detail: 'Only ' + round1(rain3) + '" of rain in the prior 3 days — footing should be firm and dry.' };
+  }
+
+  // --- Wind ---
+  var w = today.windMax;
+  var wind;
+  if (w > 20) {
+    wind = { score: 0, label: 'Extreme', detail: 'Sustained winds near ' + Math.round(w) + ' mph — too gusty for relaxed, controlled riding.' };
+  } else if (w > 15) {
+    wind = { score: 1, label: 'Poor', detail: 'Winds near ' + Math.round(w) + ' mph — noticeably windy, can unsettle horses.' };
+  } else if (w > 10) {
+    wind = { score: 2, label: 'Fair', detail: 'Breezy, winds near ' + Math.round(w) + ' mph.' };
+  } else {
+    wind = { score: 3, label: 'Good', detail: 'Calm, winds near ' + Math.round(w) + ' mph.' };
+  }
+
+  // --- Heat / cold ---
+  var hi = today.heatIndexMax, tmax = today.tempMax;
+  var heat;
+  if (hi > 95) {
+    heat = { score: 0, label: 'Extreme heat', detail: 'Heat index near ' + Math.round(hi) + '°F — real heat-stress risk for horse and rider.' };
+  } else if (tmax < 20) {
+    heat = { score: 0, label: 'Extreme cold', detail: 'High near ' + Math.round(tmax) + '°F — bitterly cold, icy-footing risk.' };
+  } else if (hi > 85) {
+    heat = { score: 1, label: 'Hot/humid', detail: 'Heat index near ' + Math.round(hi) + '°F — plan extra water breaks, avoid the hottest hours.' };
+  } else if (tmax < 32) {
+    heat = { score: 1, label: 'Cold', detail: 'High near ' + Math.round(tmax) + '°F — dress and tack for cold, watch for icy patches.' };
+  } else {
+    heat = { score: 3, label: 'Comfortable', detail: 'Comfortable temps, heat index near ' + Math.round(hi) + '°F.' };
+  }
+
+  // --- Rain that day ---
+  var p = today.precipSum;
+  var rain;
+  if (p > 0.5) {
+    rain = { score: 0, label: 'Washout', detail: 'Over ' + round1(p) + '" of rain expected that day — plan on a wet, sloppy ride.' };
+  } else if (p > 0.1) {
+    rain = { score: 1, label: 'Wet', detail: round1(p) + '" of rain expected that day.' };
+  } else if (p > 0.02) {
+    rain = { score: 2, label: 'Slight chance', detail: 'A little rain possible (' + round1(p) + '").' };
+  } else {
+    rain = { score: 3, label: 'Dry', detail: 'No rain expected that day.' };
+  }
+
+  // --- Storms / ice ---
+  var storm = today.stormFlag ?
+    { score: 0, label: 'Storms/ice', detail: 'Thunderstorms, freezing rain, or heavy snow in the forecast — not a safe day to ride.' } :
+    { score: 3, label: 'Clear', detail: 'No storms or ice in the forecast.' };
+
+  var factors = [
+    { key: 'footing', name: 'Footing', data: footing },
+    { key: 'wind', name: 'Wind', data: wind },
+    { key: 'heat', name: 'Heat / Cold', data: heat },
+    { key: 'rain', name: 'Rain that day', data: rain },
+    { key: 'storm', name: 'Storms', data: storm }
+  ];
+
+  var finalScore = 3;
+  for (var f = 0; f < factors.length; f++) {
+    if (factors[f].data.score < finalScore) finalScore = factors[f].data.score;
+  }
+
+  var limiting = factors.filter(function (f) { return f.data.score === finalScore; }).map(function (f) { return f.name; });
+
+  return {
+    score: finalScore,
+    rating: CONFIG.RATING_NAMES[finalScore],
+    factors: factors,
+    limiting: limiting
+  };
+}
+
+/* ============================== RENDER ============================== */
+function renderDateStrip() {
+  var strip = qs('dateStrip');
+  strip.innerHTML = '';
+  for (var i = 0; i <= CONFIG.FORECAST_DAYS_AHEAD; i++) {
+    var dateStr = addDaysToDateStr(STATE.todayStr, i);
+    var rating = STATE.ratings[dateStr];
+    var chip = document.createElement('div');
+    chip.className = 'dateChip' + (dateStr === STATE.selectedDate ? ' selected' : '');
+    chip.setAttribute('data-date', dateStr);
+    var dow = i === 0 ? 'Today' : formatDateLabel(dateStr, { weekday: 'short', timeZone: 'UTC' });
+    var dom = formatDateLabel(dateStr, { month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+    var dotColor = rating ? ratingColorVar(rating.score) : 'transparent';
+    chip.innerHTML = '<span class="dow">' + escapeHtml(dow) + '</span>' +
+      '<span class="dom">' + escapeHtml(dom) + '</span>' +
+      '<span class="dot" style="background:' + dotColor + '"></span>';
+    chip.addEventListener('click', function () {
+      STATE.selectedDate = this.getAttribute('data-date');
+      renderDateStrip();
+      renderRating();
+    });
+    strip.appendChild(chip);
+  }
+}
+
+function ratingColorVar(score) {
+  if (score === 3) return 'var(--excellent)';
+  if (score === 2) return 'var(--great)';
+  if (score === 1) return 'var(--questionable)';
+  return 'var(--sketchy)';
+}
+
+function renderRating() {
+  var result = STATE.ratings[STATE.selectedDate];
+  if (!result) return;
+
+  qs('ratingDate').textContent = formatDateLabel(STATE.selectedDate, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+  var badge = qs('ratingBadge');
+  badge.className = 'rate-' + result.rating;
+  badge.textContent = result.rating;
+
+  qs('ratingSummary').textContent = 'Limiting factor: ' + result.limiting.join(' & ');
+
+  var list = qs('factorList');
+  list.innerHTML = '';
+  result.factors.forEach(function (f) {
+    var row = document.createElement('div');
+    row.className = 'factorRow' + (f.data.score === result.score ? ' limiting' : '');
+    row.innerHTML = '<div class="frTop"><span class="frName">' + escapeHtml(f.name) + '</span>' +
+      '<span class="frScore score-' + f.data.score + '">' + escapeHtml(f.data.label) + '</span></div>' +
+      '<div class="frDetail">' + escapeHtml(f.data.detail) + '</div>';
+    list.appendChild(row);
+  });
+}
+
+function showError(msg) {
+  qs('errBox').hidden = false;
+  qs('errText').textContent = msg;
+  qs('ratingCard').style.display = 'none';
+}
+
+function hideError() {
+  qs('errBox').hidden = true;
+  qs('ratingCard').style.display = '';
+}
+
+/* ============================== LOAD ============================== */
+function loadWeatherForLocation() {
+  qs('loading').hidden = false;
+  qs('loadStatus').textContent = 'Loading forecast for ' + STATE.location.label + '…';
+
+  fetchWeather(STATE.location.lat, STATE.location.lon, function (result) {
+    STATE.days = result.days;
+    STATE.todayStr = result.todayStr;
+    STATE.selectedDate = STATE.todayStr;
+    STATE.ratings = {};
+    for (var i = 0; i <= CONFIG.FORECAST_DAYS_AHEAD; i++) {
+      var dateStr = addDaysToDateStr(STATE.todayStr, i);
+      var r = rateDay(STATE.days, dateStr);
+      if (r) STATE.ratings[dateStr] = r;
+    }
+    qs('locLabel').textContent = STATE.location.label;
+    hideError();
+    renderDateStrip();
+    renderRating();
+    qs('loading').hidden = true;
+    qs('app').hidden = false;
+  }, function () {
+    qs('loading').hidden = true;
+    qs('app').hidden = false;
+    showError('Couldn’t load the forecast for ' + STATE.location.label + '. Check your connection and try again.');
+  });
+}
+
+/* ============================== LOCATION MODAL ============================== */
+function openLocationModal() {
+  qs('locationResults').innerHTML = '';
+  qs('locationError').textContent = '';
+  qs('locationInput').value = '';
+  qs('locationModal').hidden = false;
+  qs('locationInput').focus();
+}
+
+function closeLocationModal() {
+  qs('locationModal').hidden = true;
+}
+
+function runLocationSearch() {
+  var query = qs('locationInput').value.trim();
+  if (!query) return;
+  qs('locationError').textContent = '';
+  qs('locationResults').innerHTML = 'Searching…';
+
+  geocode(query, function (results) {
+    if (results.length === 1) {
+      applyLocation(results[0]);
+      closeLocationModal();
+      return;
+    }
+    var box = qs('locationResults');
+    box.innerHTML = '';
+    results.slice(0, 8).forEach(function (r) {
+      var row = document.createElement('div');
+      row.className = 'locResultRow';
+      row.textContent = r.label;
+      row.addEventListener('click', function () {
+        applyLocation(r);
+        closeLocationModal();
+      });
+      box.appendChild(row);
+    });
+  }, function (msg) {
+    qs('locationResults').innerHTML = '';
+    qs('locationError').textContent = msg;
+  });
+}
+
+function applyLocation(loc) {
+  STATE.location = loc;
+  loadWeatherForLocation();
+}
+
+/* ============================== INIT ============================== */
+function init() {
+  qs('loadVersion').textContent = 'v' + CONFIG.VERSION;
+  qs('versionTag').textContent = 'v' + CONFIG.VERSION;
+
+  qs('changeLocBtn').addEventListener('click', openLocationModal);
+  qs('locLabel').addEventListener('click', openLocationModal);
+  qs('locationModalClose').addEventListener('click', closeLocationModal);
+  qs('locationSearchBtn').addEventListener('click', runLocationSearch);
+  qs('locationInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') runLocationSearch();
+  });
+  qs('infoBtn').addEventListener('click', function () { qs('infoModal').hidden = false; });
+  qs('infoModalClose').addEventListener('click', function () { qs('infoModal').hidden = true; });
+  qs('retryBtn').addEventListener('click', loadWeatherForLocation);
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+
+  loadWeatherForLocation();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
