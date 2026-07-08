@@ -103,7 +103,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.1</div>
+  <div class="loadVersion" id="loadVersion">v0.0.2</div>
 </div>
 
 <div id="app" hidden>
@@ -112,7 +112,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.1</span>
+    <span id="versionTag">v0.0.2</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -170,7 +170,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     it's always named in the breakdown below the rating.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.1 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.2 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
@@ -178,7 +178,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.1',
+  VERSION: '0.0.2',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
@@ -268,25 +268,60 @@ function geocodeZip(zip, onOk, onErr) {
   });
 }
 
+function splitCityState(query) {
+  var trimmed = query.trim();
+  if (trimmed.indexOf(',') !== -1) {
+    var commaParts = trimmed.split(',');
+    return { name: commaParts[0].trim(), state: commaParts[1] ? commaParts[1].trim().toUpperCase() : null };
+  }
+
+  // No comma: try to peel a trailing state name/abbreviation off a plain
+  // "City State" query (e.g. "Speculator NY" or "Speculator New York").
+  var words = trimmed.split(/\s+/);
+  if (words.length > 1) {
+    var lastWord = words[words.length - 1].toUpperCase();
+    var isAbbr = false;
+    for (var key in US_STATE_ABBR) {
+      if (US_STATE_ABBR[key] === lastWord) { isAbbr = true; break; }
+    }
+    if (lastWord.length === 2 && isAbbr) {
+      return { name: words.slice(0, words.length - 1).join(' '), state: lastWord };
+    }
+    for (var n = 3; n >= 1; n--) {
+      if (words.length > n) {
+        var candidate = words.slice(words.length - n).join(' ').toUpperCase();
+        if (US_STATE_ABBR[candidate]) {
+          return { name: words.slice(0, words.length - n).join(' '), state: US_STATE_ABBR[candidate] };
+        }
+      }
+    }
+  }
+  return { name: trimmed, state: null };
+}
+
 function geocodeCity(query, onOk, onErr) {
-  var parts = query.split(',');
-  var namePart = parts[0].trim();
-  var statePart = parts.length > 1 ? parts[1].trim().toUpperCase() : null;
+  var parsed = splitCityState(query);
+  var namePart = parsed.name;
+  var statePart = parsed.state;
 
   fetch(CONFIG.GEOCODE_URL + '?name=' + encodeURIComponent(namePart) + '&count=10&language=en&format=json')
     .then(function (r) { return r.json(); })
     .then(function (data) {
       var results = data.results || [];
+      if (results.length === 0) {
+        onErr('No location found for "' + query + '".');
+        return;
+      }
       if (statePart) {
-        results = results.filter(function (r) {
+        var filtered = results.filter(function (r) {
           var admin1 = (r.admin1 || '').toUpperCase();
           var abbr = US_STATE_ABBR[admin1] || null;
           return admin1 === statePart || abbr === statePart;
         });
-      }
-      if (results.length === 0) {
-        onErr('No location found for "' + query + '".');
-        return;
+        // If the state guess didn't match anything (e.g. our parsing grabbed
+        // a word that isn't really a state), fall back to the unfiltered
+        // results rather than reporting a false "not found".
+        if (filtered.length > 0) results = filtered;
       }
       var mapped = results.map(function (r) {
         var admin1 = r.admin1 ? r.admin1 : '';
