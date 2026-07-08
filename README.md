@@ -47,9 +47,16 @@ heat/humidity, cold, rain that day, or storms/ice) drove the rating.
   and city/state geocoding, and [Zippopotam.us](https://zippopotam.us) for
   ZIP code lookup.
 - Defaults to Warrenton, VA / today on first load.
+- Shows a horse fact of the day (`hoofcast/horse-facts.js`, 500+ entries
+  aimed at seasoned riders): one fact in the AM, a different one in the PM.
+  The slot is computed deterministically from the date and time of day, so
+  every visitor sees the same fact in the same slot and refreshing never
+  changes it. Facts cycle through the whole list before repeating — append
+  new ones to the end of the file; don't reorder or remove existing entries,
+  since that shifts which fact every future date lands on.
 - Versioned independently from SkyFrame via `CONFIG.VERSION` in
   `hoofcast/index.html` (kept in lockstep with `CACHE_VERSION` in
-  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.1 — an
+  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.3 — an
   early MVP; rating thresholds are expected to be tuned before a v1.0.
 - Local preview: `cd hoofcast && python3 -m http.server 8766`, then open
   `http://localhost:8766/index.html`.

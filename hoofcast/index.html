@@ -95,6 +95,10 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 #infoModal .modalBox{max-width:420px;}
 #infoModal p{font-size:13px;color:var(--text-dim);line-height:1.5;}
 #infoModal b{color:var(--text);}
+
+#factCard{background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;padding:14px 16px;margin-top:14px;}
+#factCard .factLabel{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--primary);margin-bottom:6px;}
+#factCard .factText{font-size:13px;color:var(--text);line-height:1.5;}
 </style>
 </head>
 <body>
@@ -103,7 +107,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.2</div>
+  <div class="loadVersion" id="loadVersion">v0.0.3</div>
 </div>
 
 <div id="app" hidden>
@@ -112,7 +116,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.2</span>
+    <span id="versionTag">v0.0.3</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -127,6 +131,10 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <div id="errBox" hidden>
       <div id="errText">Couldn't load the forecast.</div>
       <button id="retryBtn">Retry</button>
+    </div>
+    <div id="factCard">
+      <div class="factLabel" id="factLabel">Fact of the Day</div>
+      <div class="factText" id="factText">-</div>
     </div>
   </main>
 
@@ -170,15 +178,16 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     it's always named in the breakdown below the rating.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.2 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.3 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
 
+<script src="horse-facts.js"></script>
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.2',
+  VERSION: '0.0.3',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
@@ -187,7 +196,11 @@ var CONFIG = {
   WEATHER_URL: 'https://api.open-meteo.com/v1/forecast',
   GEOCODE_URL: 'https://geocoding-api.open-meteo.com/v1/search',
   ZIP_URL: 'https://api.zippopotam.us/us/',
-  RATING_NAMES: { 3: 'EXCELLENT', 2: 'GREAT', 1: 'QUESTIONABLE', 0: 'SKETCHY' }
+  RATING_NAMES: { 3: 'EXCELLENT', 2: 'GREAT', 1: 'QUESTIONABLE', 0: 'SKETCHY' },
+  // Fixed reference point for the fact-of-the-day rotation. Never change this
+  // once shipped -- it would shift every future date onto a different fact.
+  FACT_EPOCH_UTC_MS: Date.UTC(2026, 0, 1),
+  FACT_CHECK_MS: 5 * 60 * 1000
 };
 
 var US_STATE_ABBR = {
@@ -588,6 +601,28 @@ function hideError() {
   qs('ratingCard').style.display = '';
 }
 
+/* ============================== FACT OF THE DAY ============================== */
+// Deterministic by design: every visitor computes the same slot index from
+// the same wall-clock date, so everyone sees the same fact and a refresh
+// never changes it. Two slots per day (AM/PM) cycle through the whole list
+// before any fact repeats.
+function factSlotForNow() {
+  var now = new Date();
+  var localMidnightUtcMs = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  var dayNum = Math.round((localMidnightUtcMs - CONFIG.FACT_EPOCH_UTC_MS) / 86400000);
+  return { dayNum: dayNum, isPM: now.getHours() >= 12 };
+}
+
+function renderFact() {
+  if (typeof HORSE_FACTS === 'undefined' || !HORSE_FACTS.length) return;
+  var slot = factSlotForNow();
+  var slotIndex = slot.dayNum * 2 + (slot.isPM ? 1 : 0);
+  var n = HORSE_FACTS.length;
+  var idx = ((slotIndex % n) + n) % n;
+  qs('factLabel').textContent = slot.isPM ? 'PM Fact of the Day' : 'AM Fact of the Day';
+  qs('factText').textContent = HORSE_FACTS[idx];
+}
+
 /* ============================== LOAD ============================== */
 function loadWeatherForLocation() {
   qs('loading').hidden = false;
@@ -683,6 +718,9 @@ function init() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(function () {});
   }
+
+  renderFact();
+  setInterval(renderFact, CONFIG.FACT_CHECK_MS);
 
   loadWeatherForLocation();
 }
