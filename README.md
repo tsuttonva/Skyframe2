@@ -46,7 +46,15 @@ heat/humidity, cold, rain that day, or storms/ice) drove the rating.
   [Open-Meteo](https://open-meteo.com) for forecast + recent-rain history
   and city/state geocoding, and [Zippopotam.us](https://zippopotam.us) for
   ZIP code lookup.
-- Defaults to Warrenton, VA / today on first load.
+- Location defaults, in priority order: (1) a location the user has
+  explicitly set before (search, ZIP, or "use my location") — persisted in
+  `localStorage`; (2) on a genuine first run with nothing saved yet, the
+  browser's geolocation, reverse-geocoded via
+  [Nominatim](https://nominatim.openstreetmap.org) to a city/state label;
+  (3) if geolocation is unsupported, denied, or times out, Warrenton, VA —
+  which then also becomes the saved default so the app doesn't re-prompt for
+  location on every visit. A "Use my current location" button in the
+  location modal lets the user invoke geolocation manually at any time.
 - Shows a horse fact of the day (`hoofcast/horse-facts.js`, 500+ entries
   aimed at seasoned riders): one fact in the AM, a different one in the PM.
   The slot is computed deterministically from the date and time of day, so
@@ -56,7 +64,7 @@ heat/humidity, cold, rain that day, or storms/ice) drove the rating.
   since that shifts which fact every future date lands on.
 - Versioned independently from SkyFrame via `CONFIG.VERSION` in
   `hoofcast/index.html` (kept in lockstep with `CACHE_VERSION` in
-  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.3 — an
+  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.4 — an
   early MVP; rating thresholds are expected to be tuned before a v1.0.
 - Local preview: `cd hoofcast && python3 -m http.server 8766`, then open
   `http://localhost:8766/index.html`.

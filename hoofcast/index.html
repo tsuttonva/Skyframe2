@@ -87,6 +87,8 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 .modalBox .closeX{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--text-dim);font-size:18px;}
 #locationInput{width:100%;background:var(--bg);border:1px solid var(--panel-line);color:var(--text);padding:9px 10px;border-radius:6px;font-size:14px;margin-bottom:10px;}
 #locationSearchBtn{width:100%;background:var(--primary-dim);color:#1a1206;font-weight:700;border:none;padding:10px;border-radius:6px;font-size:13px;cursor:pointer;}
+#locOrDivider{text-align:center;color:var(--text-dim);font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:12px 0;}
+#useGeoBtn{width:100%;background:transparent;color:var(--primary);font-weight:700;border:1px solid var(--primary-dim);padding:10px;border-radius:6px;font-size:13px;cursor:pointer;}
 #locationResults{margin-top:10px;}
 .locResultRow{padding:9px 10px;border:1px solid var(--panel-line);border-radius:6px;margin-bottom:6px;cursor:pointer;font-size:13px;}
 .locResultRow:active{background:rgba(230,166,54,0.12);}
@@ -107,7 +109,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.3</div>
+  <div class="loadVersion" id="loadVersion">v0.0.4</div>
 </div>
 
 <div id="app" hidden>
@@ -116,7 +118,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.3</span>
+    <span id="versionTag">v0.0.4</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -150,6 +152,8 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <h3>Change location</h3>
     <input id="locationInput" placeholder="City, State or ZIP code" autocomplete="off">
     <button id="locationSearchBtn">Search</button>
+    <div id="locOrDivider">or</div>
+    <button id="useGeoBtn">&#128205; Use my current location</button>
     <div id="locationResults"></div>
     <div id="locationError"></div>
   </div>
@@ -178,7 +182,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     it's always named in the breakdown below the rating.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.3 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.4 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
@@ -187,7 +191,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.3',
+  VERSION: '0.0.4',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
@@ -196,6 +200,9 @@ var CONFIG = {
   WEATHER_URL: 'https://api.open-meteo.com/v1/forecast',
   GEOCODE_URL: 'https://geocoding-api.open-meteo.com/v1/search',
   ZIP_URL: 'https://api.zippopotam.us/us/',
+  REVERSE_GEOCODE_URL: 'https://nominatim.openstreetmap.org/reverse',
+  GEOLOCATION_TIMEOUT_MS: 8000,
+  LOCATION_STORAGE_KEY: 'hoofcast_location_v1',
   RATING_NAMES: { 3: 'EXCELLENT', 2: 'GREAT', 1: 'QUESTIONABLE', 0: 'SKETCHY' },
   // Fixed reference point for the fact-of-the-day rotation. Never change this
   // once shipped -- it would shift every future date onto a different fact.
@@ -358,6 +365,70 @@ function geocode(query, onOk, onErr) {
   } else {
     geocodeCity(trimmed, onOk, onErr);
   }
+}
+
+/* ============================== SAVED LOCATION ============================== */
+// The saved location is the persisted default: whatever the user last chose
+// explicitly (search, ZIP, or "use my location"), or a geolocation result
+// resolved automatically the first time the app ran with nothing saved yet.
+function loadSavedLocation() {
+  try {
+    var raw = localStorage.getItem(CONFIG.LOCATION_STORAGE_KEY);
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.lat === 'number' && typeof parsed.lon === 'number' && parsed.label) return parsed;
+  } catch (e) { /* localStorage unavailable (e.g. private browsing) */ }
+  return null;
+}
+
+function saveLocation(loc) {
+  try {
+    localStorage.setItem(CONFIG.LOCATION_STORAGE_KEY, JSON.stringify({ lat: loc.lat, lon: loc.lon, label: loc.label }));
+  } catch (e) { /* ignore -- just won't persist across visits */ }
+}
+
+/* ============================== GEOLOCATION ============================== */
+function reverseGeocode(lat, lon, onOk) {
+  var url = CONFIG.REVERSE_GEOCODE_URL + '?format=json&lat=' + lat + '&lon=' + lon + '&zoom=10&addressdetails=1';
+  fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) {
+    if (!r.ok) throw new Error('reverse-geocode-failed');
+    return r.json();
+  }).then(function (data) {
+    var addr = data.address || {};
+    var city = addr.city || addr.town || addr.village || addr.hamlet || addr.county || null;
+    var stateName = addr.state ? addr.state.toUpperCase() : null;
+    var state = stateName ? (US_STATE_ABBR[stateName] || addr.state) : null;
+    var label;
+    if (city && state) label = city + ', ' + state;
+    else if (city) label = city;
+    else label = 'Current Location';
+    onOk(label);
+  }).catch(function () {
+    onOk('Current Location');
+  });
+}
+
+// Calls onDone(true) if STATE.location was set from the device's current
+// position (and persisted as the new default), or onDone(false) if
+// geolocation is unsupported, denied, or times out.
+function useGeolocation(onDone) {
+  if (!('geolocation' in navigator)) {
+    onDone(false);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      var lat = pos.coords.latitude, lon = pos.coords.longitude;
+      reverseGeocode(lat, lon, function (label) {
+        var loc = { lat: lat, lon: lon, label: label };
+        STATE.location = loc;
+        saveLocation(loc);
+        onDone(true);
+      });
+    },
+    function () { onDone(false); },
+    { timeout: CONFIG.GEOLOCATION_TIMEOUT_MS, maximumAge: 5 * 60 * 1000 }
+  );
 }
 
 /* ============================== WEATHER ============================== */
@@ -696,7 +767,22 @@ function runLocationSearch() {
 
 function applyLocation(loc) {
   STATE.location = loc;
+  saveLocation(loc);
   loadWeatherForLocation();
+}
+
+function runUseGeolocation() {
+  qs('locationError').textContent = '';
+  qs('locationResults').innerHTML = 'Finding your location…';
+  useGeolocation(function (succeeded) {
+    if (succeeded) {
+      closeLocationModal();
+      loadWeatherForLocation();
+    } else {
+      qs('locationResults').innerHTML = '';
+      qs('locationError').textContent = 'Couldn’t get your location. Check your browser/device location permission and try again.';
+    }
+  });
 }
 
 /* ============================== INIT ============================== */
@@ -711,6 +797,7 @@ function init() {
   qs('locationInput').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') runLocationSearch();
   });
+  qs('useGeoBtn').addEventListener('click', runUseGeolocation);
   qs('infoBtn').addEventListener('click', function () { qs('infoModal').hidden = false; });
   qs('infoModalClose').addEventListener('click', function () { qs('infoModal').hidden = true; });
   qs('retryBtn').addEventListener('click', loadWeatherForLocation);
@@ -722,7 +809,34 @@ function init() {
   renderFact();
   setInterval(renderFact, CONFIG.FACT_CHECK_MS);
 
-  loadWeatherForLocation();
+  resolveInitialLocationAndLoad();
+}
+
+// Startup priority: a previously saved location (explicit pick or an earlier
+// successful geolocation) always wins. With nothing saved yet -- a genuine
+// first run -- try the device's current location; if that's unavailable or
+// denied, fall back to CONFIG.DEFAULT_LOCATION and save it so we don't
+// re-prompt for geolocation on every subsequent load.
+function resolveInitialLocationAndLoad() {
+  var saved = loadSavedLocation();
+  if (saved) {
+    STATE.location = saved;
+    loadWeatherForLocation();
+    return;
+  }
+
+  qs('loadStatus').textContent = 'Finding your location…';
+  useGeolocation(function (succeeded) {
+    if (!succeeded) {
+      STATE.location = {
+        lat: CONFIG.DEFAULT_LOCATION.lat,
+        lon: CONFIG.DEFAULT_LOCATION.lon,
+        label: CONFIG.DEFAULT_LOCATION.label
+      };
+      saveLocation(STATE.location);
+    }
+    loadWeatherForLocation();
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
