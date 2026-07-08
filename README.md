@@ -62,9 +62,13 @@ heat/humidity, cold, rain that day, or storms/ice) drove the rating.
   changes it. Facts cycle through the whole list before repeating — append
   new ones to the end of the file; don't reorder or remove existing entries,
   since that shifts which fact every future date lands on.
+- Each date chip shows a sky icon (☀️/🌧️/🌨️, from precipitation and
+  temperature), a 💨 wind icon when that day's sustained wind tops 15 mph,
+  and the midday (noon local) temperature, alongside the existing
+  rating-color dot.
 - Versioned independently from SkyFrame via `CONFIG.VERSION` in
   `hoofcast/index.html` (kept in lockstep with `CACHE_VERSION` in
-  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.4 — an
+  `hoofcast/sw.js`, same convention as SkyFrame). Currently v0.0.5 — an
   early MVP; rating thresholds are expected to be tuned before a v1.0.
 - Local preview: `cd hoofcast && python3 -m http.server 8766`, then open
   `http://localhost:8766/index.html`.

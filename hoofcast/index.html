@@ -44,10 +44,13 @@ header#header{display:flex;align-items:center;gap:10px;padding:10px 12px;backgro
 #versionTag{font-size:9px;color:var(--text-dim);opacity:0.7;flex-shrink:0;}
 
 #dateStrip{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border-bottom:1px solid var(--panel-line);flex-shrink:0;}
-.dateChip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid var(--panel-line);background:transparent;cursor:pointer;color:var(--text);min-width:52px;}
+.dateChip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 10px;border-radius:8px;border:1px solid var(--panel-line);background:transparent;cursor:pointer;color:var(--text);min-width:64px;}
 .dateChip .dow{font-size:10px;color:var(--text-dim);letter-spacing:0.5px;text-transform:uppercase;}
 .dateChip .dom{font-size:14px;font-weight:700;}
 .dateChip .dot{width:8px;height:8px;border-radius:50%;}
+.dateChip .wxRow{display:flex;align-items:center;gap:3px;}
+.dateChip .wxIcon{font-size:12px;line-height:1;}
+.dateChip .wxTemp{font-size:11px;color:var(--text-dim);font-weight:600;}
 .dateChip.selected{border-color:var(--primary);background:rgba(230,166,54,0.12);}
 
 main#main{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
@@ -109,7 +112,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.4</div>
+  <div class="loadVersion" id="loadVersion">v0.0.5</div>
 </div>
 
 <div id="app" hidden>
@@ -118,7 +121,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.4</span>
+    <span id="versionTag">v0.0.5</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -182,7 +185,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     it's always named in the breakdown below the rating.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.4 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.5 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
@@ -191,7 +194,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.4',
+  VERSION: '0.0.5',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
@@ -463,7 +466,7 @@ function buildDailyRecords(data) {
     var hour = parseInt(dt.substring(11, 13), 10);
 
     if (!byDate[date]) {
-      byDate[date] = { temps: [], precs: [], winds: [], afternoonHI: [], daytimeCodes: [] };
+      byDate[date] = { temps: [], precs: [], winds: [], afternoonHI: [], daytimeCodes: [], middayTemp: null };
       order.push(date);
     }
     var rec = byDate[date];
@@ -476,6 +479,7 @@ function buildDailyRecords(data) {
     rec.temps.push(temp);
     rec.precs.push(prec);
     rec.winds.push(wind);
+    if (hour === 12) rec.middayTemp = temp;
 
     if (hour >= 6 && hour <= 20) {
       rec.afternoonHI.push(heatIndex(temp, hum));
@@ -489,10 +493,12 @@ function buildDailyRecords(data) {
     var rec = byDate[date];
     var precipSum = rec.precs.reduce(function (a, b) { return a + b; }, 0);
     var heatIdxSource = rec.afternoonHI.length ? rec.afternoonHI : rec.temps;
+    var tempMax = Math.max.apply(null, rec.temps);
     return {
       date: date,
-      tempMax: Math.max.apply(null, rec.temps),
+      tempMax: tempMax,
       tempMin: Math.min.apply(null, rec.temps),
+      middayTemp: rec.middayTemp === null ? tempMax : rec.middayTemp,
       precipSum: precipSum,
       windMax: Math.max.apply(null, rec.winds),
       heatIndexMax: Math.max.apply(null, heatIdxSource),
@@ -606,21 +612,40 @@ function rateDay(days, targetDate) {
 }
 
 /* ============================== RENDER ============================== */
+function weatherIconsForDay(day) {
+  var isSnow = day.precipSum > 0.02 && day.tempMax <= 34;
+  var isRain = !isSnow && day.precipSum > 0.02;
+  var sky = isSnow ? '🌨️' : (isRain ? '🌧️' : '☀️');
+  return { sky: sky, windy: day.windMax > 15 };
+}
+
 function renderDateStrip() {
   var strip = qs('dateStrip');
   strip.innerHTML = '';
   for (var i = 0; i <= CONFIG.FORECAST_DAYS_AHEAD; i++) {
     var dateStr = addDaysToDateStr(STATE.todayStr, i);
     var rating = STATE.ratings[dateStr];
+    var dayIdx = findDayIndex(STATE.days, dateStr);
+    var day = dayIdx === -1 ? null : STATE.days[dayIdx];
     var chip = document.createElement('div');
     chip.className = 'dateChip' + (dateStr === STATE.selectedDate ? ' selected' : '');
     chip.setAttribute('data-date', dateStr);
     var dow = i === 0 ? 'Today' : formatDateLabel(dateStr, { weekday: 'short', timeZone: 'UTC' });
     var dom = formatDateLabel(dateStr, { month: 'numeric', day: 'numeric', timeZone: 'UTC' });
     var dotColor = rating ? ratingColorVar(rating.score) : 'transparent';
+    var wxHtml = '';
+    if (day) {
+      var wx = weatherIconsForDay(day);
+      wxHtml = '<span class="wxRow">' +
+        '<span class="wxIcon">' + wx.sky + '</span>' +
+        (wx.windy ? '<span class="wxIcon">💨</span>' : '') +
+        '<span class="wxTemp">' + Math.round(day.middayTemp) + '°</span>' +
+        '</span>';
+    }
     chip.innerHTML = '<span class="dow">' + escapeHtml(dow) + '</span>' +
       '<span class="dom">' + escapeHtml(dom) + '</span>' +
-      '<span class="dot" style="background:' + dotColor + '"></span>';
+      '<span class="dot" style="background:' + dotColor + '"></span>' +
+      wxHtml;
     chip.addEventListener('click', function () {
       STATE.selectedDate = this.getAttribute('data-date');
       renderDateStrip();
