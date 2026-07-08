@@ -10,13 +10,14 @@
  * is left completely untouched (no respondWith), so weather data is never
  * served stale from a cache.
  */
-var CACHE_VERSION = '0.0.2';
+var CACHE_VERSION = '0.0.3';
 var CACHE_NAME = 'hoofcast-' + CACHE_VERSION;
 
 var STATIC_ASSETS = [
   './',
   'index.html',
   'manifest.webmanifest',
+  'horse-facts.js',
   'icons/favicon-16.png',
   'icons/favicon-32.png',
   'icons/apple-touch-icon.png',
