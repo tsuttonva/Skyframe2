@@ -2,7 +2,12 @@ name: Deploy Pages
 
 on:
   push:
-    branches: [claude/cross-platform-app-build-vtwr2l, claude/horse-riding-conditions-app-b0adbr]
+    # Only the branch allow-listed in the github-pages environment's deployment
+    # branch policy can actually deploy; other branches merge into this one
+    # to publish (see README) rather than listing them here, since a push-only
+    # trigger from a non-allow-listed branch fails instantly on the
+    # environment protection check, not on anything in this workflow.
+    branches: [claude/cross-platform-app-build-vtwr2l]
 
 permissions:
   contents: read
