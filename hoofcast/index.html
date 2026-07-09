@@ -123,7 +123,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.6</div>
+  <div class="loadVersion" id="loadVersion">v0.0.7</div>
 </div>
 
 <div id="app" hidden>
@@ -132,7 +132,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.6</span>
+    <span id="versionTag">v0.0.7</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -191,7 +191,8 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     (wind, heat/humidity, cold, active rain, and storms/ice).</p>
     <p><b>Footing:</b> under 0.1&quot; of rain in the 3 days prior is Good;
     0.1-0.5&quot; is Fair (soft); over 0.5&quot; total, or any single day over
-    1&quot;, is Poor (muddy).</p>
+    1&quot; within the prior 5 days (even if that day falls outside the
+    3-day total above), is Poor (muddy).</p>
     <p><b>Wind:</b> under 10 mph is Good, 10-15 Fair, 15-20 Poor, over 20 mph
     Extreme.</p>
     <p><b>Heat/Cold:</b> heat index under 85&deg;F is Good, 85-95&deg;F is
@@ -213,7 +214,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     informational, not safety factors for the ride itself.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.6 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.7 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
@@ -222,7 +223,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.6',
+  VERSION: '0.0.7',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
@@ -601,17 +602,30 @@ function rateDay(days, targetDate) {
   var today = days[idx];
 
   // --- Footing (trailing rain) ---
-  var rain3 = 0, maxSingle5 = 0;
+  // rain3 sums the 3 days immediately before the ride; maxSingle5/Offset
+  // separately scan the full 5-day lookback for any single heavy-rain day,
+  // which can fall outside that 3-day window (day 4 or 5 back). The two
+  // numbers describe different windows, so the message below must say so
+  // explicitly rather than juxtapose them as if they were the same span.
+  var rain3 = 0, maxSingle5 = 0, maxSingle5Offset = 0;
   for (var k = 1; k <= CONFIG.LOOKBACK_DAYS; k++) {
     var pIdx = idx - k;
     if (pIdx < 0) continue;
     var p = days[pIdx].precipSum;
     if (k <= 3) rain3 += p;
-    if (p > maxSingle5) maxSingle5 = p;
+    if (p > maxSingle5) { maxSingle5 = p; maxSingle5Offset = k; }
   }
   var footing;
   if (maxSingle5 > 1.0 || rain3 > 0.5) {
-    footing = { score: 0, label: 'Poor', detail: round1(rain3) + '" of rain in the prior 3 days (heaviest single day ' + round1(maxSingle5) + '") — trails are likely muddy and soft underfoot.' };
+    var footingDetail;
+    if (maxSingle5 > 1.0 && maxSingle5Offset > 3) {
+      footingDetail = round1(maxSingle5) + '" of rain fell ' + maxSingle5Offset + ' days before this ride — outside the last 3 days (which only saw ' + round1(rain3) + '"), but trails may still be recovering from that heavier rain.';
+    } else if (maxSingle5 > 1.0) {
+      footingDetail = round1(maxSingle5) + '" fell in a single day within the prior 3 days (' + round1(rain3) + '" total) — trails are likely muddy and soft underfoot.';
+    } else {
+      footingDetail = round1(rain3) + '" of rain in the prior 3 days — trails are likely muddy and soft underfoot.';
+    }
+    footing = { score: 0, label: 'Poor', detail: footingDetail };
   } else if (rain3 > 0.1) {
     footing = { score: 2, label: 'Fair', detail: round1(rain3) + '" of rain in the prior 3 days — footing may be soft in low spots.' };
   } else {

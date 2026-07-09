@@ -10,7 +10,7 @@
  * is left completely untouched (no respondWith), so weather data is never
  * served stale from a cache.
  */
-var CACHE_VERSION = '0.0.6';
+var CACHE_VERSION = '0.0.7';
 var CACHE_NAME = 'hoofcast-' + CACHE_VERSION;
 
 var STATIC_ASSETS = [
