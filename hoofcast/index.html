@@ -31,13 +31,13 @@ body{display:flex;flex-direction:column;}
 #loading .spinner{width:46px;height:46px;border-radius:50%;border:3px solid var(--primary-dim);border-top-color:var(--primary);animation:spin 1s linear infinite;margin-bottom:18px;}
 #loading .loadTitle{font-size:22px;letter-spacing:3px;margin-bottom:6px;}
 #loading .loadStatus{font-size:13px;color:var(--text-dim);}
-#loading .loadVersion{position:absolute;bottom:14px;font-size:11px;color:var(--text-dim);letter-spacing:1px;}
+#loading .loadVersion{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom, 0px));font-size:11px;color:var(--text-dim);letter-spacing:1px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 #app{display:flex;flex-direction:column;height:100%;width:100%;}
 #app[hidden]{display:none;}
 
-header#header{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);border-bottom:1px solid var(--panel-line);flex-shrink:0;}
+header#header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top, 0px)) 12px 10px;background:var(--panel);border-bottom:1px solid var(--panel-line);flex-shrink:0;}
 #appTitle{font-size:16px;font-weight:700;color:var(--primary);letter-spacing:1px;flex-shrink:0;}
 #locLabel{font-size:12px;color:var(--primary);border:1px solid var(--panel-line);padding:6px 10px;border-radius:6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;flex-shrink:1;}
 #headerSpacer{flex:1;}
@@ -86,7 +86,7 @@ main#main{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
 #errBox[hidden]{display:none;}
 #errBox button{margin-top:8px;background:var(--panel-line);color:var(--text);border:none;padding:7px 14px;border-radius:6px;font-size:12px;}
 
-footer#footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:var(--panel);border-top:1px solid var(--panel-line);flex-shrink:0;font-size:11px;color:var(--text-dim);}
+footer#footer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom, 0px));background:var(--panel);border-top:1px solid var(--panel-line);flex-shrink:0;font-size:11px;color:var(--text-dim);}
 footer#footer button{background:var(--panel-line);color:var(--text);border:none;padding:7px 12px;border-radius:6px;font-size:12px;cursor:pointer;}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px;}
@@ -123,7 +123,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
   <div class="spinner"></div>
   <div class="loadTitle">HOOFCAST</div>
   <div class="loadStatus" id="loadStatus">Loading forecast&hellip;</div>
-  <div class="loadVersion" id="loadVersion">v0.0.7</div>
+  <div class="loadVersion" id="loadVersion">v0.0.8</div>
 </div>
 
 <div id="app" hidden>
@@ -132,7 +132,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     <span id="locLabel">Warrenton, VA</span>
     <span id="headerSpacer"></span>
     <button id="infoBtn" title="How ratings work">?</button>
-    <span id="versionTag">v0.0.7</span>
+    <span id="versionTag">v0.0.8</span>
   </header>
 
   <div id="dateStrip"></div>
@@ -214,7 +214,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
     informational, not safety factors for the ride itself.</p>
     <p>Forecast and recent-rain data from
     <a href="https://open-meteo.com" target="_blank" rel="noopener" style="color:var(--primary);">Open-Meteo</a>,
-    a free open weather API. This is a v0.0.7 MVP &mdash; thresholds are
+    a free open weather API. This is a v0.0.8 MVP &mdash; thresholds are
     tunable and will keep improving.</p>
   </div>
 </div>
@@ -223,7 +223,7 @@ footer#footer button{background:var(--panel-line);color:var(--text);border:none;
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '0.0.7',
+  VERSION: '0.0.8',
   DEFAULT_LOCATION: { lat: 38.7160, lon: -77.7947, label: 'Warrenton, VA' },
   FORECAST_DAYS_AHEAD: 10,
   LOOKBACK_DAYS: 5,
