@@ -23,6 +23,8 @@ const MIL_RECHECK_MS = 60 * 60 * 1000; // re-check KV hourly per spec
 const FLIGHTS_CACHE_MS = 25 * 1000;
 const AIRCRAFT_CACHE_MS = 24 * 60 * 60 * 1000;
 const ROUTE_CACHE_MS = 60 * 60 * 1000;
+const ANALYTICS_KV_TTL = 90 * 24 * 60 * 60; // 90-day retention
+const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
 
 // ---- module-scope in-memory caches (live for the lifetime of the isolate) ----
 let milDb = { ranges: [], updated: null, loadedAt: 0 };
@@ -559,23 +561,193 @@ async function handleRefreshMilDb(env) {
 }
 
 // ---------------------------------------------------------------------------
+// Analytics
+// ---------------------------------------------------------------------------
+
+async function hashIP(ip) {
+  const data = new TextEncoder().encode(ip + ':sf2salt');
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).slice(0, 4)
+    .map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+function classifyUA(ua) {
+  if (/iPhone|iPad|watchOS/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  if (/Macintosh|Mac OS X/.test(ua)) return 'mac';
+  if (/Windows/.test(ua)) return 'windows';
+  return 'other';
+}
+
+function analyticsHourKey() {
+  const now = new Date();
+  return 'analytics:' + now.toISOString().slice(0, 10) + ':' +
+    String(now.getUTCHours()).padStart(2, '0');
+}
+
+async function logAnalyticsEvent(request, env, opts) {
+  try {
+    const ip = request.headers.get('CF-Connecting-IP') || '';
+    const cf = request.cf || {};
+    const ipHash = await hashIP(ip);
+    const event = {
+      ts: Date.now(),
+      h: ipHash,
+      country: cf.country || null,
+      region: cf.region || null,
+      city: cf.city || null,
+      ua: classifyUA(request.headers.get('User-Agent') || ''),
+      radius: opts && opts.radius ? Math.round(opts.radius) : null,
+    };
+    const key = analyticsHourKey();
+    const existing = (await env.SKYFRAME2_KV.get(key, 'json')) || [];
+    existing.push(event);
+    await env.SKYFRAME2_KV.put(key, JSON.stringify(existing), {
+      expirationTtl: ANALYTICS_KV_TTL,
+    });
+  } catch (e) {
+    // never break the main request path
+  }
+}
+
+function buildDateHourKeys(days) {
+  const keys = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    const day = d.toISOString().slice(0, 10);
+    for (let h = 0; h < 24; h++) {
+      keys.push('analytics:' + day + ':' + String(h).padStart(2, '0'));
+    }
+  }
+  return keys;
+}
+
+async function handleAnalytics(url, env) {
+  const reqKey = url.searchParams.get('key') || '';
+  if (!env.ANALYTICS_KEY || reqKey !== env.ANALYTICS_KEY) {
+    return json({ error: 'unauthorized' }, 401);
+  }
+
+  const days = Math.min(90, Math.max(1, parseInt(url.searchParams.get('days') || '7', 10)));
+  const hourKeys = buildDateHourKeys(days);
+
+  // Fetch in batches of 24 (one day) to avoid hammering KV
+  const allEvents = [];
+  for (let i = 0; i < hourKeys.length; i += 24) {
+    const batch = hourKeys.slice(i, i + 24);
+    const results = await Promise.all(batch.map(function (k) {
+      return env.SKYFRAME2_KV.get(k, 'json').then(function (v) { return v || []; });
+    }));
+    results.forEach(function (arr) { allEvents.push.apply(allEvents, arr); });
+  }
+
+  if (!allEvents.length) {
+    return json({ days: days, totalRequests: 0, uniqueUsers: 0, message: 'No analytics data yet — start making /flights requests to populate.' });
+  }
+
+  allEvents.sort(function (a, b) { return a.ts - b.ts; });
+
+  // Unique users by hashed IP
+  const uniqueHashes = new Set(allEvents.map(function (e) { return e.h; }));
+
+  // Session analysis: group timestamps by hash, split on SESSION_GAP_MS
+  const byHash = {};
+  allEvents.forEach(function (e) {
+    if (!byHash[e.h]) byHash[e.h] = [];
+    byHash[e.h].push(e.ts);
+  });
+
+  const sessions = [];
+  Object.keys(byHash).forEach(function (hash) {
+    const tss = byHash[hash].sort(function (a, b) { return a - b; });
+    let start = tss[0];
+    let last = tss[0];
+    let count = 1;
+    for (let i = 1; i < tss.length; i++) {
+      if (tss[i] - last > SESSION_GAP_MS) {
+        sessions.push({ durationMin: Math.round((last - start) / 60000), requests: count });
+        start = tss[i];
+        count = 0;
+      }
+      last = tss[i];
+      count++;
+    }
+    sessions.push({ durationMin: Math.round((last - start) / 60000), requests: count });
+  });
+
+  const avgSessionMin = sessions.length
+    ? Math.round(sessions.reduce(function (s, x) { return s + x.durationMin; }, 0) / sessions.length * 10) / 10
+    : 0;
+
+  // Per-day breakdown
+  const byDay = {};
+  const byDayUsers = {};
+  allEvents.forEach(function (e) {
+    const day = new Date(e.ts).toISOString().slice(0, 10);
+    byDay[day] = (byDay[day] || 0) + 1;
+    if (!byDayUsers[day]) byDayUsers[day] = new Set();
+    byDayUsers[day].add(e.h);
+  });
+  const dailyStats = Object.keys(byDay).sort().reverse().map(function (day) {
+    return { date: day, requests: byDay[day], uniqueUsers: byDayUsers[day].size };
+  });
+
+  // Top locations (city, state)
+  const locationCounts = {};
+  allEvents.forEach(function (e) {
+    const parts = [e.city, e.region, e.country].filter(Boolean);
+    if (!parts.length) return;
+    const loc = parts.join(', ');
+    locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+  });
+  const topLocations = Object.entries(locationCounts)
+    .sort(function (a, b) { return b[1] - a[1]; })
+    .slice(0, 15)
+    .map(function (pair) { return { location: pair[0], requests: pair[1] }; });
+
+  // Device breakdown
+  const devices = {};
+  allEvents.forEach(function (e) {
+    const ua = e.ua || 'other';
+    devices[ua] = (devices[ua] || 0) + 1;
+  });
+
+  return json({
+    days: days,
+    totalRequests: allEvents.length,
+    uniqueUsers: uniqueHashes.size,
+    totalSessions: sessions.length,
+    avgSessionDurationMin: avgSessionMin,
+    dailyStats: dailyStats,
+    topLocations: topLocations,
+    devices: devices,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders() });
     }
     const url = new URL(request.url);
     try {
-      if (url.pathname === '/flights' && request.method === 'GET') return await handleFlights(url, env);
+      if (url.pathname === '/flights' && request.method === 'GET') {
+        const resp = await handleFlights(url, env);
+        const radius = parseFloat(url.searchParams.get('dist')) || 50;
+        ctx.waitUntil(logAnalyticsEvent(request, env, { radius: radius }));
+        return resp;
+      }
       if (url.pathname === '/aircraft' && request.method === 'GET') return await handleAircraft(url);
       if (url.pathname === '/route' && request.method === 'POST') return await handleRoute(request, env);
       if (url.pathname === '/weather' && request.method === 'GET') return await handleWeather(url);
       if (url.pathname === '/health' && request.method === 'GET') return await handleHealth(env);
       if (url.pathname === '/usage' && request.method === 'GET') return await handleUsage(env);
       if (url.pathname === '/refresh-mil-db') return await handleRefreshMilDb(env);
+      if (url.pathname === '/analytics' && request.method === 'GET') return await handleAnalytics(url, env);
       return json({ error: 'not found' }, 404);
     } catch (err) {
       return json({ error: 'internal error', message: String(err && err.message ? err.message : err) }, 500);
