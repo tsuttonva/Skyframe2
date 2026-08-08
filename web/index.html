@@ -232,6 +232,7 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
     <button id="fieldsBtn">Fields: ON</button>
     <span id="dataStateVal" class="live">LIVE</span>
     <div id="refreshStatus"><span id="lastRefreshedVal">Last refreshed --:--:--</span><span id="nextRefreshVal">Next refresh in --s</span><span id="lastErrorVal" hidden></span></div>
+    <button id="pollBtn">POLL: 30s</button>
     <button id="refreshBtn">REFRESH</button>
     <button id="testAudioBtn">TEST</button>
   </footer>
@@ -265,12 +266,13 @@ footer#footer button.active{background:var(--primary);color:#001a0a;}
 <script>
 /* ============================== CONFIG ============================== */
 var CONFIG = {
-  VERSION: '1.0.46',
+  VERSION: '1.0.47',
   WORKER_URL: 'https://skyframe2-worker.tom-tsutton.workers.dev',
   DEFAULT_LOCATION: { lat: 38.6862, lon: -77.7997, label: 'Bealeton, VA' },
   RADAR_MIN_NM: 5, RADAR_MAX_NM: 300, RADAR_DEFAULT_NM: 50,
   ALERT_MIN_NM: 1, ALERT_MAX_NM: 20, ALERT_DEFAULT_NM: 15, ALERT_HYSTERESIS: 1.2,
   REFRESH_MS: 30000,
+  REFRESH_OPTIONS_MS: [10000, 20000, 30000, 60000],
   FIRST_LOAD_RETRY_DELAY_MS: 2000,
   STALE_RETRY_DELAYS_MS: [3000, 6000],
   WORKER_TIMEOUT_MS: 20000,
@@ -319,6 +321,7 @@ var STATE = {
   stale: false,
   hasEverSucceeded: false,
   firstLoadRetryDone: false,
+  refreshIntervalMs: 30000,
   refreshTimer: null,
   lastRefreshedAt: null,
   nextRefreshAt: null,
@@ -946,7 +949,7 @@ function restartRefreshCycle() {
   if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
   if (STATE.demoMode === 'showcase') return;
   attemptRefresh();
-  startRefreshInterval(CONFIG.REFRESH_MS);
+  startRefreshInterval(STATE.refreshIntervalMs);
 }
 
 /* ============================== RADAR DRAW ============================== */
@@ -1653,7 +1656,7 @@ function setRadarRadius(nm, isExpand) {
 function restartRefreshCycleNoFetch() {
   if (STATE.refreshTimer) clearInterval(STATE.refreshTimer);
   if (STATE.demoMode === 'showcase') return;
-  startRefreshInterval(CONFIG.REFRESH_MS);
+  startRefreshInterval(STATE.refreshIntervalMs);
 }
 
 function adjustRadarRadius(dir) {
@@ -2864,6 +2867,15 @@ document.getElementById('fieldsBtn').addEventListener('click', function () {
   this.textContent = 'Fields: ' + (STATE.fieldsOn ? 'ON' : 'OFF');
 });
 
+document.getElementById('pollBtn').addEventListener('click', function () {
+  var opts = CONFIG.REFRESH_OPTIONS_MS;
+  var idx = opts.indexOf(STATE.refreshIntervalMs);
+  STATE.refreshIntervalMs = opts[(idx + 1) % opts.length];
+  Persist.set('refreshIntervalMs', STATE.refreshIntervalMs);
+  this.textContent = 'POLL: ' + (STATE.refreshIntervalMs / 1000) + 's';
+  if (STATE.demoMode !== 'showcase') startRefreshInterval(STATE.refreshIntervalMs);
+});
+
 document.getElementById('refreshBtn').addEventListener('click', function () {
   if (STATE.demoMode === 'showcase') return;
   STATE.source.preferred = null;
@@ -2915,6 +2927,8 @@ function init() {
   document.getElementById('audioBtn').textContent = 'Audio: ' + (STATE.audioOn ? 'ON' : 'OFF');
   STATE.fieldsOn = Persist.get('fieldsOn', true);
   document.getElementById('fieldsBtn').textContent = 'Fields: ' + (STATE.fieldsOn ? 'ON' : 'OFF');
+  STATE.refreshIntervalMs = Persist.get('refreshIntervalMs', CONFIG.REFRESH_MS);
+  document.getElementById('pollBtn').textContent = 'POLL: ' + (STATE.refreshIntervalMs / 1000) + 's';
   applyTheme(Persist.get('theme', 'modern'));
 
   window.addEventListener('resize', debounce(resizeCanvas, 150));
