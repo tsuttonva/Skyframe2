@@ -365,6 +365,7 @@ async function paidRouteLookup(callsign, env) {
     origin: { code: origin.code || '', name: origin.name || '', city: origin.city || '' },
     destination: { code: dest.code || '', name: dest.name || '', city: dest.city || '' },
     status: flight.status || '',
+    departedAt: flight.actual_off || flight.scheduled_off || null,
     diverted: diverted,
     divertedTo: diverted ? findDivertedDestination(flights, flight) : null,
   };
