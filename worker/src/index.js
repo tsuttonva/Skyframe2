@@ -20,11 +20,15 @@ const MIL_RANGES_URL = 'https://raw.githubusercontent.com/wiedehopf/tar1090-db/m
 const MIL_KV_KEY = 'mil:db';
 const MIL_KV_TTL_SECONDS = 8 * 24 * 60 * 60; // ~8 days, per spec: survives a missed weekly refresh
 const MIL_RECHECK_MS = 60 * 60 * 1000; // re-check KV hourly per spec
-const FLIGHTS_CACHE_MS = 10 * 1000;
+const FLIGHTS_CACHE_MS = 25 * 1000;
+const FLIGHTS_KV_TTL_SECONDS = 6 * 60 * 60; // durable stale-fallback survives isolate restarts/redeploys
 const AIRCRAFT_CACHE_MS = 24 * 60 * 60 * 1000;
 const ROUTE_CACHE_MS = 60 * 60 * 1000;
 const ANALYTICS_KV_TTL = 90 * 24 * 60 * 60; // 90-day retention
 const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
+// adsb.lol asks API consumers to identify their app (contact URL) rather than
+// send anonymous/generic traffic, per their fair-use policy.
+const ADSB_USER_AGENT = 'SkyFrame2-Worker/1.0 (+https://tsuttonva.github.io/Skyframe2/)';
 
 // ---- module-scope in-memory caches (live for the lifetime of the isolate) ----
 let milDb = { ranges: [], updated: null, loadedAt: 0 };
@@ -161,13 +165,14 @@ function normalizeAdsbLol(ac, myLat, myLon, ranges) {
   };
 }
 
-async function handleFlights(url, env) {
+async function handleFlights(url, env, ctx) {
   const lat = parseFloat(url.searchParams.get('lat'));
   const lon = parseFloat(url.searchParams.get('lon'));
   const dist = parseFloat(url.searchParams.get('dist')) || 50;
   if (isNaN(lat) || isNaN(lon)) return json({ error: 'lat and lon are required' }, 400);
 
   const cacheKey = lat.toFixed(2) + ',' + lon.toFixed(2) + ',' + Math.round(dist);
+  const kvKey = 'flights:' + cacheKey;
   const cached = flightsCache.get(cacheKey);
   if (cached && Date.now() - cached.at < FLIGHTS_CACHE_MS) {
     return json({ aircraft: cached.aircraft, source: 'worker', cached: true });
@@ -182,18 +187,22 @@ async function handleFlights(url, env) {
   // of short retries often succeed instead of forcing the client through its
   // whole fallback cascade for a blip.
   const backoffsMs = [500, 1500];
-  let resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
+  let resp = await fetch(upstreamUrl, { headers: { 'User-Agent': ADSB_USER_AGENT } });
   for (let i = 0; !resp.ok && i < backoffsMs.length; i++) {
     await new Promise(function (resolve) { setTimeout(resolve, backoffsMs[i]); });
-    resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
+    resp = await fetch(upstreamUrl, { headers: { 'User-Agent': ADSB_USER_AGENT } });
   }
   if (!resp.ok) {
-    // Upstream is still down after retries -- serve the last known-good
-    // list for this location/radius (even past its normal TTL) rather than
-    // erroring the client into its whole other-source fallback cascade for
-    // what's usually a transient adsb.lol hiccup. Only hard-fail if we've
-    // never successfully fetched this location/radius before.
+    // Upstream is still down after retries -- serve the last known-good list
+    // for this location/radius rather than erroring the client into its whole
+    // other-source fallback cascade for what's usually a transient adsb.lol
+    // rate limit. Check the in-memory cache first (fastest), then fall back
+    // to KV -- which survives isolate restarts/redeploys, so a freshly
+    // deployed or cold-started worker still has something to serve during an
+    // outage instead of hard-failing on its very first request.
     if (cached) return json({ aircraft: cached.aircraft, source: 'worker', cached: true, stale: true });
+    const kvCached = await env.SKYFRAME2_KV.get(kvKey, 'json');
+    if (kvCached) return json({ aircraft: kvCached.aircraft, source: 'worker', cached: true, stale: true });
     return json({ error: 'upstream error', status: resp.status }, 502);
   }
   const data = await resp.json();
@@ -205,6 +214,11 @@ async function handleFlights(url, env) {
     .filter(Boolean);
 
   flightsCache.set(cacheKey, { aircraft: aircraft, at: Date.now() });
+  if (ctx) {
+    ctx.waitUntil(env.SKYFRAME2_KV.put(kvKey, JSON.stringify({ aircraft: aircraft, at: Date.now() }), {
+      expirationTtl: FLIGHTS_KV_TTL_SECONDS,
+    }));
+  }
   return json({ aircraft: aircraft, source: 'worker', cached: false });
 }
 
@@ -746,7 +760,7 @@ export default {
     const url = new URL(request.url);
     try {
       if (url.pathname === '/flights' && request.method === 'GET') {
-        const resp = await handleFlights(url, env);
+        const resp = await handleFlights(url, env, ctx);
         const radius = parseFloat(url.searchParams.get('dist')) || 50;
         ctx.waitUntil(logAnalyticsEvent(request, env, { radius: radius }));
         return resp;
