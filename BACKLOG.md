@@ -1,5 +1,76 @@
 # Backlog
 
+## IN PROGRESS: adsb.lol rate-limiting reliability (pick up here)
+
+Symptom that started this: `/flights` intermittently (then, under heavy
+testing, *persistently*) returning `502`, cascading into every other
+fallback source failing too -- browser console showed something like
+`airplanesLive: Failed to fetch; direct: Failed to fetch; opensky: Failed
+to fetch; worker: worker http 502`.
+
+Root cause, confirmed live via `npx wrangler tail` (not guessed): adsb.lol
+rate-limits by source IP, and Cloudflare Workers share IP ranges across
+many unrelated tenants. Saw real `429`s from adsb.lol to the worker --
+sometimes a brief blip, but during a heavy testing session (many rapid
+location changes in one evening) saw it sustained for 2+ minutes straight
+(6 consecutive 20s poll cycles for Syracuse, NY, every single one a 429,
+right up until testing stopped for the night).
+
+Fixes shipped so far, all in `worker/src/index.js` (`handleFlights` and
+around), deployed to both `claude/skyframe2-session-recovery-0s85kv` and
+the live deploy branch `claude/cross-platform-app-build-vtwr2l`:
+
+1. Retry a failed adsb.lol call twice (500ms/1500ms backoff) before
+   giving up on a single request.
+2. Restored the worker's own upstream cache to 25s (it had been cut to
+   10s in v1.0.47 to support the 10s poll-interval option, which tripled
+   request volume to adsb.lol regardless of any one client's actual poll
+   setting -- this was a real contributor, not just a coincidence).
+3. Proper `User-Agent` identifying the app + contact URL sent to adsb.lol
+   (was a bare, anonymous-looking string before).
+4. Stale-data fallback on failure: serve the last known-good aircraft
+   list for that location/radius instead of a hard error. Checks
+   in-memory cache first, then a durable KV-backed cache
+   (`flights:<lat>,<lon>,<radius>` key, 6h TTL) so a freshly
+   deployed/cold-started worker isolate still has something to serve.
+   Confirmed working live (`kv fallback HIT` seen in tail output).
+5. Tried adding airplanes.live as a second server-side upstream --
+   confirmed via `wrangler tail` it returns a hard `403` to *every single*
+   request from a Cloudflare Worker (their own bot-protection blocking
+   Workers' IP ranges outright, not transient/rate-limit-shaped), so this
+   was removed again as pure dead weight.
+6. Circuit breaker: after one live adsb.lol failure, the worker stops
+   attempting/retrying against it for 60s (`ADSB_COOLDOWN_MS`) and goes
+   straight to cache/KV/502 instead, so it isn't piling more requests onto
+   an already-throttled window every 20s.
+7. Diagnostic `console.log` lines left in `handleFlights` on purpose
+   (visible via `npx wrangler tail`) -- logs adsb.lol status,
+   circuit-breaker state, and cache/KV hit-or-miss. Useful for next time,
+   don't remove without a reason.
+
+**Not yet confirmed:** whether the circuit breaker (fix #6, the last one
+shipped) actually let the sustained Syracuse throttle clear -- testing
+stopped for the night with it still failing every cycle. Next session,
+start here:
+
+- Check cold (no heavy testing beforehand) whether a brand-new location's
+  first request now succeeds normally, or is still hitting 429.
+- If still bad after a quiet period: consider whether `ADSB_COOLDOWN_MS`
+  (currently 60s) needs to be longer, or whether last night's testing got
+  this Worker's IP a longer-than-60s penalty from adsb.lol that needs more
+  time (hours, not minutes) to clear on its own.
+- If it's healthy: consider this resolved, but keep an eye out since nothing
+  here can fully control adsb.lol's own rate limiting -- it's shared
+  infrastructure outside this app's control.
+
+Lower priority, not blocking: the client-side `direct` (adsb.lol) and
+`opensky` fallback sources in `web/index.html` are both structurally
+broken when called from a browser (missing/mismatched CORS headers on
+their end) and always fail -- confirmed via DevTools, not something we
+changed, not urgent since the worker + stale-cache path now carries
+reliability. Worth considering removing the dead client-side fallback
+attempts for cleanliness at some point.
+
 ## ~~Remove "fail into demo mode" fallback~~ (done in v1.0.9)
 
 When all data sources fail repeatedly with no aircraft yet loaded,
