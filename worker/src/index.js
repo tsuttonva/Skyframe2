@@ -22,9 +22,12 @@ const MIL_KV_TTL_SECONDS = 8 * 24 * 60 * 60; // ~8 days, per spec: survives a mi
 const MIL_RECHECK_MS = 60 * 60 * 1000; // re-check KV hourly per spec
 const FLIGHTS_CACHE_MS = 25 * 1000;
 const FLIGHTS_KV_TTL_SECONDS = 6 * 60 * 60; // durable stale-fallback survives isolate restarts/redeploys
+const FLIGHTS_KV_WRITE_INTERVAL_MS = 5 * 60 * 1000; // throttle KV writes -- see flightsKvWrittenAt below
 const AIRCRAFT_CACHE_MS = 24 * 60 * 60 * 1000;
 const ROUTE_CACHE_MS = 60 * 60 * 1000;
 const ANALYTICS_KV_TTL = 90 * 24 * 60 * 60; // 90-day retention
+const ANALYTICS_FLUSH_COUNT = 20; // flush the buffer after this many events...
+const ANALYTICS_FLUSH_MS = 5 * 60 * 1000; // ...or after this long, whichever comes first
 const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
 // adsb.lol asks API consumers to identify their app (contact URL) rather than
 // send anonymous/generic traffic, per their fair-use policy.
@@ -37,6 +40,17 @@ let milLoadPromise = null;
 const flightsCache = new Map();
 const aircraftCache = new Map();
 const routeCache = new Map();
+// Cloudflare's free Workers KV tier caps writes tightly (1,000/day) -- the
+// KV stale-fallback only needs to be "pretty fresh," not literally
+// per-request, so throttle writes per location to keep our footprint small.
+const flightsKvWrittenAt = new Map();
+// Analytics events are buffered here and flushed to KV in batches (see
+// logAnalyticsEvent) instead of one KV read+write per request -- same KV
+// write cap concern. A buffer lost to isolate recycling before it flushes
+// is an acceptable trade for personal-scale analytics.
+let analyticsBuffer = [];
+let analyticsBufferKey = null;
+let analyticsBufferSince = 0;
 // Circuit breaker: once adsb.lol fails, stop hammering it (with retries, on
 // every single poll cycle) for a cooldown window. adsb.lol rate-limits by
 // source IP shared across many unrelated Cloudflare Worker tenants, and
@@ -230,7 +244,14 @@ async function handleFlights(url, env, ctx) {
     // worth the extra round-trip.)
     console.log('[flights] adsb.lol failed key=' + cacheKey + ' memCache=' + !!cached);
     if (cached) return json({ aircraft: cached.aircraft, source: 'worker', cached: true, stale: true });
-    const kvCached = await env.SKYFRAME2_KV.get(kvKey, 'json');
+    let kvCached = null;
+    try {
+      kvCached = await env.SKYFRAME2_KV.get(kvKey, 'json');
+    } catch (e) {
+      // KV itself can fail (e.g. account hit its own daily op cap) -- treat
+      // that the same as a miss rather than crashing the request into a 500.
+      console.log('[flights] kv fallback read error key=' + kvKey + ' err=' + e);
+    }
     console.log('[flights] kv fallback ' + (kvCached ? 'HIT' : 'MISS') + ' key=' + kvKey);
     if (kvCached) return json({ aircraft: kvCached.aircraft, source: 'worker', cached: true, stale: true });
     return json({ error: 'upstream error', status: resp.status }, 502);
@@ -245,7 +266,9 @@ async function handleFlights(url, env, ctx) {
 
   console.log('[flights] success key=' + cacheKey + ' n=' + aircraft.length);
   flightsCache.set(cacheKey, { aircraft: aircraft, at: Date.now() });
-  if (ctx) {
+  const lastKvWrite = flightsKvWrittenAt.get(cacheKey) || 0;
+  if (ctx && Date.now() - lastKvWrite >= FLIGHTS_KV_WRITE_INTERVAL_MS) {
+    flightsKvWrittenAt.set(cacheKey, Date.now());
     ctx.waitUntil(env.SKYFRAME2_KV.put(kvKey, JSON.stringify({ aircraft: aircraft, at: Date.now() }), {
       expirationTtl: FLIGHTS_KV_TTL_SECONDS,
     }));
@@ -640,6 +663,19 @@ function analyticsHourKey() {
     String(now.getUTCHours()).padStart(2, '0');
 }
 
+async function flushAnalyticsBuffer(env) {
+  if (!analyticsBuffer.length || !analyticsBufferKey) return;
+  const key = analyticsBufferKey;
+  const toWrite = analyticsBuffer;
+  analyticsBuffer = [];
+  analyticsBufferSince = Date.now();
+  const existing = (await env.SKYFRAME2_KV.get(key, 'json')) || [];
+  existing.push.apply(existing, toWrite);
+  await env.SKYFRAME2_KV.put(key, JSON.stringify(existing), {
+    expirationTtl: ANALYTICS_KV_TTL,
+  });
+}
+
 async function logAnalyticsEvent(request, env, opts) {
   try {
     const ip = request.headers.get('CF-Connecting-IP') || '';
@@ -655,11 +691,17 @@ async function logAnalyticsEvent(request, env, opts) {
       radius: opts && opts.radius ? Math.round(opts.radius) : null,
     };
     const key = analyticsHourKey();
-    const existing = (await env.SKYFRAME2_KV.get(key, 'json')) || [];
-    existing.push(event);
-    await env.SKYFRAME2_KV.put(key, JSON.stringify(existing), {
-      expirationTtl: ANALYTICS_KV_TTL,
-    });
+    if (key !== analyticsBufferKey) {
+      // Hour rolled over -- flush whatever's buffered under the old key
+      // first so it doesn't get merged into the wrong hour's bucket.
+      await flushAnalyticsBuffer(env);
+      analyticsBufferKey = key;
+      analyticsBufferSince = Date.now();
+    }
+    analyticsBuffer.push(event);
+    const dueForFlush = analyticsBuffer.length >= ANALYTICS_FLUSH_COUNT ||
+      Date.now() - analyticsBufferSince >= ANALYTICS_FLUSH_MS;
+    if (dueForFlush) await flushAnalyticsBuffer(env);
   } catch (e) {
     // never break the main request path
   }
