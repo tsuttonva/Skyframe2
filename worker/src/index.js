@@ -26,10 +26,9 @@ const AIRCRAFT_CACHE_MS = 24 * 60 * 60 * 1000;
 const ROUTE_CACHE_MS = 60 * 60 * 1000;
 const ANALYTICS_KV_TTL = 90 * 24 * 60 * 60; // 90-day retention
 const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
-// adsb.lol and airplanes.live both ask API consumers to identify their app
-// (contact URL) rather than send anonymous/generic traffic, per their
-// fair-use policies.
-const FLIGHT_API_USER_AGENT = 'SkyFrame2-Worker/1.0 (+https://tsuttonva.github.io/Skyframe2/)';
+// adsb.lol asks API consumers to identify their app (contact URL) rather than
+// send anonymous/generic traffic, per their fair-use policy.
+const ADSB_USER_AGENT = 'SkyFrame2-Worker/1.0 (+https://tsuttonva.github.io/Skyframe2/)';
 
 // ---- module-scope in-memory caches (live for the lifetime of the isolate) ----
 let milDb = { ranges: [], updated: null, loadedAt: 0 };
@@ -167,10 +166,10 @@ function normalizeAdsbLol(ac, myLat, myLon, ranges) {
 }
 
 async function fetchWithRetry(upstreamUrl, backoffsMs) {
-  let resp = await fetch(upstreamUrl, { headers: { 'User-Agent': FLIGHT_API_USER_AGENT } });
+  let resp = await fetch(upstreamUrl, { headers: { 'User-Agent': ADSB_USER_AGENT } });
   for (let i = 0; !resp.ok && i < backoffsMs.length; i++) {
     await new Promise(function (resolve) { setTimeout(resolve, backoffsMs[i]); });
-    resp = await fetch(upstreamUrl, { headers: { 'User-Agent': FLIGHT_API_USER_AGENT } });
+    resp = await fetch(upstreamUrl, { headers: { 'User-Agent': ADSB_USER_AGENT } });
   }
   return resp;
 }
@@ -199,25 +198,20 @@ async function handleFlights(url, env, ctx) {
   let resp = await fetchWithRetry(adsbUrl, [500, 1500]);
   console.log('[flights] adsb.lol status=' + resp.status + ' key=' + cacheKey);
   if (!resp.ok) {
-    // adsb.lol is still down -- airplanes.live exposes the same
-    // ADSBExchange-compatible v2/point shape from an independently operated
-    // feeder network, so it's a genuinely different rate limiter/outage
-    // surface than adsb.lol, worth trying server-side before giving up
-    // (unlike the client's direct browser call to it, this one isn't subject
-    // to CORS).
-    const airplanesLiveUrl = 'https://api.airplanes.live/v2/point/' + lat + '/' + lon + '/' + radiusNm;
-    resp = await fetchWithRetry(airplanesLiveUrl, [500]);
-    console.log('[flights] airplanes.live status=' + resp.status + ' key=' + cacheKey);
-  }
-  if (!resp.ok) {
-    // Both upstreams are still down after retries -- serve the last
-    // known-good list for this location/radius rather than erroring the
-    // client into its whole other-source fallback cascade for what's usually
-    // a transient rate limit. Check the in-memory cache first (fastest), then
-    // fall back to KV -- which survives isolate restarts/redeploys, so a
-    // freshly deployed or cold-started worker still has something to serve
-    // during an outage instead of hard-failing on its very first request.
-    console.log('[flights] both upstreams failed key=' + cacheKey + ' memCache=' + !!cached);
+    // adsb.lol is still down after retries -- serve the last known-good list
+    // for this location/radius rather than erroring the client into its whole
+    // other-source fallback cascade for what's usually a transient rate
+    // limit. Check the in-memory cache first (fastest), then fall back to
+    // KV -- which survives isolate restarts/redeploys, so a freshly deployed
+    // or cold-started worker still has something to serve during an outage
+    // instead of hard-failing on its very first request.
+    //
+    // (airplanes.live was tried here too as a second upstream, but it
+    // returns a hard 403 to every Cloudflare Worker request -- consistent,
+    // not transient, likely their own Cloudflare bot-protection blocking
+    // Workers' IP ranges outright. Retrying it never helps, so it's not
+    // worth the extra round-trip.)
+    console.log('[flights] adsb.lol failed key=' + cacheKey + ' memCache=' + !!cached);
     if (cached) return json({ aircraft: cached.aircraft, source: 'worker', cached: true, stale: true });
     const kvCached = await env.SKYFRAME2_KV.get(kvKey, 'json');
     console.log('[flights] kv fallback ' + (kvCached ? 'HIT' : 'MISS') + ' key=' + kvKey);
