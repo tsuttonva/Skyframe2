@@ -29,6 +29,7 @@ const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
 // adsb.lol asks API consumers to identify their app (contact URL) rather than
 // send anonymous/generic traffic, per their fair-use policy.
 const ADSB_USER_AGENT = 'SkyFrame2-Worker/1.0 (+https://tsuttonva.github.io/Skyframe2/)';
+const ADSB_COOLDOWN_MS = 60 * 1000;
 
 // ---- module-scope in-memory caches (live for the lifetime of the isolate) ----
 let milDb = { ranges: [], updated: null, loadedAt: 0 };
@@ -36,6 +37,12 @@ let milLoadPromise = null;
 const flightsCache = new Map();
 const aircraftCache = new Map();
 const routeCache = new Map();
+// Circuit breaker: once adsb.lol fails, stop hammering it (with retries, on
+// every single poll cycle) for a cooldown window. adsb.lol rate-limits by
+// source IP shared across many unrelated Cloudflare Worker tenants, and
+// retrying into a sustained throttle just adds to the load keeping it from
+// clearing, on top of burning a couple of wasted seconds per request.
+let adsbUnhealthyUntil = 0;
 
 function corsHeaders() {
   return {
@@ -189,14 +196,24 @@ async function handleFlights(url, env, ctx) {
 
   const milDbNow = await ensureMilDb(env);
   const radiusNm = Math.max(1, Math.min(250, Math.round(dist)));
-  // adsb.lol rate-limits by source IP, and Cloudflare Workers share IP ranges
-  // across many unrelated tenants -- a failure here (429, or a transient 5xx)
-  // is usually a brief, bursty window rather than a real outage, so a couple
-  // of short retries often succeed instead of forcing the client through its
-  // whole fallback cascade for a blip.
-  const adsbUrl = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm;
-  let resp = await fetchWithRetry(adsbUrl, [500, 1500]);
-  console.log('[flights] adsb.lol status=' + resp.status + ' key=' + cacheKey);
+  let resp;
+  if (Date.now() < adsbUnhealthyUntil) {
+    // adsb.lol failed recently enough that we're in a cooldown window --
+    // don't add to its load with more retries, just fall straight through to
+    // cache/KV below.
+    console.log('[flights] adsb.lol circuit open (until ' + new Date(adsbUnhealthyUntil).toISOString() + '), skipping key=' + cacheKey);
+    resp = { ok: false, status: 429 };
+  } else {
+    // adsb.lol rate-limits by source IP, and Cloudflare Workers share IP
+    // ranges across many unrelated tenants -- a failure here (429, or a
+    // transient 5xx) is usually a brief, bursty window rather than a real
+    // outage, so a couple of short retries often succeed instead of forcing
+    // the client through its whole fallback cascade for a blip.
+    const adsbUrl = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm;
+    resp = await fetchWithRetry(adsbUrl, [500, 1500]);
+    console.log('[flights] adsb.lol status=' + resp.status + ' key=' + cacheKey);
+    adsbUnhealthyUntil = resp.ok ? 0 : Date.now() + ADSB_COOLDOWN_MS;
+  }
   if (!resp.ok) {
     // adsb.lol is still down after retries -- serve the last known-good list
     // for this location/radius rather than erroring the client into its whole
