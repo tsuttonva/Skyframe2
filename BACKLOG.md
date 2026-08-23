@@ -1,6 +1,6 @@
 # Backlog
 
-## IN PROGRESS: adsb.lol rate-limiting reliability (pick up here)
+## ~~adsb.lol rate-limiting reliability~~ (resolved Aug 23, 2026)
 
 Symptom that started this: `/flights` intermittently (then, under heavy
 testing, *persistently*) returning `502`, cascading into every other
@@ -70,20 +70,27 @@ dashboard ("View usage" link in that email) to confirm the new write
 volume stays comfortably under the cap during normal use, not just during
 another testing burst.
 
-**Not yet confirmed:** whether the circuit breaker (fix #6, the last one
-shipped) actually let the sustained Syracuse throttle clear -- testing
-stopped for the night with it still failing every cycle. Next session,
-start here:
+**Resolution, confirmed the next morning via `wrangler tail`:** a genuinely
+never-before-queried location (Boise, ID) succeeded on its very first live
+attempt, immediately after the circuit breaker's cooldown expired --
+proof the general fix is healthy, not just luck. Syracuse, NY specifically
+kept failing 8/8 times across both sessions (9+ hours apart) while other
+locations succeeded around it, which isn't consistent with a shared
+per-IP limit -- best guess is that one exact query (same lat/lon/radius,
+queried repeatedly during testing) got its own abuse flag independent of
+general traffic. Left alone rather than chased further; not expected to
+affect real usage, which won't hammer one fixed coordinate like a
+debugging session does.
 
-- Check cold (no heavy testing beforehand) whether a brand-new location's
-  first request now succeeds normally, or is still hitting 429.
-- If still bad after a quiet period: consider whether `ADSB_COOLDOWN_MS`
-  (currently 60s) needs to be longer, or whether last night's testing got
-  this Worker's IP a longer-than-60s penalty from adsb.lol that needs more
-  time (hours, not minutes) to clear on its own.
-- If it's healthy: consider this resolved, but keep an eye out since nothing
-  here can fully control adsb.lol's own rate limiting -- it's shared
-  infrastructure outside this app's control.
+Net effect: the app now self-heals within a poll cycle or two instead of
+cascading into visible errors, for both transient blips and sustained
+multi-minute throttles. Nothing here can fully control adsb.lol's own
+rate limiting since it's shared infrastructure outside this app's
+control -- if it resurfaces, `wrangler tail` plus the diagnostic logging
+left in `handleFlights` (fix #7) is the fastest way back to a root cause,
+and `docs/RATE_LIMITS.md` now has the published limits for everything
+this app depends on so the next investigation starts from documented
+numbers instead of guesses.
 
 Lower priority, not blocking: the client-side `direct` (adsb.lol) and
 `opensky` fallback sources in `web/index.html` are both structurally
