@@ -197,6 +197,7 @@ async function handleFlights(url, env, ctx) {
   // whole fallback cascade for a blip.
   const adsbUrl = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm;
   let resp = await fetchWithRetry(adsbUrl, [500, 1500]);
+  console.log('[flights] adsb.lol status=' + resp.status + ' key=' + cacheKey);
   if (!resp.ok) {
     // adsb.lol is still down -- airplanes.live exposes the same
     // ADSBExchange-compatible v2/point shape from an independently operated
@@ -206,6 +207,7 @@ async function handleFlights(url, env, ctx) {
     // to CORS).
     const airplanesLiveUrl = 'https://api.airplanes.live/v2/point/' + lat + '/' + lon + '/' + radiusNm;
     resp = await fetchWithRetry(airplanesLiveUrl, [500]);
+    console.log('[flights] airplanes.live status=' + resp.status + ' key=' + cacheKey);
   }
   if (!resp.ok) {
     // Both upstreams are still down after retries -- serve the last
@@ -215,8 +217,10 @@ async function handleFlights(url, env, ctx) {
     // fall back to KV -- which survives isolate restarts/redeploys, so a
     // freshly deployed or cold-started worker still has something to serve
     // during an outage instead of hard-failing on its very first request.
+    console.log('[flights] both upstreams failed key=' + cacheKey + ' memCache=' + !!cached);
     if (cached) return json({ aircraft: cached.aircraft, source: 'worker', cached: true, stale: true });
     const kvCached = await env.SKYFRAME2_KV.get(kvKey, 'json');
+    console.log('[flights] kv fallback ' + (kvCached ? 'HIT' : 'MISS') + ' key=' + kvKey);
     if (kvCached) return json({ aircraft: kvCached.aircraft, source: 'worker', cached: true, stale: true });
     return json({ error: 'upstream error', status: resp.status }, 502);
   }
@@ -228,6 +232,7 @@ async function handleFlights(url, env, ctx) {
     })
     .filter(Boolean);
 
+  console.log('[flights] success key=' + cacheKey + ' n=' + aircraft.length);
   flightsCache.set(cacheKey, { aircraft: aircraft, at: Date.now() });
   if (ctx) {
     ctx.waitUntil(env.SKYFRAME2_KV.put(kvKey, JSON.stringify({ aircraft: aircraft, at: Date.now() }), {
