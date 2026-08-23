@@ -23,6 +23,9 @@ This repo also hosts **HoofCast**, a horse-riding-conditions PWA — see
   Safari (12.5.x). Run against both apps in CI (`.github/workflows/ci.yml`).
 - `docs/DEPLOYMENT.md` — full step-by-step setup and deployment instructions,
   written for someone with no prior deployment experience.
+- `docs/RATE_LIMITS.md` — published rate limits/quotas for every external
+  service this app depends on. Check before changing polling frequency,
+  cache TTLs, or anything that calls one of these APIs.
 
 ## CI/CD
 
