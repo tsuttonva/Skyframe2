@@ -48,6 +48,28 @@ the live deploy branch `claude/cross-platform-app-build-vtwr2l`:
    circuit-breaker state, and cache/KV hit-or-miss. Useful for next time,
    don't remove without a reason.
 
+**Side effect discovered the next morning:** Cloudflare emailed a "50% of
+daily Workers KV op cap" warning about 30 minutes before testing stopped
+that night. Cause: analytics logging (pre-existing, unrelated to this
+investigation) *and* the new stale-fallback cache (fix #4) both did a KV
+read+write on every single `/flights` request -- easily enough combined
+volume, especially under heavy testing, to approach the free tier's
+1,000-writes/day cap. Fixed the same session:
+8. Analytics events are now buffered in memory and flushed to KV in
+   batches (every 20 events or 5 minutes) instead of one KV op pair per
+   request.
+9. The stale-fallback KV write (fix #4) is now throttled to once per 5
+   minutes per location instead of every successful fetch.
+10. The KV read in the fallback path is now wrapped in try/catch, so if
+    KV itself ever rejects requests (cap fully hit, not just 50%), it
+    degrades to a plain 502 instead of an uncaught exception turning it
+    into a confusing 500.
+
+Quota resets daily at 00:00 UTC. Worth glancing at the Cloudflare
+dashboard ("View usage" link in that email) to confirm the new write
+volume stays comfortably under the cap during normal use, not just during
+another testing burst.
+
 **Not yet confirmed:** whether the circuit breaker (fix #6, the last one
 shipped) actually let the sustained Syracuse throttle clear -- testing
 stopped for the night with it still failing every cycle. Next session,
