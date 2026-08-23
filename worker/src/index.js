@@ -176,17 +176,26 @@ async function handleFlights(url, env) {
   const milDbNow = await ensureMilDb(env);
   const radiusNm = Math.max(1, Math.min(250, Math.round(dist)));
   const upstreamUrl = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm;
+  // adsb.lol rate-limits by source IP, and Cloudflare Workers share IP ranges
+  // across many unrelated tenants -- a failure here (429, or a transient 5xx)
+  // is usually a brief, bursty window rather than a real outage, so a couple
+  // of short retries often succeed instead of forcing the client through its
+  // whole fallback cascade for a blip.
+  const backoffsMs = [500, 1500];
   let resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
-  if (resp.status === 429) {
-    // adsb.lol rate-limits by source IP, and Cloudflare Workers share IP
-    // ranges across many unrelated tenants -- a 429 here is usually a brief,
-    // bursty window rather than a real outage, so one short retry often
-    // succeeds instead of forcing the client through its whole fallback
-    // cascade for a transient block.
-    await new Promise(function (resolve) { setTimeout(resolve, 750); });
+  for (let i = 0; !resp.ok && i < backoffsMs.length; i++) {
+    await new Promise(function (resolve) { setTimeout(resolve, backoffsMs[i]); });
     resp = await fetch(upstreamUrl, { headers: { 'User-Agent': 'SkyFrame-Worker' } });
   }
-  if (!resp.ok) return json({ error: 'upstream error', status: resp.status }, 502);
+  if (!resp.ok) {
+    // Upstream is still down after retries -- serve the last known-good
+    // list for this location/radius (even past its normal TTL) rather than
+    // erroring the client into its whole other-source fallback cascade for
+    // what's usually a transient adsb.lol hiccup. Only hard-fail if we've
+    // never successfully fetched this location/radius before.
+    if (cached) return json({ aircraft: cached.aircraft, source: 'worker', cached: true, stale: true });
+    return json({ error: 'upstream error', status: resp.status }, 502);
+  }
   const data = await resp.json();
   const list = data && data.ac ? data.ac : [];
   const aircraft = list
