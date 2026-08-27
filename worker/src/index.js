@@ -266,12 +266,30 @@ async function handleFlights(url, env, ctx) {
 
   console.log('[flights] success key=' + cacheKey + ' n=' + aircraft.length);
   flightsCache.set(cacheKey, { aircraft: aircraft, at: Date.now() });
-  const lastKvWrite = flightsKvWrittenAt.get(cacheKey) || 0;
-  if (ctx && Date.now() - lastKvWrite >= FLIGHTS_KV_WRITE_INTERVAL_MS) {
+  const lastKvWriteLocal = flightsKvWrittenAt.get(cacheKey) || 0;
+  if (ctx && Date.now() - lastKvWriteLocal >= FLIGHTS_KV_WRITE_INTERVAL_MS) {
+    // Local memory alone isn't enough to throttle this globally -- Cloudflare
+    // Workers scale across many concurrent isolates that don't share memory,
+    // so each one would otherwise "forget" that some other isolate just
+    // wrote this same key seconds ago. Read the durable record first (reads
+    // are capped at 100,000/day vs. 1,000 writes/day, so this trade is
+    // cheap) and only write if it's actually stale too.
     flightsKvWrittenAt.set(cacheKey, Date.now());
-    ctx.waitUntil(env.SKYFRAME2_KV.put(kvKey, JSON.stringify({ aircraft: aircraft, at: Date.now() }), {
-      expirationTtl: FLIGHTS_KV_TTL_SECONDS,
-    }));
+    let shouldWrite = true;
+    try {
+      const existingKv = await env.SKYFRAME2_KV.get(kvKey, 'json');
+      if (existingKv && existingKv.at && Date.now() - existingKv.at < FLIGHTS_KV_WRITE_INTERVAL_MS) {
+        shouldWrite = false;
+      }
+    } catch (e) {
+      // if the durable check fails, fall back to writing -- worst case is
+      // one extra write, not a crash.
+    }
+    if (shouldWrite) {
+      ctx.waitUntil(env.SKYFRAME2_KV.put(kvKey, JSON.stringify({ aircraft: aircraft, at: Date.now() }), {
+        expirationTtl: FLIGHTS_KV_TTL_SECONDS,
+      }));
+    }
   }
   return json({ aircraft: aircraft, source: 'worker', cached: false });
 }
