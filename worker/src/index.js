@@ -33,6 +33,14 @@ const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
 // send anonymous/generic traffic, per their fair-use policy.
 const ADSB_USER_AGENT = 'SkyFrame2-Worker/1.0 (+https://tsuttonva.github.io/Skyframe2/)';
 const ADSB_COOLDOWN_MS = 60 * 1000;
+// Paused Aug 27, 2026: analytics logging was a direct contributor to the
+// Workers KV daily write-cap warnings (a KV read+write on every /flights
+// request, even after batching). Historical data already collected is
+// still readable via /analytics -- flip this back on once logging moves
+// to something that doesn't compete with reliability-critical KV writes
+// (e.g. Cloudflare Analytics Engine, built for high-frequency events
+// without KV's tight caps). See docs/RATE_LIMITS.md.
+const ANALYTICS_ENABLED = false;
 
 // ---- module-scope in-memory caches (live for the lifetime of the isolate) ----
 let milDb = { ranges: [], updated: null, loadedAt: 0 };
@@ -226,6 +234,17 @@ async function handleFlights(url, env, ctx) {
     const adsbUrl = 'https://api.adsb.lol/v2/point/' + lat + '/' + lon + '/' + radiusNm;
     resp = await fetchWithRetry(adsbUrl, [500, 1500]);
     console.log('[flights] adsb.lol status=' + resp.status + ' key=' + cacheKey);
+    if (!resp.ok && !cached) {
+      // No stale in-memory data to fall back to for this location -- most
+      // often a first load or a just-changed location, which is the one
+      // moment reliability matters most. The alternative to trying harder
+      // here is a guaranteed empty/error result, so it's worth spending a
+      // few more seconds (well under the client's 20s timeout) rather than
+      // giving up at the same budget used for routine steady-state polling.
+      console.log('[flights] no in-memory fallback, extending retry key=' + cacheKey);
+      resp = await fetchWithRetry(adsbUrl, [2000, 3000]);
+      console.log('[flights] adsb.lol extended-retry status=' + resp.status + ' key=' + cacheKey);
+    }
     adsbUnhealthyUntil = resp.ok ? 0 : Date.now() + ADSB_COOLDOWN_MS;
   }
   if (!resp.ok) {
@@ -852,8 +871,10 @@ export default {
     try {
       if (url.pathname === '/flights' && request.method === 'GET') {
         const resp = await handleFlights(url, env, ctx);
-        const radius = parseFloat(url.searchParams.get('dist')) || 50;
-        ctx.waitUntil(logAnalyticsEvent(request, env, { radius: radius }));
+        if (ANALYTICS_ENABLED) {
+          const radius = parseFloat(url.searchParams.get('dist')) || 50;
+          ctx.waitUntil(logAnalyticsEvent(request, env, { radius: radius }));
+        }
         return resp;
       }
       if (url.pathname === '/aircraft' && request.method === 'GET') return await handleAircraft(url);
