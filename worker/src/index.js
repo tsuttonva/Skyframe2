@@ -32,7 +32,13 @@ const SESSION_GAP_MS = 30 * 60 * 1000; // 30-min gap = new session
 // adsb.lol asks API consumers to identify their app (contact URL) rather than
 // send anonymous/generic traffic, per their fair-use policy.
 const ADSB_USER_AGENT = 'SkyFrame2-Worker/1.0 (+https://tsuttonva.github.io/Skyframe2/)';
-const ADSB_COOLDOWN_MS = 60 * 1000;
+// Kept under the client's poll interval (now 30s minimum -- see
+// REFRESH_OPTIONS_MS in web/index.html) on purpose: a cooldown longer than
+// the poll interval means every other poll gets auto-skipped instead of
+// making a real attempt, roughly doubling how long a real recovery takes
+// to actually show up for the user. 25s guarantees the circuit has closed
+// again by the time the next poll lands, even with some jitter.
+const ADSB_COOLDOWN_MS = 25 * 1000;
 // Paused Aug 27, 2026: analytics logging was a direct contributor to the
 // Workers KV daily write-cap warnings (a KV read+write on every /flights
 // request, even after batching). Historical data already collected is
