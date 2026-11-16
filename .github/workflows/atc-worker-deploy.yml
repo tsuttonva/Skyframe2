@@ -1,0 +1,39 @@
+name: Deploy ATC Explorer Worker
+
+on:
+  push:
+    branches: [claude/cross-platform-app-build-vtwr2l]
+    paths:
+      - 'atc/worker/**'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: atc-worker-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Scenario privacy tests
+        run: node --test atc/tests/worker.test.mjs
+      # Reuses the SkyFrame worker's Cloudflare secrets; nothing new to configure.
+      - name: Find or create the KV namespace
+        run: node atc/worker/scripts/ensure-kv.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: atc/worker
+          command: deploy

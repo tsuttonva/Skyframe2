@@ -92,6 +92,25 @@ hurt:
   1/second write cap applies on the paid tier too -- don't assume paying
   removes that specific constraint.
 
+**ATC Explorer shares this quota (added Nov 16, 2026)**
+- The daily caps above are **per account, not per namespace**. ATC
+  Explorer's Worker (`atc/worker`, namespace `atc-explorer-kv`) draws on
+  the same 1,000 writes/day as SkyFrame's `SKYFRAME2_KV`.
+- Its design rule, enforced by `atc/tests/worker.test.mjs`: reads,
+  sign-ins and share-link views never write (sessions are stateless signed
+  tokens); a save is 1 write, creating a share is 2, a signup is 2.
+- Hard caps in `atc/worker/src/index.js`: 25 signups/day across everyone
+  (signup is the only unauthenticated write path, so at most 50
+  writes/day can be forced by a stranger), 150 saves/day per account, 50
+  scenarios per account. All of one user's scenarios live in a single key,
+  so listing them is 1 read and never a KV `list` op.
+- PBKDF2 is set to 100,000 iterations, which is the most Workers' WebCrypto
+  allows. That is real CPU work against the free plan's 10ms/request
+  figure. Not yet observed in production as of this writing: if `/login`
+  or `/signup` start failing with error 1102 (CPU limit exceeded), that is
+  the cause -- lower `PBKDF2_ITER` (existing users keep working; each
+  record stores its own iteration count) and record what happened here.
+
 ---
 
 ## adsb.lol
@@ -384,3 +403,41 @@ hurt:
 - Small best-effort community service with no formal SLA -- "no published
   limit" isn't a guarantee. No specific incident reports found; keep
   basic error handling regardless of the lack of a stated cap.
+
+---
+
+## 123atc.com (ATC Explorer's weekly staffing/training refresh)
+
+Used only by `atc/scripts/refresh-123atc.mjs`, run weekly from GitHub
+Actions (`.github/workflows/atc-refresh.yml`). Never called from a browser
+or from a Worker. Checked Nov 16, 2026.
+
+**Official**
+- No API and no published rate limit. The data is an HTML table at
+  `https://123atc.com/facilities` (313 rows, server-rendered, not
+  paginated) plus one page per facility at `/facility/<ID>`.
+- `robots.txt` is `Allow: /` for all user agents, disallowing only
+  `/admin/`, `/load/`, `/scripts/`, `/includes/`. The pages this app reads
+  are allowed. Do not call `/load/...` (the site's own search endpoint).
+  [robots.txt](https://123atc.com/robots.txt)
+- There is no separate terms page (`/terms` is a 404). The terms that
+  exist sit inside the privacy policy and cover consent and arbitration;
+  nothing in them addresses scraping, bots or automated access either way.
+  [Privacy policy](https://123atc.com/privacy)
+
+**This app's self-imposed limits** (there is no published number to cite,
+so these are deliberately far below anything that could matter)
+- 8 requests per weekly run: the table twice, then 6 facility pages.
+- 5 seconds between any two requests (`GAP_MS`).
+- A User-Agent that names the project and links to this repo.
+- Any non-200, layout change or failed check aborts the run and leaves
+  the published data untouched. No retries.
+
+**Unofficial / community notes**
+- A run from this repo's cloud dev container succeeded on Nov 16, 2026.
+  Whether GitHub Actions' IP ranges are treated the same is unverified
+  until the first scheduled run -- if that job fails with a 403 or a
+  challenge page ("facility table not found"), note it here and switch to
+  the manual `--file` export path described in `atc/README.md` rather
+  than adding retries or disguising the User-Agent.
+

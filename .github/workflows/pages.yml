@@ -8,6 +8,10 @@ on:
     # trigger from a non-allow-listed branch fails instantly on the
     # environment protection check, not on anything in this workflow.
     branches: [claude/cross-platform-app-build-vtwr2l]
+  # Also runnable on demand: the weekly ATC data refresh (atc-refresh.yml)
+  # dispatches this after committing new data, because a push made with the
+  # built-in GITHUB_TOKEN does not trigger push workflows by itself.
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -26,12 +30,14 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Assemble combined site (SkyFrame at /, HoofCast at /hoofcast)
+      - name: Assemble combined site (SkyFrame at /, HoofCast at /hoofcast, ATC Explorer at /atc)
         run: |
           mkdir -p dist
           cp -r web/. dist/
           mkdir -p dist/hoofcast
           cp -r hoofcast/. dist/hoofcast/
+          mkdir -p dist/atc
+          cp -r atc/site/. dist/atc/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

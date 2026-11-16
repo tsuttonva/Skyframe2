@@ -1,0 +1,292 @@
+code,name,state,level,crwg_target,current_staff,projected_staff,min_cpc_salary
+A11,Anchorage TRACON,AK,9,24,75%,109%,138508
+A80,Atlanta TRACON,GA,12,100,74%,82%,162801
+A90,Boston TRACON,NH,11,70,81%,91%,166052
+ABE,Allentown Tower,PA,7,22,132%,150%,116914
+ABI,Abilene Tower,TX,6,19,100%,117%,89784
+ABQ,Albuquerque Tower,NM,8,24,92%,114%,110816
+ACK,Nantucket Tower,MA,5,10,90%,113%,120000
+ACT,Waco Tower,TX,7,18,94%,139%,99209
+ACY,Atlantic City Tower,NJ,6,23,74%,101%,100238
+ADS,Addison Tower,TX,6,11,127%,130%,99141
+ADW,Andrews Tower,MD,5,16,88%,119%,97060
+AFW,Alliance Tower,TX,6,15,100%,133%,97607
+AGC,Allegheny Tower,PA,5,15,127%,136%,84004
+AGS,Augusta Tower,GA,6,18,100%,121%,89784
+ALB,Albany Tower,NY,6,23,96%,90%,92629
+ALO,Waterloo Tower,IA,5,11,82%,95%,81249
+AMA,Amarillo Tower,TX,6,14,86%,118%,89784
+ANC,Anchorage Tower,AK,8,26,73%,82%,125350
+APA,Centennial Tower,CO,8,25,76%,109%,124948
+APC,Napa Tower,CA,5,10,60%,117%,108513
+ARB,Ann Arbor Tower,MI,5,10,120%,128%,93299
+ARR,Aurora Tower,IL,5,10,70%,102%,95200
+ASE,Aspen TRACAB,CO,6,14,71%,90%,106244
+ATL,Atlanta Tower,GA,12,52,75%,90%,162801
+AUS,Austin Tower,TX,9,52,54%,88%,124538
+AVL,Asheville Tower,NC,7,17,100%,123%,99209
+AVP,Wilkes-Barre Tower,PA,5,22,64%,103%,81249
+AZO,Kalamazoo Tower,MI,8,39,113%,121%,109627
+BDL,Bradley Tower,CT,5,15,113%,126%,95630
+BED,Hanscom Tower,MA,6,13,85%,120%,109357
+BFI,Boeing Tower,WA,6,16,88%,135%,105285
+BFL,Bakersfield Tower,CA,6,17,88%,107%,104671
+BGM,Binghamton Tower,NY,5,13,108%,102%,81249
+BGR,Bangor Tower,ME,5,22,73%,87%,81249
+BHM,Birmingham Tower,AL,8,22,95%,111%,110732
+BIL,Billings Tower,MT,7,19,95%,94%,99209
+BIS,Bismarck TRACAB,ND,5,14,86%,109%,81249
+BJC,Broomfield Tower,CO,8,17,53%,116%,125603
+BNA,Nashville Tower,TN,10,52,56%,81%,139307
+BOI,Boise Tower,ID,8,28,71%,115%,109627
+BOS,Boston Tower,MA,10,33,79%,90%,166702
+BPT,Beaumont Tower,TX,4,10,100%,115%,71585
+BTR,Baton Rouge Tower,LA,6,15,87%,92%,89784
+BTV,Burlington Tower,VT,7,16,100%,105%,101235
+BUF,Buffalo Tower,NY,7,26,112%,110%,103743
+BUR,Burbank Tower,CA,7,15,107%,117%,124134
+BWI,Baltimore Tower,MD,8,22,86%,102%,127027
+C90,Chicago TRACON,IL,12,100,80%,83%,182620
+CAE,Columbia Tower,SC,7,22,73%,101%,99209
+CAK,Akron-Canton Tower,OH,4,15,93%,123%,74747
+CCR,Concord Tower,CA,5,10,80%,125%,108513
+CDW,Caldwell Tower,NJ,6,11,109%,128%,113476
+CHA,Chattanooga Tower,TN,7,18,100%,132%,99209
+CHS,Charleston Tower,SC,8,23,74%,122%,109627
+CID,Cedar Rapids Tower,IA,5,14,100%,128%,81249
+CKB,Clarksburg Tower,WV,5,18,83%,81%,81249
+CLE,Cleveland Tower,OH,8,39,115%,129%,114469
+CLT,Charlotte Tower,NC,12,85,86%,91%,157382
+CMA,Camarillo Tower,CA,7,11,100%,123%,122863
+CMH,Columbus Tower,OH,8,45,80%,121%,114394
+CMI,Champaign Tower,IL,6,15,100%,93%,89784
+CNO,Chino Tower,CA,8,11,91%,117%,129677
+COS,Colorado Springs Tower,CO,8,30,60%,91%,112521
+CPR,Casper Tower,WY,5,17,41%,90%,81249
+CPS,St. Louis Downtown Tower,IL,6,10,90%,103%,92062
+CRP,Corpus Christi Tower,TX,8,29,79%,124%,110161
+CRQ,Palomar Tower,CA,6,11,136%,148%,108008
+CRW,Charleston Tower,WV,5,21,86%,86%,81249
+CSG,Columbus Tower,GA,4,10,130%,147%,75701
+CVG,Cincinnati Tower,KY,9,40,98%,119%,126173
+D01,Denver TRACON,CO,12,90,76%,87%,175860
+D10,Dallas-Fort Worth TRACON,TX,12,100,67%,76%,167364
+D21,Detroit TRACON,MI,10,49,96%,94%,156515
+DAB,Daytona Beach Tower,FL,10,58,83%,89%,139307
+DAL,Dallas Love Tower,TX,8,21,105%,124%,119179
+DAY,Dayton Tower,OH,4,15,80%,104%,74251
+DCA,Wash. National Tower,DC,9,30,77%,98%,142016
+DEN,Denver Tower,CO,12,47,66%,91%,175860
+DFW,Dallas-Fort Worth Tower,TX,12,54,80%,91%,167364
+DLH,Duluth Tower,MN,6,19,84%,111%,89784
+DPA,Dupage Tower,IL,6,13,131%,132%,104663
+DSM,Des Moines Tower,IA,7,20,100%,126%,100014
+DTW,Detroit Tower,MI,9,30,93%,92%,136098
+DVT,Deer Valley Tower,AZ,9,20,70%,99%,126711
+DWH,Houston Hooks Tower,TX,6,10,100%,204%,103543
+ELM,Elmira TRACAB,NY,5,11,82%,111%,81249
+ELP,El Paso Tower,TX,7,20,95%,119%,99209
+EMT,El Monte Tower,CA,5,10,100%,106%,101662
+ERI,Erie Tower,PA,4,10,110%,124%,71585
+EUG,Eugene Tower,OR,6,19,79%,159%,89784
+EVV,Evansville Tower,IN,5,13,92%,111%,81249
+EWR,Newark Tower,NJ,11,38,74%,93%,183299
+F11,Central Florida TRACON,FL,11,56,71%,87%,146614
+FAI,Fairbanks Tower,AK,7,22,59%,68%,120219
+FAR,Fargo Tower,ND,7,18,100%,113%,99209
+FAT,Fresno Tower,CA,7,27,74%,82%,99709
+FAY,Fayetteville Tower,NC,6,23,91%,101%,93757
+FCM,Flying Cloud Tower,MN,6,10,120%,153%,102178
+FFZ,Falcon Tower,AZ,9,18,89%,103%,126711
+FLL,Fort Lauderdale Tower,FL,8,24,88%,107%,116754
+FLO,Florence Tower,SC,5,12,83%,101%,81249
+FNT,Flint Tower,MI,4,10,110%,137%,78960
+FPR,St. Lucie Tower,FL,7,10,110%,148%,105659
+FRG,Farmingdale Tower,NY,7,11,100%,133%,125389
+FSD,Sioux Falls Tower,SD,6,17,71%,100%,89784
+FSM,Fort Smith Tower,AR,7,22,114%,126%,99209
+FTW,Meacham Tower,TX,7,15,140%,155%,107854
+FWA,Fort Wayne Tower,IN,5,20,75%,90%,81249
+FXE,Ft. Lauderdale Exec Tower,FL,7,16,75%,128%,105659
+GCN,Grand Canyon Tower,AZ,4,10,80%,118%,76477
+GEG,Spokane Tower,WA,8,33,88%,123%,110198
+GFK,Grand Forks Tower,ND,9,23,87%,92%,121134
+GGG,Longview Tower,TX,6,17,100%,110%,89784
+GPT,Gulfport Tower,MS,7,15,87%,113%,99209
+GRB,Green Bay Tower,WI,6,19,95%,118%,89784
+GRR,Grand Rapids Tower,MI,5,11,109%,111%,82012
+GSO,Greensboro Tower,NC,7,24,83%,121%,99209
+GSP,Greer Tower,SC,7,18,106%,117%,99209
+GTF,Great Falls Tower,MT,5,18,61%,88%,81249
+HCF,Honolulu Control Fac,HI,11,93,74%,87%,163885
+HEF,Manassas Tower,VA,5,10,120%,144%,97546
+HIO,Hillsboro Tower,OR,7,11,136%,177%,108167
+HLN,Helena Tower,MT,5,11,82%,105%,81249
+HOU,Hobby Tower,TX,8,21,86%,124%,126428
+HPN,Westchester Tower,NY,7,13,92%,139%,125389
+HSV,Huntsville Tower,AL,7,17,88%,125%,103320
+HTS,Huntington Tower,WV,5,19,89%,90%,81249
+HUF,Terre Haute Tower,IN,6,19,63%,101%,89784
+HWD,Hayward Tower,CA,6,11,82%,102%,119911
+I90,Houston TRACON,TX,12,81,86%,92%,177544
+IAD,Dulles Tower,VA,10,30,87%,99%,164869
+IAH,Houston Intercont. Tower,TX,11,34,85%,103%,169083
+ICT,Wichita Tower,KS,8,31,74%,78%,109627
+ILG,Wilmington Tower,DE,4,10,110%,114%,78881
+ILM,Wilmington Tower,NC,7,15,100%,125%,99209
+IND,Indianapolis Tower,IN,9,45,78%,100%,122262
+ISP,Islip Tower,NY,7,11,100%,163%,125389
+ITO,Hilo TRACAB,HI,5,11,91%,104%,86843
+JAN,Jackson Tower,MS,6,14,93%,114%,89784
+JAX,Jacksonville Tower,FL,9,45,78%,81%,121134
+JCF,Joshua TRACON,CA,8,27,78%,123%,127804
+JFK,Kennedy Tower,NY,11,36,69%,74%,185303
+JNU,Juneau Tower,AK,5,13,85%,108%,92902
+L30,Las Vegas TRACON,NV,11,46,59%,92%,149758
+LAF,Lafayette Tower,IN,6,10,90%,117%,90620
+LAN,Lansing Tower,MI,4,11,91%,140%,79633
+LAS,Las Vegas Tower,NV,11,43,74%,88%,149758
+LAX,Los Angeles Tower,CA,11,45,82%,93%,181070
+LBB,Lubbock Tower,TX,7,17,82%,110%,99209
+LCH,Lake Charles Tower,LA,5,16,81%,106%,81249
+LEX,Lexington Tower,KY,7,24,75%,99%,99209
+LFT,Lafayette Tower,LA,5,16,88%,92%,81249
+LGA,La Guardia Tower,NY,11,37,89%,93%,185303
+LGB,Long Beach Tower,CA,9,21,81%,97%,151567
+LIT,Little Rock Tower,AR,7,22,100%,119%,99209
+LNK,Lincoln Tower,NE,5,15,53%,91%,81249
+LOU,Louisville Bowman Tower,KY,6,10,120%,165%,89784
+LVK,Livermore Tower,CA,7,10,90%,135%,132499
+M03,Memphis TRACON,TN,9,32,72%,85%,121134
+M98,Minneapolis TRACON,MN,10,46,98%,93%,156872
+MAF,Midland Tower,TX,7,14,86%,118%,99209
+MBS,Saginaw Tower,MI,4,10,110%,145%,71585
+MCI,Kansas City Intl Tower,MO,8,27,119%,142%,111416
+MCO,Orlando Tower,FL,9,33,91%,105%,121134
+MDT,Harrisburg Intl Tower,PA,7,31,61%,89%,101218
+MDW,Midway Tower,IL,8,22,77%,111%,130043
+MEM,Memphis Tower,TN,8,21,86%,94%,109627
+MFD,Mansfield Tower,OH,4,10,110%,124%,74747
+MGM,Montgomery Tower,AL,6,16,94%,89%,89784
+MHT,Manchester Tower,NH,4,15,93%,119%,81076
+MIA,Miami Tower,FL,12,90,76%,81%,163958
+MIC,Crystal Tower,MN,4,10,110%,117%,81468
+MKC,Kansas City Dntn Tower,MO,5,15,107%,130%,82575
+MKE,Milwaukee Tower,WI,8,35,89%,123%,116801
+MKG,Muskegon Tower,MI,4,10,100%,106%,71585
+MLI,Moline Quad City Tower,IL,6,16,69%,77%,91218
+MLU,Monroe Tower,LA,5,13,85%,125%,81249
+MMU,Morristown Tower,NJ,6,10,100%,109%,110945
+MOB,Mobile Tower,AL,7,19,84%,109%,99209
+MRI,Merrill Tower,AK,6,12,67%,100%,102662
+MRY,Monterey Tower,CA,5,10,80%,104%,108513
+MSN,Madison Tower,WI,7,19,89%,119%,99802
+MSP,Minneapolis Tower,MN,9,33,106%,112%,136407
+MSY,Moisant Tower,LA,9,40,60%,73%,121134
+MWH,Grant County Tower,WA,6,16,44%,50%,89784
+MYF,Montgomery Tower,CA,10,20,95%,100%,167701
+MYR,Myrtle Beach Tower,SC,8,27,78%,113%,109627
+N90,New York TRACON,NY,12,160,71%,65%,194574
+NCT,NorCal TRACON,CA,12,170,72%,75%,174860
+NEW,Lakefront Tower,LA,5,10,110%,125%,81249
+OAK,Oakland Tower,CA,8,18,100%,112%,146413
+OGG,Kahului Tower,HI,6,12,133%,134%,103199
+OKC,Oklahoma City Tower,OK,8,30,73%,95%,109627
+OMA,Omaha Tower,NE,6,15,100%,119%,90681
+ONT,Ontario Tower,CA,5,15,107%,112%,96248
+ORD,Chicago O'Hare Tower,IL,12,88,65%,71%,185250
+ORF,Norfolk Tower,VA,8,30,57%,76%,111256
+ORL,Orlando Executive Tower,FL,7,10,120%,116%,99209
+P31,Pensacola TRACON,FL,9,35,80%,118%,121134
+P50,Phoenix TRACON,AZ,11,60,75%,93%,153365
+P80,Portland TRACON,OR,9,26,77%,96%,131451
+PAE,Paine Tower,WA,6,10,120%,141%,103291
+PAO,Palo Alto Tower,CA,6,11,82%,110%,119911
+PBI,West Palm Beach Tower,FL,9,59,64%,82%,129009
+PCT,Potomac TRACON,VA,12,160,94%,94%,182199
+PDK,DeKalb-Peachtree Tower,GA,7,13,154%,184%,104913
+PDX,Portland Tower,OR,7,19,147%,146%,107659
+PHF,Patrick Henry Tower,VA,5,10,90%,152%,82457
+PHL,Philadelphia Tower,PA,12,110,82%,87%,173717
+PHX,Phoenix Tower,AZ,10,36,78%,88%,145721
+PIA,Peoria Tower,IL,4,15,73%,117%,71585
+PIE,St. Petersburg Tower,FL,7,11,100%,138%,99209
+PIT,Pittsburgh Tower,PA,8,37,108%,125%,113345
+PNE,NE Philadelphia Tower,PA,6,10,110%,123%,103843
+PNS,Pensacola Tower,FL,7,10,100%,124%,99209
+POC,Brackett Tower,CA,6,10,120%,154%,112341
+POU,Poughkeepsie Tower,NY,5,10,90%,117%,97691
+PRC,Prescott Tower,AZ,9,16,88%,104%,121134
+PSC,Pasco Tower,WA,4,10,140%,156%,71585
+PSP,Palm Springs Tower,CA,5,10,90%,123%,97220
+PTK,Pontiac Tower,MI,6,11,91%,122%,100567
+PUB,Pueblo Tower,CO,7,12,108%,111%,101828
+PVD,Providence Tower,RI,7,29,83%,106%,117109
+PWK,Palwaukee Tower,IL,5,10,110%,140%,97768
+PWM,Portland Tower,ME,7,18,100%,124%,113634
+R90,Omaha TRACON,NE,8,22,95%,124%,110723
+RDG,Reading Tower,PA,5,11,164%,110%,89529
+RDU,Raleigh-Durham Tower,NC,9,40,88%,121%,126494
+RFD,Rockford Tower,IL,6,22,95%,124%,100368
+RHV,Reid-Hillview Tower,CA,6,10,100%,96%,119911
+RIC,Richmond Tower,VA,6,15,100%,135%,93787
+RNO,Reno Tower,NV,6,15,87%,92%,91210
+ROA,Roanoke Tower,VA,6,22,86%,106%,89784
+ROC,Rochester Tower,NY,6,21,76%,119%,91870
+ROW,Roswell Tower,NM,5,13,62%,86%,81249
+RST,Rochester Muni TRACAB,MN,5,13,69%,99%,88578
+RSW,Fort Myers Tower,FL,8,33,91%,122%,109627
+RVS,Riverside Tower,OK,8,12,108%,97%,109627
+S46,Seattle TRACON,WA,10,50,60%,94%,164905
+S56,Salt Lake City TRACON,UT,10,42,79%,93%,139307
+SAN,San Diego Tower,CA,8,23,91%,112%,131785
+SAT,San Antonio Tower,TX,9,42,81%,95%,122914
+SAV,Savannah Tower,GA,8,29,66%,113%,109627
+SBA,Santa Barbara Tower,CA,7,22,91%,122%,124134
+SBN,South Bend Tower,IN,7,23,74%,80%,99209
+SCK,Stockton Tower,CA,4,10,130%,127%,90347
+SCT,SoCal TRACON,CA,12,215,88%,89%,185592
+SDF,Standiford Tower,KY,9,47,79%,88%,121134
+SDL,Scottsdale Tower,AZ,7,13,100%,141%,103777
+SEA,Seattle Tower,WA,10,33,91%,102%,164905
+SEE,Gillespie Tower,CA,7,11,109%,144%,119346
+SFB,Sanford Tower,FL,9,18,89%,109%,121134
+SFO,San Francisco Tower,CA,10,32,66%,77%,186053
+SGF,Springfield Tower,MO,7,24,100%,124%,99209
+SHV,Shreveport Tower,LA,5,20,90%,83%,81249
+SJC,San Jose Tower,CA,7,14,79%,122%,132499
+SJU,San Juan Tower,PR,7,15,107%,115%,104709
+SLC,Salt Lake City Tower,UT,10,32,81%,90%,139307
+SMF,Sacramento Tower,CA,6,15,93%,123%,102208
+SMO,Santa Monica Tower,CA,5,11,100%,123%,101662
+SNA,John Wayne Tower,CA,9,23,91%,100%,148256
+SPI,Springfield Tower,IL,4,10,100%,117%,71585
+SRQ,Sarasota Tower,FL,7,12,125%,153%,99209
+STL,St. Louis Tower,MO,7,15,147%,156%,101726
+STP,St. Paul Tower,MN,4,10,130%,134%,80061
+STS,Sonoma Tower,CA,5,11,45%,83%,108513
+STT,St. Thomas Tower,VI,4,10,120%,136%,78850
+SUS,Spirit Tower,MO,6,10,100%,102%,92062
+SUX,Sioux Gateway Tower,IA,5,15,87%,105%,81249
+SYR,Syracuse Tower,NY,6,19,89%,81%,89784
+T75,St. Louis TRACON,MO,9,38,82%,96%,124207
+TEB,Teterboro Tower,NJ,9,28,54%,92%,153099
+TLH,Tallahassee Tower,FL,7,17,88%,109%,99209
+TMB,Tamiami Tower,FL,8,17,106%,111%,120125
+TOA,Torrance Tower,CA,5,10,90%,134%,101662
+TOL,Toledo Tower,OH,6,22,77%,94%,89784
+TPA,Tampa Tower,FL,10,52,77%,82%,139307
+TRI,Tri-Cities Tower,TN,6,17,118%,109%,89784
+TUL,Tulsa Tower,OK,8,27,107%,124%,109627
+TUS,Tucson Tower,AZ,6,15,93%,108%,92790
+TVC,Traverse City Tower,MI,5,10,100%,115%,81249
+TWF,Twin Falls Tower,ID,5,11,82%,102%,81249
+TYS,Knoxville Tower,TN,8,26,92%,116%,109627
+U90,Tucson TRACON,AZ,8,19,74%,121%,113017
+VGT,North Las Vegas Tower,NV,7,16,81%,113%,101336
+VNY,Van Nuys Tower,CA,9,22,95%,106%,151567
+VRB,Vero Beach Tower,FL,8,14,86%,107%,116754
+Y90,Yankee TRACON,CT,8,21,76%,104%,128001
+YIP,Willow Run Tower,MI,5,15,93%,133%,92396
+YNG,Youngstown Tower,OH,5,21,86%,98%,84837
+ZAB,Albuquerque ARTCC,NM,10,234,68%,80%,140818

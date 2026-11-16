@@ -1,0 +1,210 @@
+code,facility,state,city_used,state_used,match,zori_rent_sep2026,zhvi_avg_of_neighborhoods_sep2026,zhvi_neighborhood_count,zhvi_city_sep2026,median_household_income
+A80,Atlanta TRACON,GA,Atlanta,GA,direct,1942,550984,190,380331,85652
+ABE,Allentown Tower,PA,Allentown,PA,direct,1686,276666,22,315694,55494
+ABI,Abilene Tower,TX,Abilene,TX,direct,1988,219941,22,223853,62648
+ACK,Nantucket Tower,MA,,MA,none,,,,,
+ACT,Waco Tower,TX,Waco,TX,direct,1342,195993,22,192729,54365
+ACY,Atlantic City Tower,NJ,Atlantic City,NJ,direct,1812,,,219133,41028
+ADS,Addison Tower,TX,Addison,TX,direct,1591,,,499576,73854
+ADW,Andrews Tower,MD,Washington,DC,proxy,2484,671858,117,566961,109870
+AFW,Alliance Tower,TX,Fort Worth,TX,proxy,1612,360675,256,292949,79507
+AGC,Allegheny Tower,PA,Pittsburgh,PA,proxy,1569,231369,88,234620,65742
+AGS,Augusta Tower,GA,Augusta,GA,direct,1344,164758,37,187663,55485
+ALB,Albany Tower,NY,Albany,NY,direct,1664,287601,24,331504,61986
+ALO,Waterloo Tower,IA,Waterloo,IA,direct,909,130002,21,146001,57480
+AMA,Amarillo Tower,TX,Amarillo,TX,direct,1305,,,209627,65912
+APC,Napa Tower,CA,Napa,CA,direct,2815,838968,25,861798,105963
+ARB,Ann Arbor Tower,MI,Ann Arbor,MI,direct,2026,543564,60,517346,82212
+ARR,Aurora Tower,IL,Aurora,IL,direct,2294,322937,17,323277,93633
+ASE,Aspen TRACAB,CO,Aspen,CO,direct,17626,,,3559803,74033
+ATL,Atlanta Tower,GA,Atlanta,GA,direct,1942,550984,190,380331,85652
+AVL,Asheville Tower,NC,Asheville,NC,direct,1726,499882,1,444478,71102
+AVP,Wilkes-Barre Tower,PA,Wilkes-Barre,PA,direct,1311,168646,8,185887,48515
+BDL,Bradley Tower,CT,Hartford,CT,proxy,1555,225098,13,202489,46411
+BED,Hanscom Tower,MA,Boston,MA,proxy,3271,872269,25,761236,97344
+BFI,Boeing Tower,WA,Seattle,WA,proxy,2227,903369,92,822572,123860
+BFL,Bakersfield Tower,CA,Bakersfield,CA,direct,1901,416861,63,385686,80540
+BGM,Binghamton Tower,NY,Binghamton,NY,direct,1838,176768,1,190913,45578
+BGR,Bangor Tower,ME,Bangor,ME,direct,1509,,,283105,59942
+BIL,Billings Tower,MT,Billings,MT,direct,1393,390208,12,401071,73712
+BIS,Bismarck TRACAB,ND,Bismarck,ND,direct,1242,,,378242,78387
+BNA,Nashville Tower,TN,Nashville,TN,direct,1820,500466,312,425889,77371
+BOS,Boston Tower,MA,Boston,MA,direct,3271,872269,25,761236,97344
+BPT,Beaumont Tower,TX,Beaumont,TX,direct,1287,191957,19,172183,56997
+BTR,Baton Rouge Tower,LA,Baton Rouge,LA,direct,1301,224629,53,228438,49994
+BTV,Burlington Tower,VT,Burlington,VT,direct,2738,,,504324,71109
+BUF,Buffalo Tower,NY,Buffalo,NY,direct,1421,233221,54,244068,50041
+BUR,Burbank Tower,CA,Burbank,CA,direct,2752,1068707,4,1167055,97082
+BWI,Baltimore Tower,MD,Baltimore,MD,direct,1762,209475,222,184804,62177
+CAE,Columbia Tower,SC,Columbia,SC,direct,1500,319763,74,227148,55529
+CAK,Akron-Canton Tower,OH,Canton,OH,direct,1124,163206,21,174287,43188
+CCR,Concord Tower,CA,Concord,CA,direct,2569,728490,6,720907,108709
+CDW,Caldwell Tower,NJ,Newark,NJ,proxy,2111,459646,17,480494,52060
+CHA,Chattanooga Tower,TN,Chattanooga,TN,direct,1498,306331,68,314999,64523
+CHS,Charleston Tower,SC,Charleston,SC,direct,2288,786628,73,587511,92414
+CID,Cedar Rapids Tower,IA,Cedar Rapids,IA,direct,1274,172204,9,215727,70424
+CKB,Clarksburg Tower,WV,Clarksburg,WV,direct,969,71745,1,116886,47386
+CLE,Cleveland Tower,OH,Cleveland,OH,direct,1359,131659,35,115810,40801
+CLT,Charlotte Tower,NC,Charlotte,NC,direct,1729,491378,182,389648,82068
+CMA,Camarillo Tower,CA,Camarillo,CA,direct,2911,,,910985,113428
+CMI,Champaign Tower,IL,Champaign,IL,direct,1466,,,236141,56118
+CPR,Casper Tower,WY,Casper,WY,direct,1422,,,310650,70218
+CPS,St. Louis Downtown Tower,IL,St. Louis,MO,proxy,,,,,56160
+CRQ,Palomar Tower,CA,San Diego,CA,proxy,3004,1026486,113,980490,108077
+CRW,Charleston Tower,WV,Charleston,WV,direct,1351,147990,11,162391,65812
+CSG,Columbus Tower,GA,Columbus,GA,direct,1331,270420,17,175906,58073
+DAY,Dayton Tower,OH,Dayton,OH,direct,1241,126059,56,137939,45247
+DCA,Washington National,DC,Washington,DC,direct,2484,671858,117,566961,109870
+DLH,Duluth Tower,MN,Duluth,MN,direct,1434,289758,30,296120,68807
+DPA,Dupage Tower,IL,Chicago,IL,proxy,2311,354563,174,334108,77902
+DSM,Des Moines Tower,IA,Des Moines,IA,direct,1129,233365,64,208053,65932
+DWH,Houston Hooks Tower,TX,Houston,TX,direct,1544,447766,100,259465,64813
+ELM,Elmira TRACAB,NY,Elmira,NY,direct,1148,,,133827,43120
+ELP,El Paso Tower,TX,El Paso,TX,direct,1508,255512,63,237556,59745
+EMT,El Monte Tower,CA,El Monte,CA,direct,2451,741197,5,752488,68030
+ERI,Erie Tower,PA,Erie,PA,direct,1098,213139,2,204067,46113
+EUG,Eugene Tower,OR,Eugene,OR,direct,1795,488275,22,471485,66562
+EVV,Evansville Tower,IN,Evansville,IN,direct,1058,160760,50,203571,53387
+EWR,Newark Tower,NJ,Newark,NJ,direct,2111,459646,17,480494,52060
+FAI,Fairbanks Tower,AK,Fairbanks,AK,direct,1907,246453,1,307947,73534
+FAR,Fargo Tower,ND,Fargo,ND,direct,1094,342228,33,321568,66998
+FAT,Fresno Tower,CA,Fresno,CA,direct,1945,372729,12,384885,70991
+FAY,Fayetteville Tower,NC,Fayetteville,NC,direct,1362,230839,117,221511,58407
+FCM,Flying Cloud Tower,MN,Minneapolis,MN,proxy,1747,346250,83,328351,80846
+FLL,Fort Lauderdale Tower,FL,Fort Lauderdale,FL,direct,2697,937742,79,509743,83130
+FLO,Florence Tower,SC,Florence,SC,direct,1613,,,224906,56143
+FNT,Flint Tower,MI,Flint,MI,direct,927,62424,22,64412,37646
+FPR,St. Lucie Tower,FL,Port St. Lucie,FL,proxy,,,,,80648
+FRG,Farmingdale Tower,NY,New York,NY,proxy,4089,889265,198,825854,80483
+FSD,Sioux Falls Tower,SD,Sioux Falls,SD,direct,1279,276970,25,330625,75970
+FSM,Fort Smith Tower,AR,Fort Smith,AR,direct,1063,,,193081,54816
+FTW,Meacham Tower,TX,Fort Worth,TX,proxy,1612,360675,256,292949,79507
+FWA,Fort Wayne Tower,IN,Fort Wayne,IN,direct,1257,240598,244,245193,61422
+FXE,Ft. Lauderdale Exec Tower,FL,Fort Lauderdale,FL,proxy,2697,937742,79,509743,83130
+GCN,Grand Canyon Tower,AZ,,AZ,none,,,,,
+GGG,Longview Tower,TX,Longview,TX,direct,1140,,,232947,63340
+GPT,Gulfport Tower,MS,Gulfport,MS,direct,1467,,,206122,49919
+GRB,Green Bay Tower,WI,Green Bay,WI,direct,1088,281291,32,285670,66206
+GRR,Grand Rapids Tower,MI,Grand Rapids,MI,direct,1602,302133,33,303937,69108
+GSO,Greensboro Tower,NC,Greensboro,NC,direct,1395,290739,9,260573,61515
+GSP,Greer Tower,SC,Greer,SC,direct,1681,,,349020,82626
+GTF,Great Falls Tower,MT,Great Falls,MT,direct,1433,,,337936,63373
+HEF,Manassas Tower,VA,Manassas,VA,direct,2135,461078,5,547070,113590
+HIO,Hillsboro Tower,OR,Hillsboro,OR,direct,1969,503959,1,509612,106409
+HLN,Helena Tower,MT,Helena,MT,direct,1630,474202,10,477974,71036
+HPN,Westchester Tower,NY,New York,NY,proxy,4089,889265,198,825854,80483
+HSV,Huntsville Tower,AL,Huntsville,AL,direct,1335,328820,83,286952,74714
+HTS,Huntington Tower,WV,Huntington,WV,direct,1018,,,144323,45100
+HUF,Terre Haute Tower,IN,Terre Haute,IN,direct,993,,,158602,43126
+HWD,Hayward Tower,CA,Hayward,CA,direct,2652,809598,18,816424,113318
+IAD,Dulles Tower,VA,Washington,DC,proxy,2484,671858,117,566961,109870
+ILG,Wilmington Tower,DE,Wilmington,DE,direct,1757,266253,35,327252,58671
+ILM,Wilmington Tower,NC,Wilmington,NC,direct,1713,459988,48,416464,66738
+ISP,Islip Tower,NY,New York,NY,proxy,4089,889265,198,825854,80483
+ITO,Hilo TRACAB,HI,Hilo,HI,direct,2129,,,562242,81779
+JAN,Jackson Tower,MS,Jackson,MS,direct,1228,114614,60,83517,42071
+JAX,Jacksonville Tower,FL,Jacksonville,FL,direct,1589,287406,186,284832,69872
+JFK,Kennedy Tower,NY,New York,NY,proxy,4089,889265,198,825854,80483
+JNU,Juneau Tower,AK,Juneau,AK,direct,2433,322681,1,473155,101661
+LAF,Lafayette Tower,IN,Lafayette,IN,direct,1282,220216,22,264702,53716
+LAN,Lansing Tower,MI,Lansing,MI,direct,1197,146242,39,166379,54382
+LBB,Lubbock Tower,TX,Lubbock,TX,direct,1315,166108,42,210957,60895
+LCH,Lake Charles Tower,LA,Lake Charles,LA,direct,1329,,,206813,59235
+LEX,Lexington Tower,KY,Lexington,KY,direct,1631,324266,36,331087,69479
+LFT,Lafayette Tower,LA,Lafayette,LA,direct,1329,,,224537,61915
+LGA,La Guardia Tower,NY,New York,NY,proxy,4089,889265,198,825854,80483
+LIT,Little Rock Tower,AR,Little Rock,AR,direct,1184,209416,30,219657,63003
+LNK,Lincoln Tower,NE,Lincoln,NE,direct,1278,276963,48,291408,71867
+LOU,Louisville Bowman Tower,KY,Louisville,KY,direct,1330,316123,128,261376,66849
+LVK,Livermore Tower,CA,Livermore,CA,direct,3066,,,1071869,160775
+MAF,Midland Tower,TX,Midland,TX,direct,1565,381410,30,328375,89585
+MBS,Saginaw Tower,MI,Saginaw,MI,direct,1058,68074,16,133927,38579
+MCO,Orlando Tower,FL,Orlando,FL,direct,1889,414758,111,372775,72336
+MDT,Harrisburg Tower,PA,Harrisburg,PA,direct,1388,229993,15,263909,48099
+MEM,Memphis Tower,TN,Memphis,TN,direct,1259,150590,12,151794,51736
+MFD,Mansfield Tower,OH,Mansfield,OH,direct,852,,,152993,44540
+MGM,Montgomery Tower,AL,Montgomery,AL,direct,1305,,,149943,56811
+MHT,Manchester Tower,NH,Manchester,NH,direct,2082,418002,25,434476,81007
+MIC,Crystal Tower,MN,Crystal,MN,direct,1385,,,315531,92513
+MKC,Kansas City Dntn Tower,MO,Kansas City,MO,direct,1446,277757,210,250185,69166
+MKG,Muskegon Tower,MI,Muskegon,MI,direct,1200,,,191113,44735
+MLI,Moline Quad City Tower,IL,Moline,IL,direct,1090,166734,15,150080,67701
+MLU,Monroe Tower,LA,Monroe,LA,direct,1216,159053,7,154730,40505
+MMU,Morristown Tower,NJ,Morristown,NJ,direct,3119,,,906303,121340
+MOB,Mobile Tower,AL,Mobile,AL,direct,1258,196889,100,196696,53558
+MRI,Merrill Tower,AK,Anchorage,AK,proxy,1845,484360,30,422584,103284
+MRY,Monterey Tower,CA,Monterey,CA,direct,2696,1195690,13,1153012,102846
+MSN,Madison Tower,WI,Madison,WI,direct,1837,450473,93,424543,78050
+MWH,Grant County Tower,WA,,WA,none,,,,,
+MYR,Myrtle Beach Tower,SC,Myrtle Beach,SC,direct,1697,346446,1,323033,60394
+NEW,Lakefront Tower,LA,New Orleans,LA,proxy,1633,316017,67,241895,56631
+OGG,Kahului Tower,HI,Kahului,HI,direct,2550,,,1006867,98077
+OMA,Omaha Tower,NE,Omaha,NE,direct,1389,330009,142,294607,73201
+ONT,Ontario Tower,CA,Ontario,CA,direct,2580,661438,6,662006,88941
+ORF,Norfolk Tower,VA,Norfolk,VA,direct,1749,334259,111,310673,66109
+ORL,Orlando Executive Tower,FL,Orlando,FL,direct,1889,414758,111,372775,72336
+PAE,Paine Tower,WA,Seattle,WA,proxy,2227,903369,92,822572,123860
+PAO,Palo Alto Tower,CA,Palo Alto,CA,direct,4558,3466275,27,3592240,231101
+PCT,Potomac TRACON,VA,Washington,DC,proxy,2484,671858,117,566961,109870
+PDK,DeKalb-Peachtree Tower,GA,Atlanta,GA,proxy,1942,550984,190,380331,85652
+PDX,Portland Tower,OR,Portland,OR,direct,1719,564934,92,524318,90919
+PHF,Patrick Henry Tower,VA,Newport News,VA,proxy,1593,303558,23,291926,69634
+PHL,Philadelphia Tower,PA,Philadelphia,PA,direct,1757,275124,138,231584,61953
+PIA,Peoria Tower,IL,Peoria,IL,direct,1240,79818,4,136279,59410
+PIE,St. Petersburg Tower,FL,St. Petersburg,FL,proxy,,,,,75192
+PIT,Pittsburgh Tower,PA,Pittsburgh,PA,direct,1569,231369,88,234620,65742
+PNE,Northeast Philadelphia Tower,PA,Philadelphia,PA,direct,1757,275124,138,231584,61953
+PNS,Pensacola Tower,FL,Pensacola,FL,direct,1640,278076,29,264868,74212
+POC,Brackett Tower,CA,Los Angeles,CA,proxy,2772,1139759,97,927891,81939
+POU,Poughkeepsie Tower,NY,Poughkeepsie,NY,direct,1865,,,,60741
+PSC,Pasco Tower,WA,Pasco,WA,direct,1707,,,416458,85586
+PSP,Palm Springs Tower,CA,Palm Springs,CA,direct,2067,1023005,38,612063,73119
+PTK,Pontiac Tower,MI,Pontiac,MI,direct,1351,,,135258,44329
+PUB,Pueblo Tower,CO,Pueblo,CO,direct,1323,247285,27,281571,56664
+PVD,Providence Tower,RI,Providence,RI,direct,2190,494253,24,431740,68119
+PWK,Palwaukee Tower,IL,Chicago,IL,proxy,2311,354563,174,334108,77902
+PWM,Portland Tower,ME,Portland,ME,direct,2399,590933,19,554454,79540
+RDG,Reading Tower,PA,Reading,PA,direct,1472,323517,6,262626,44091
+RDU,Raleigh-Durham Tower,NC,Raleigh,NC,direct,1572,545387,18,424663,85395
+RFD,Rockford Tower,IL,Rockford,IL,direct,1227,189564,44,185067,54752
+RHV,Reid-Hillview Tower,CA,San Jose,CA,proxy,3582,1338806,24,1353869,146427
+RIC,Richmond Tower,VA,Richmond,VA,direct,1628,406996,109,361844,64587
+RNO,Reno Tower,NV,Reno,NV,direct,1997,604576,39,571562,80760
+ROA,Roanoke Tower,VA,Roanoke,VA,direct,1368,212360,45,277549,55378
+ROC,Rochester Tower,NY,Rochester,NY,direct,1454,207624,32,240168,47213
+ROW,Roswell Tower,NM,Roswell,NM,direct,1263,,,175148,51583
+RST,Rochester Muni TRACAB,MN,Rochester,MN,direct,1602,317960,22,340589,89389
+SAV,Savannah Tower,GA,Savannah,GA,direct,1712,321459,72,318893,57137
+SBA,Santa Barbara Tower,CA,Santa Barbara,CA,direct,3642,2011534,27,1805649,106182
+SBN,South Bend Tower,IN,South Bend,IN,direct,1269,194343,34,198280,55786
+SCK,Stockton Tower,CA,Stockton,CA,direct,2032,396984,37,422451,79907
+SDL,Scottsdale Tower,AZ,Scottsdale,AZ,direct,2114,1414628,40,851746,110886
+SEE,Gillespie Tower,CA,San Diego,CA,proxy,3004,1026486,113,980490,108077
+SGF,Springfield Tower,MO,Springfield,MO,direct,1192,205941,35,243597,49311
+SHV,Shreveport Tower,LA,Shreveport,LA,direct,1149,129584,17,145457,48699
+SJC,San Jose Tower,CA,San Jose,CA,direct,3582,1338806,24,1353869,146427
+SJU,San Juan Tower,PR,,PR,none,,,,,
+SMF,Sacramento Tower,CA,Sacramento,CA,direct,2045,479654,100,470552,87321
+SMO,Santa Monica Tower,CA,Santa Monica,CA,direct,3516,1974738,9,1657936,114885
+SPI,Springfield Tower,IL,Springfield,IL,direct,1178,162473,15,174110,66064
+SRQ,Sarasota Tower,FL,Sarasota,FL,direct,2210,799737,70,410998,72105
+STL,St. Louis Tower,MO,St. Louis,MO,proxy,,,,,56160
+STP,St. Paul Tower,MN,Saint Paul,MN,proxy,1524,319987,19,291209,73394
+STS,Sonoma Tower,CA,Sonoma,CA,direct,2991,,,920593,98527
+STT,St. Thomas Tower,VI,,VI,none,,,,,
+SUS,Spirit Tower,MO,St. Louis,MO,proxy,,,,,56160
+SUX,Sioux Gateway Tower,IA,Sioux City,IA,proxy,1267,,,200738,68906
+SYR,Syracuse Tower,NY,Syracuse,NY,direct,1566,217024,31,223201,47819
+TEB,Teterboro Tower,NJ,New York,NY,proxy,4089,889265,198,825854,80483
+TLH,Tallahassee Tower,FL,Tallahassee,FL,direct,1473,310120,32,291188,57409
+TOA,Torrance Tower,CA,Torrance,CA,direct,3006,1173514,33,1100115,116217
+TOL,Toledo Tower,OH,Toledo,OH,direct,1151,127424,24,131766,49724
+TPA,Tampa Tower,FL,Tampa,FL,direct,1930,562741,92,375619,75475
+TRI,Tri-Cities Tower,TN,Johnson City,TN,proxy,1507,208980,3,292890,57254
+TUS,Tucson Tower,AZ,Tucson,AZ,direct,1428,321141,128,318760,57073
+TVC,Traverse City Tower,MI,Traverse City,MI,direct,1850,488864,10,444107,74087
+TWF,Twin Falls Tower,ID,Twin Falls,ID,direct,1565,,,370431,61205
+TYS,Knoxville Tower,TN,Knoxville,TN,direct,1701,369746,38,368965,54039
+VGT,North Las Vegas Tower,NV,North Las Vegas,NV,direct,1866,400088,136,401760,79542
+YIP,Willow Run Tower,MI,Ann Arbor,MI,proxy,2026,543564,60,517346,82212
+YNG,Youngstown Tower,OH,Youngstown,OH,direct,1075,66491,22,70275,34408

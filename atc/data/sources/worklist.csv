@@ -1,0 +1,160 @@
+code,facility,state,level,staffed_pct,cpc_target,region,division,city_status
+ABI,Abilene Tower,TX,6,100%,19,South,West South Central,todo
+ACK,Nantucket Tower,MA,5,90%,10,Northeast,New England,todo
+ACT,Waco Tower,TX,7,94%,18,South,West South Central,todo
+ADS,Addison Tower,TX,6,127%,11,South,West South Central,todo
+AFW,Alliance Tower,TX,6,100%,15,South,West South Central,todo
+ALB,Albany Tower,NY,6,96%,23,Northeast,Middle Atlantic,todo
+ALO,Waterloo Tower,IA,5,82%,11,Midwest,West North Central,todo
+AMA,Amarillo Tower,TX,6,86%,14,South,West South Central,todo
+APC,Napa Tower,CA,5,60%,10,West,Pacific,todo
+ARB,Ann Arbor Tower,MI,5,120%,10,Midwest,East North Central,todo
+ARR,Aurora Tower,IL,5,70%,10,Midwest,East North Central,todo
+ASE,Aspen TRACAB,CO,6,71%,14,West,Mountain,todo
+BDL,Bradley Tower,CT,5,113%,15,Northeast,New England,todo
+BED,Hanscom Tower,MA,6,85%,13,Northeast,New England,todo
+BFI,Boeing Tower,WA,6,88%,16,West,Pacific,todo
+BFL,Bakersfield Tower,CA,6,88%,17,West,Pacific,todo
+BGM,Binghamton Tower,NY,5,108%,13,Northeast,Middle Atlantic,todo
+BGR,Bangor Tower,ME,5,73%,22,Northeast,New England,todo
+BIL,Billings Tower,MT,7,95%,19,West,Mountain,todo
+BIS,Bismarck TRACAB,ND,5,86%,14,Midwest,West North Central,todo
+BPT,Beaumont Tower,TX,4,100%,10,South,West South Central,todo
+BTR,Baton Rouge Tower,LA,6,87%,15,South,West South Central,todo
+BTV,Burlington Tower,VT,7,100%,16,Northeast,New England,todo
+BUF,Buffalo Tower,NY,7,112%,26,Northeast,Middle Atlantic,todo
+BUR,Burbank Tower,CA,7,107%,15,West,Pacific,todo
+CAK,Akron-Canton Tower,OH,4,93%,15,Midwest,East North Central,todo
+CCR,Concord Tower,CA,5,80%,10,West,Pacific,todo
+CDW,Caldwell Tower,NJ,6,109%,11,Northeast,Middle Atlantic,todo
+CID,Cedar Rapids Tower,IA,5,100%,14,Midwest,West North Central,todo
+CKB,Clarksburg Tower,WV,5,83%,18,South,South Atlantic,todo
+CMA,Camarillo Tower,CA,7,100%,11,West,Pacific,todo
+CMI,Champaign Tower,IL,6,100%,15,Midwest,East North Central,todo
+CPR,Casper Tower,WY,5,41%,17,West,Mountain,todo
+CPS,St. Louis Downtown Tower,IL,6,90%,10,Midwest,East North Central,todo
+CRQ,Palomar Tower,CA,6,136%,11,West,Pacific,todo
+CRW,Charleston Tower,WV,5,86%,21,South,South Atlantic,todo
+CSG,Columbus Tower,GA,4,130%,10,South,South Atlantic,todo
+DAY,Dayton Tower,OH,4,80%,15,Midwest,East North Central,todo
+DLH,Duluth Tower,MN,6,84%,19,Midwest,West North Central,todo
+DPA,Dupage Tower,IL,6,131%,13,Midwest,East North Central,todo
+DSM,Des Moines Tower,IA,7,100%,20,Midwest,West North Central,todo
+DWH,Houston Hooks Tower,TX,6,100%,10,South,West South Central,todo
+ELM,Elmira TRACAB,NY,5,82%,11,Northeast,Middle Atlantic,todo
+ELP,El Paso Tower,TX,7,95%,20,South,West South Central,todo
+EMT,El Monte Tower,CA,5,100%,10,West,Pacific,todo
+EUG,Eugene Tower,OR,6,79%,19,West,Pacific,todo
+EVV,Evansville Tower,IN,5,92%,13,Midwest,East North Central,todo
+FAI,Fairbanks Tower,AK,7,59%,22,West,Pacific,todo
+FAR,Fargo Tower,ND,7,100%,18,Midwest,West North Central,todo
+FAT,Fresno Tower,CA,7,74%,27,West,Pacific,todo
+FCM,Flying Cloud Tower,MN,6,120%,10,Midwest,West North Central,todo
+FLO,Florence Tower,SC,5,83%,12,South,South Atlantic,todo
+FNT,Flint Tower,MI,4,110%,10,Midwest,East North Central,todo
+FPR,St. Lucie Tower,FL,7,110%,10,South,South Atlantic,todo
+FRG,Farmingdale Tower,NY,7,100%,11,Northeast,Middle Atlantic,todo
+FSD,Sioux Falls Tower,SD,6,71%,17,Midwest,West North Central,todo
+FSM,Fort Smith Tower,AR,7,114%,22,South,West South Central,todo
+FTW,Meacham Tower,TX,7,140%,15,South,West South Central,todo
+FWA,Fort Wayne Tower,IN,5,75%,20,Midwest,East North Central,todo
+FXE,Ft. Lauderdale Exec Tower,FL,7,75%,16,South,South Atlantic,todo
+GCN,Grand Canyon Tower,AZ,4,80%,10,West,Mountain,todo
+GGG,Longview Tower,TX,6,100%,17,South,West South Central,todo
+GPT,Gulfport Tower,MS,7,87%,15,South,East South Central,todo
+GRB,Green Bay Tower,WI,6,95%,19,Midwest,East North Central,todo
+GRR,Grand Rapids Tower,MI,5,109%,11,Midwest,East North Central,todo
+GTF,Great Falls Tower,MT,5,61%,18,West,Mountain,todo
+HIO,Hillsboro Tower,OR,7,136%,11,West,Pacific,todo
+HLN,Helena Tower,MT,5,82%,11,West,Mountain,todo
+HPN,Westchester Tower,NY,7,92%,13,Northeast,Middle Atlantic,todo
+HSV,Huntsville Tower,AL,7,88%,17,South,East South Central,todo
+HTS,Huntington Tower,WV,5,89%,19,South,South Atlantic,todo
+HUF,Terre Haute Tower,IN,6,63%,19,Midwest,East North Central,todo
+HWD,Hayward Tower,CA,6,82%,11,West,Pacific,todo
+ILG,Wilmington Tower,DE,4,110%,10,South,South Atlantic,todo
+ISP,Islip Tower,NY,7,100%,11,Northeast,Middle Atlantic,todo
+ITO,Hilo TRACAB,HI,5,91%,11,West,Pacific,todo
+JAN,Jackson Tower,MS,6,93%,14,South,East South Central,todo
+JNU,Juneau Tower,AK,5,85%,13,West,Pacific,todo
+LAF,Lafayette Tower,IN,6,90%,10,Midwest,East North Central,todo
+LAN,Lansing Tower,MI,4,91%,11,Midwest,East North Central,todo
+LBB,Lubbock Tower,TX,7,82%,17,South,West South Central,todo
+LCH,Lake Charles Tower,LA,5,81%,16,South,West South Central,todo
+LEX,Lexington Tower,KY,7,75%,24,South,East South Central,todo
+LFT,Lafayette Tower,LA,5,88%,16,South,West South Central,todo
+LIT,Little Rock Tower,AR,7,100%,22,South,West South Central,todo
+LNK,Lincoln Tower,NE,5,53%,15,Midwest,West North Central,todo
+LOU,Louisville Bowman Tower,KY,6,120%,10,South,East South Central,todo
+LVK,Livermore Tower,CA,7,90%,10,West,Pacific,todo
+MAF,Midland Tower,TX,7,86%,14,South,West South Central,todo
+MBS,Saginaw Tower,MI,4,110%,10,Midwest,East North Central,todo
+MFD,Mansfield Tower,OH,4,110%,10,Midwest,East North Central,todo
+MGM,Montgomery Tower,AL,6,94%,16,South,East South Central,todo
+MHT,Manchester Tower,NH,4,93%,15,Northeast,New England,todo
+MIC,Crystal Tower,MN,4,110%,10,Midwest,West North Central,todo
+MKC,Kansas City Dntn Tower,MO,5,107%,15,Midwest,West North Central,todo
+MKG,Muskegon Tower,MI,4,100%,10,Midwest,East North Central,todo
+MLI,Moline Quad City Tower,IL,6,69%,16,Midwest,East North Central,todo
+MLU,Monroe Tower,LA,5,85%,13,South,West South Central,todo
+MMU,Morristown Tower,NJ,6,100%,10,Northeast,Middle Atlantic,todo
+MOB,Mobile Tower,AL,7,84%,19,South,East South Central,todo
+MRI,Merrill Tower,AK,6,67%,12,West,Pacific,todo
+MRY,Monterey Tower,CA,5,80%,10,West,Pacific,todo
+MSN,Madison Tower,WI,7,89%,19,Midwest,East North Central,todo
+MWH,Grant County Tower,WA,6,44%,16,West,Pacific,todo
+NEW,Lakefront Tower,LA,5,110%,10,South,West South Central,todo
+OGG,Kahului Tower,HI,6,133%,12,West,Pacific,todo
+OMA,Omaha Tower,NE,6,100%,15,Midwest,West North Central,todo
+ONT,Ontario Tower,CA,5,107%,15,West,Pacific,todo
+ORL,Orlando Executive Tower,FL,7,120%,10,South,South Atlantic,todo
+PAE,Paine Tower,WA,6,120%,10,West,Pacific,todo
+PAO,Palo Alto Tower,CA,6,82%,11,West,Pacific,todo
+PDX,Portland Tower,OR,7,147%,19,West,Pacific,todo
+PIA,Peoria Tower,IL,4,73%,15,Midwest,East North Central,todo
+PIE,St. Petersburg Tower,FL,7,100%,11,South,South Atlantic,todo
+PNS,Pensacola Tower,FL,7,100%,10,South,South Atlantic,todo
+POC,Brackett Tower,CA,6,120%,10,West,Pacific,todo
+POU,Poughkeepsie Tower,NY,5,90%,10,Northeast,Middle Atlantic,todo
+PSC,Pasco Tower,WA,4,140%,10,West,Pacific,todo
+PSP,Palm Springs Tower,CA,5,90%,10,West,Pacific,todo
+PTK,Pontiac Tower,MI,6,91%,11,Midwest,East North Central,todo
+PUB,Pueblo Tower,CO,7,108%,12,West,Mountain,todo
+PVD,Providence Tower,RI,7,83%,29,Northeast,New England,todo
+PWK,Palwaukee Tower,IL,5,110%,10,Midwest,East North Central,todo
+PWM,Portland Tower,ME,7,100%,18,Northeast,New England,todo
+RFD,Rockford Tower,IL,6,95%,22,Midwest,East North Central,todo
+RHV,Reid-Hillview Tower,CA,6,100%,10,West,Pacific,todo
+RNO,Reno Tower,NV,6,87%,15,West,Mountain,todo
+ROC,Rochester Tower,NY,6,76%,21,Northeast,Middle Atlantic,todo
+ROW,Roswell Tower,NM,5,62%,13,West,Mountain,todo
+RST,Rochester Muni TRACAB,MN,5,69%,13,Midwest,West North Central,todo
+SBA,Santa Barbara Tower,CA,7,91%,22,West,Pacific,todo
+SBN,South Bend Tower,IN,7,74%,23,Midwest,East North Central,todo
+SCK,Stockton Tower,CA,4,130%,10,West,Pacific,todo
+SDL,Scottsdale Tower,AZ,7,100%,13,West,Mountain,todo
+SEE,Gillespie Tower,CA,7,109%,11,West,Pacific,todo
+SGF,Springfield Tower,MO,7,100%,24,Midwest,West North Central,todo
+SHV,Shreveport Tower,LA,5,90%,20,South,West South Central,todo
+SJC,San Jose Tower,CA,7,79%,14,West,Pacific,todo
+SJU,San Juan Tower,PR,7,107%,15,,,todo
+SMF,Sacramento Tower,CA,6,93%,15,West,Pacific,todo
+SMO,Santa Monica Tower,CA,5,100%,11,West,Pacific,todo
+SPI,Springfield Tower,IL,4,100%,10,Midwest,East North Central,todo
+SRQ,Sarasota Tower,FL,7,125%,12,South,South Atlantic,todo
+STL,St. Louis Tower,MO,7,147%,15,Midwest,West North Central,todo
+STP,St. Paul Tower,MN,4,130%,10,Midwest,West North Central,todo
+STS,Sonoma Tower,CA,5,45%,11,West,Pacific,todo
+STT,St. Thomas Tower,VI,4,120%,10,,,todo
+SUS,Spirit Tower,MO,6,100%,10,Midwest,West North Central,todo
+SUX,Sioux Gateway Tower,IA,5,87%,15,Midwest,West North Central,todo
+SYR,Syracuse Tower,NY,6,89%,19,Northeast,Middle Atlantic,todo
+TLH,Tallahassee Tower,FL,7,88%,17,South,South Atlantic,todo
+TOA,Torrance Tower,CA,5,90%,10,West,Pacific,todo
+TOL,Toledo Tower,OH,6,77%,22,Midwest,East North Central,todo
+TUS,Tucson Tower,AZ,6,93%,15,West,Mountain,todo
+TVC,Traverse City Tower,MI,5,100%,10,Midwest,East North Central,todo
+TWF,Twin Falls Tower,ID,5,82%,11,West,Mountain,todo
+VGT,North Las Vegas Tower,NV,7,81%,16,West,Mountain,todo
+YIP,Willow Run Tower,MI,5,93%,15,Midwest,East North Central,todo
+YNG,Youngstown Tower,OH,5,86%,21,Midwest,East North Central,todo

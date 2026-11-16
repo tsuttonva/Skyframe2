@@ -15,3 +15,13 @@ jobs:
         run: node scripts/check-syntax.js web/index.html
       - name: Check HoofCast syntax (iOS 12 Safari compatibility gate)
         run: node scripts/check-syntax.js hoofcast/index.html
+
+  atc-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: ATC Explorer tests (scoring, data vs 123ATC, refresh stop rules, scenario privacy)
+        run: node --test atc/tests/*.test.mjs

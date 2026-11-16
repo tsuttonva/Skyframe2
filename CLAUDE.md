@@ -6,13 +6,14 @@ Read `docs/RATE_LIMITS.md` first -- rate limits, quotas, and usage
 policies for every external service this app depends on (Cloudflare
 Workers, Cloudflare Workers KV, adsb.lol, airplanes.live, OpenSky,
 FlightAware AeroAPI, Nominatim, GitHub raw content/Pages, hexdb.io,
-Resend, aviationweather.gov, planespotters.net, and Open-Meteo/
-Zippopotam.us for HoofCast).
+Resend, aviationweather.gov, planespotters.net, Open-Meteo/
+Zippopotam.us for HoofCast, and 123atc.com for ATC Explorer).
 
 This applies to: polling frequency or interval options, cache TTLs,
 retry/backoff logic, anything reading or writing Cloudflare KV, adding a
 new upstream/fallback source, or changing how often any endpoint in
-`worker/src/index.js` gets called. Guessing about a limit instead of
+`worker/src/index.js` or `atc/worker/src/index.js` gets called (the two
+Workers share one Cloudflare account's daily KV quota). Guessing about a limit instead of
 checking that file is exactly what caused a real multi-hour debugging
 session (Aug 22-23, 2026) -- see the resolved "adsb.lol rate-limiting
 reliability" entry in `BACKLOG.md` for the full story.

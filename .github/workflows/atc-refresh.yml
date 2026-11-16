@@ -1,0 +1,47 @@
+name: ATC data refresh (123ATC)
+
+# Weekly pull of the fast-changing fields (level, CRWG target, staffing %, entry
+# pay, training success). One table page read twice plus 6 facility pages, 5 s
+# apart, with an identifying User-Agent. Policy and stop rules: atc/README.md.
+# Scheduled workflows only run from the default branch.
+on:
+  schedule:
+    - cron: '23 10 * * 2' # Tuesdays 10:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # commit the snapshot + rebuilt data
+  actions: write    # dispatch the Pages deploy afterwards
+
+concurrency:
+  group: atc-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Fetch, validate, snapshot (aborts and changes nothing if a check fails)
+        run: node atc/scripts/refresh-123atc.mjs --spot 6
+      - name: Rebuild facilities.json
+        run: node atc/scripts/build.mjs
+      - name: Tests (app values must match the new snapshot for every facility)
+        run: node --test atc/tests/*.test.mjs
+      - name: Commit and deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "atc-refresh[bot]"
+          git config user.email "atc-refresh[bot]@users.noreply.github.com"
+          git add atc/data atc/site/data
+          if git diff --cached --quiet; then
+            echo "No data changes."
+            exit 0
+          fi
+          git commit -m "ATC data refresh $(date -u +%F)"
+          git push
+          gh workflow run pages.yml --ref "${GITHUB_REF_NAME}"

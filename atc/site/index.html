@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATC Landing Spots: Warrenton Reference</title>
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<header>
+  <h1>ATC Landing Spots, measured against Warrenton, VA</h1>
+  <span class="snap" id="snap"></span>
+  <div class="scnbar" id="scnbar"></div>
+</header>
+<div class="sharebar" id="sharebar"></div>
+
+<div class="toolbar">
+  <input id="q" type="search" placeholder="Search facility, code, state...">
+  <label class="flt">Region<select id="fRegion"><option value="">any</option><option value="R:Northeast">All Northeast</option><option value="R:Midwest">All Midwest</option><option value="R:South">All South</option><option value="R:West">All West</option><optgroup label="Northeast"><option value="D:New England">New England</option><option value="D:Middle Atlantic">Middle Atlantic</option></optgroup><optgroup label="Midwest"><option value="D:East North Central">East North Central</option><option value="D:West North Central">West North Central</option></optgroup><optgroup label="South"><option value="D:South Atlantic">South Atlantic</option><option value="D:East South Central">East South Central</option><option value="D:West South Central">West South Central</option></optgroup><optgroup label="West"><option value="D:Mountain">Mountain</option><option value="D:Pacific">Pacific</option></optgroup></select></label>
+  <label class="flt">Max level<select id="fLevel"><option value="">any</option></select></label>
+  <label class="flt">Max staffed<select id="fStaff"><option value="">any</option><option value="100">100% or less</option><option value="95">95% or less</option><option value="90">90% or less</option><option value="85">85% or less</option><option value="80">80% or less</option><option value="75">75% or less</option><option value="70">70% or less</option></select></label>
+  <span class="count" id="count"></span>
+</div>
+
+<div class="wrap">
+<section class="crit">
+  <div class="crit-h">Criteria Prioritization <span id="wtot"></span><button type="button" id="mapBtn" class="mapbtn">Show on map</button></div>
+  <div class="crit-grid">
+    <div class="wt">Pay (take-home after rent) <b id="v_pay">25</b><div class="rowc"><button type="button" class="nudge" data-for="w_pay" data-d="-5" aria-label="less">&minus;</button><input id="w_pay" type="range" min="0" max="100" value="25"><button type="button" class="nudge" data-for="w_pay" data-d="5" aria-label="more">+</button></div></div>
+    <div class="wt">Rent (2BR) <b id="v_afford">25</b><div class="rowc"><button type="button" class="nudge" data-for="w_afford" data-d="-5" aria-label="less">&minus;</button><input id="w_afford" type="range" min="0" max="100" value="25"><button type="button" class="nudge" data-for="w_afford" data-d="5" aria-label="more">+</button></div></div>
+    <div class="wt">Safety (crime) <b id="v_safe">20</b><div class="rowc"><button type="button" class="nudge" data-for="w_safe" data-d="-5" aria-label="less">&minus;</button><input id="w_safe" type="range" min="0" max="100" value="20"><button type="button" class="nudge" data-for="w_safe" data-d="5" aria-label="more">+</button></div></div>
+    <div class="wt">Near Warrenton <b id="v_close">10</b><div class="rowc"><button type="button" class="nudge" data-for="w_close" data-d="-5" aria-label="less">&minus;</button><input id="w_close" type="range" min="0" max="100" value="10"><button type="button" class="nudge" data-for="w_close" data-d="5" aria-label="more">+</button></div></div>
+    <div class="wt">Staffing need (lower % staffed) <b id="v_need">10</b><div class="rowc"><button type="button" class="nudge" data-for="w_need" data-d="-5" aria-label="less">&minus;</button><input id="w_need" type="range" min="0" max="100" value="10"><button type="button" class="nudge" data-for="w_need" data-d="5" aria-label="more">+</button></div></div>
+    <div class="wt">Outdoors (trails + parks) <b id="v_out">10</b><div class="rowc"><button type="button" class="nudge" data-for="w_out" data-d="-5" aria-label="less">&minus;</button><input id="w_out" type="range" min="0" max="100" value="10"><button type="button" class="nudge" data-for="w_out" data-d="5" aria-label="more">+</button></div></div>
+  </div>
+  <div class="crit-grid">
+    <div class="wt">Training success (123ATC) <b id="v_train">0</b><div class="rowc"><button type="button" class="nudge" data-for="w_train" data-d="-5" aria-label="less">&minus;</button><input id="w_train" type="range" min="0" max="100" value="0"><button type="button" class="nudge" data-for="w_train" data-d="5" aria-label="more">+</button></div></div>
+  </div>
+  <div class="crit-note">Split 100 points across what matters most to you. Each facility gets a fit score from these weights.</div>
+</section>
+<section class="mapbox" id="mapbox" style="display:none">
+  <div class="map-h"><span>Your fit map</span><span class="mapw" id="mapWeights"></span><button type="button" id="mapClose" class="cmp-clear">Hide map</button></div>
+  <div class="map-note">Each dot is a facility in your current list. The number is its fit score for your weights. Tap a dot for details. The top 20 are labeled.</div>
+  <div class="zoombar">
+    <button type="button" id="zIn" aria-label="Zoom in">+</button>
+    <button type="button" id="zOut" aria-label="Zoom out">&minus;</button>
+    <button type="button" data-z="full">Full US</button>
+    <button type="button" data-z="east">East Coast</button>
+    <button type="button" data-z="ne">Northeast</button>
+    <button type="button" data-z="se">Southeast</button>
+    <span class="zhint">Scroll or drag to zoom and pan</span>
+  </div>
+  <svg id="usmap" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="map-legend"><span><span class="lg hi"></span>70+</span><span><span class="lg mid"></span>40–69</span><span><span class="lg lo"></span>under 40</span><span><span class="lg na"></span>not scored</span></div>
+</section>
+<section class="cmp-panel" id="cmp" style="display:none"></section>
+<div class="table-scroll"><table id="t">
+  <thead>
+    <tr>
+      <th class="ck"></th>
+      <th class="l" data-k="code" data-t="s">Facility</th>
+      <th data-k="fit" data-t="n">Fit (your weights)</th>
+      <th data-k="miles" data-t="n">Miles from Warrenton</th>
+      <th data-k="trail_mi" data-t="n">Trail miles (10 mi, OSM)</th>
+      <th data-k="park_ac" data-t="n">Park acres (10 mi, OSM)</th>      <th data-k="staff" data-t="n">Staffed %</th>
+      <th data-k="target" data-t="n">CPC target</th>
+      <th data-k="level" data-t="n">Level</th>
+      <th data-k="colDelta" data-t="n">Cost vs Warrenton</th>
+      <th data-k="index" data-t="n">Price index</th>
+      <th data-k="trainee" data-t="n">Est. trainee start</th>
+      <th data-k="train" data-t="n">Training success (123ATC)</th>
+      <th data-k="net" data-t="n">Take-home /mo (after tax)</th>
+      <th data-k="afterRent" data-t="n">Left after 2BR rent /mo</th>
+      <th data-k="rentPct" data-t="n">Rent % of take-home</th>
+      <th data-k="entry" data-t="n">CPC entry pay</th>
+      <th data-k="grade" data-t="s">Safety grade*</th>
+      <th data-k="crime" data-t="n">Violent crime /100k (2024)</th>
+      <th data-k="home" data-t="n">Median home (latest)</th>
+      <th data-k="rent2" data-t="n">2BR avg rent (Sep 2026)</th>
+      <th data-k="income" data-t="n">Median household income, city (2020–24)</th>
+      <th class="l" data-k="lean" data-t="s">Political lean</th>
+      <th class="l">Strava heatmap</th>
+      <th class="l" data-k="sports" data-t="s">Sports identity</th>
+    </tr>
+  </thead>
+  <tbody id="b"></tbody>
+</table></div>
+<div class="legend">
+  2BR rent for towers outside the original 50 = Census ACS median gross rent (includes utilities; runs about 20% below the RentCafe asking figures used for the original 50, so those towers look slightly more affordable than they are relative to the others).
+  Trainee pay = estimated at 57.5% of CPC entry pay. Warrenton baseline = 108.9 price index (Washington metro).
+  Miles are straight-line from approximate airport coordinates.
+</div>
+</div>
+
+<div class="drawer" id="drawer"><span class="x" id="dx">&times;</span><div id="dbody"></div></div>
+
+<footer><details class="notes"><summary>Sources, methods, and caveats (click to expand)</summary>
+  Take-home is an approximation: single filer, 2026 federal brackets with standard deduction, 7.65% FICA, rough state and city rates at about $60K, and trainee pay. It excludes FERS retirement contributions, health premiums, food, car, and utilities, so treat "left after rent" as an upper bound. Filters exclude rows with missing data when that filter is set.Median household income is the city's 2020–2024 figure from Census QuickFacts, in 2024 dollars. It's household income, not salary, because the Census doesn't publish median salary by city. Dulles uses Loudoun County, Andrews uses Prince George's County, and Teterboro has no figure. Worst safety grade means the lowest safety grade you'll accept. Political lean is the average of the 2020 and 2024 presidential margins in the airport's county (20+ points = hard). Counties are a rough proxy for the metro area around each airport. Fit score: each category is percentile-ranked across the 50 facilities, then combined using your slider weights; "scored %" shows how much of your weight had data for that facility. A fit score is hidden when less than 60% of the weight has data, so facilities with missing rent don't rank on partial information. Strava links open the global heatmap centered on each airport; the heatmap can't be scored, so it's a visual check only. Training success is 123ATC's "Training Success Rate (Avg)", taken from each facility's page (the latest month shown there, August to October 2026). The site doesn't define the base or the class size, so treat it as a rough pass-rate proxy. Small facilities can swing to 100% or 0% on a few trainees; new hires typically run lower than transfers. Trail and park counts come from OpenStreetMap within a 10-mile circle of each airport. They're raw totals, so metro areas score higher, and the circle can include parks across county lines.
+*Safety grade is derived here, not a published grade: violent crime per 100k of A under 150, B 150–299, C 300–499, D 500–799, F 800+. The national violent crime rate is roughly 360–400 per 100k. Crime: FBI 2024 figures via Wikipedia's city table for large cities; NeighborhoodScout 2024 for smaller cities. Some areas use a nearby proxy (Sterling for Dulles, Clinton MD for Andrews, Warrenton for Potomac TRACON, NYC for JFK and LaGuardia, Atlanta for Atlanta TRACON). Memphis is flagged by the FBI as underreported. Asheville's NeighborhoodScout figure looked like a unit error and was converted to 800. Home values: NeighborhoodScout Q4 2025 medians. Rent: RentCafe average 2-bedroom, September 2026. Teterboro (TEB) has no usable crime, home, or rent data yet. Political lean and sports are still first-pass estimates, not checked against election results.
+<br>Borrowed crime figures: where an airport's own town has no usable FBI figure, the rate shown is borrowed from the nearby big city named in the "borrowed" tag (for example Teterboro uses New York, Hanscom uses Boston). These count toward the fit score but describe that city, not the airport's town. Crime stays blank where the FBI file has no usable number at all (GPT, JAN, NEW, ORL report zero offenses; ITO, OGG have no population figure; SJU, STT are outside the file).
+<br>Staffing, level, CPC target, entry pay and training success come from the 123ATC facilities table and refresh weekly. The date next to the title is the last successful refresh. If a value was blank at the source, the last good value is kept and tagged "stale" with the date it was last seen.
+<br>Saved scenarios store only your settings (weights, filters, compared towers, map view). Scores are recomputed from the current data each time, so a shared scenario can show different numbers than on the day it was shared.
+</details></footer>
+
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast"></div>
+<script type="module" src="src/app.js"></script>
+</body>
+</html>

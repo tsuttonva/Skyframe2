@@ -6,7 +6,9 @@ and Android from a single static site, with an optional Cloudflare Worker
 backend for military-aircraft tagging and flight-route lookups.
 
 This repo also hosts **HoofCast**, a horse-riding-conditions PWA — see
-[below](#hoofcast).
+[below](#hoofcast) — and **ATC Explorer**, a comparison of FAA towers as
+places to live and work, with saved scenarios and share links — see
+[`atc/README.md`](atc/README.md).
 
 ## Repo layout
 
@@ -18,6 +20,10 @@ This repo also hosts **HoofCast**, a horse-riding-conditions PWA — see
   hard monthly cost cap.
 - `hoofcast/` — HoofCast's frontend, a self-contained static PWA (no
   backend/Worker needed — see below).
+- `atc/` — ATC Explorer: static frontend (`atc/site/`, deployed at `/atc/`),
+  its own Cloudflare Worker for accounts and saved scenarios (`atc/worker/`),
+  and a weekly data-refresh pipeline (`atc/scripts/`, `atc/data/`). Fully
+  documented in `atc/README.md`.
 - `scripts/check-syntax.js` — a pre-ship gate that verifies an app's
   `index.html` contains no ES2020+ syntax, to keep it working on old iOS
   Safari (12.5.x). Run against both apps in CI (`.github/workflows/ci.yml`).
@@ -32,9 +38,14 @@ This repo also hosts **HoofCast**, a horse-riding-conditions PWA — see
 - `.github/workflows/ci.yml` — runs the `check-syntax.js` compatibility gate
   against both `web/index.html` and `hoofcast/index.html` on every push/PR.
 - `.github/workflows/pages.yml` — deploys a combined static site to GitHub
-  Pages on every push: SkyFrame at `/`, HoofCast at `/hoofcast/`.
+  Pages on every push: SkyFrame at `/`, HoofCast at `/hoofcast/`, ATC
+  Explorer at `/atc/`.
 - `.github/workflows/worker-deploy.yml` — deploys the SkyFrame Cloudflare
   Worker whenever `worker/**` changes.
+- `.github/workflows/atc-worker-deploy.yml` — deploys ATC Explorer's Worker
+  whenever `atc/worker/**` changes (same Cloudflare secrets).
+- `.github/workflows/atc-refresh.yml` — weekly 123ATC data refresh for ATC
+  Explorer; commits a dated snapshot and redeploys Pages.
 
 ## HoofCast
 

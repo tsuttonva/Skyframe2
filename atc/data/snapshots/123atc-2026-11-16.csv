@@ -1,0 +1,314 @@
+ID,Name,Type,Level,State,CRWG Target,Cur Staff,Proj Staff,Training Time,Training Success,Min CPC Salary
+A11,Anchorage TRACON,TRACON,9,AK,24,75%,106%,1.11 yrs,79%,138508
+A80,Atlanta TRACON,TRACON,12,GA,100,77%,84%,1.62 yrs,44%,162801
+A90,Boston TRACON,TRACON,11,NH,70,83%,92%,1.45 yrs,73%,166052
+ABE,Allentown Tower,Up/Down,7,PA,22,127%,146%,2.24 yrs,87%,116914
+ABI,Abilene Tower,Up/Down,6,TX,19,95%,122%,1.55 yrs,88%,89784
+ABQ,Albuquerque Tower,Up/Down,8,NM,24,92%,110%,1.81 yrs,80%,110816
+ACK,Nantucket Tower,Tower,5,MA,10,100%,115%,0.73 yrs,75%,120000
+ACT,Waco Tower,Up/Down,7,TX,18,100%,136%,1.69 yrs,81%,99209
+ACY,Atlantic City Tower,Up/Down,6,NJ,23,78%,97%,2.83 yrs,80%,100238
+ADS,Addison Tower,Tower,6,TX,11,127%,122%,0.55 yrs,91%,99141
+ADW,Andrews Tower,Tower,5,MD,16,88%,125%,0.85 yrs,94%,97060
+AFW,Alliance Tower,Tower,6,TX,15,93%,133%,0.68 yrs,93%,97607
+AGC,Allegheny Tower,Tower,5,PA,15,127%,136%,1.01 yrs,83%,84004
+AGS,Augusta Tower,Up/Down,6,GA,18,106%,121%,1.56 yrs,86%,89784
+ALB,Albany Tower,Up/Down,6,NY,23,100%,95%,2.52 yrs,59%,92629
+ALO,Waterloo Tower,Tower,5,IA,11,82%,103%,1.02 yrs,89%,81249
+AMA,Amarillo Tower,Up/Down,6,TX,14,79%,105%,1.99 yrs,79%,89784
+ANC,Anchorage Tower,Tower,8,AK,26,73%,79%,0.74 yrs,76%,125350
+APA,Centennial Tower,Tower,8,CO,25,80%,119%,0.94 yrs,75%,124948
+APC,Napa Tower,Tower,5,CA,10,60%,117%,0.9 yrs,86%,108513
+ARB,Ann Arbor Tower,Tower,5,MI,10,120%,128%,0.36 yrs,92%,93299
+ARR,Aurora Tower,Tower,5,IL,10,70%,102%,0.74 yrs,91%,95200
+ASE,Aspen TRACAB,Up/Down,6,CO,14,71%,95%,1.76 yrs,77%,106244
+ATL,Atlanta Tower,Tower,12,GA,52,77%,90%,1.06 yrs,74%,162801
+AUS,Austin Tower,Up/Down,9,TX,52,54%,88%,1.8 yrs,62%,124538
+AVL,Asheville Tower,Up/Down,7,NC,17,100%,123%,1 yrs,90%,99209
+AVP,Wilkes-Barre Tower,Up/Down,5,PA,22,64%,102%,1.49 yrs,87%,81249
+AZO,Kalamazoo Tower,Up/Down,8,MI,39,113%,118%,1.2 yrs,91%,109627
+BDL,Bradley Tower,Tower,5,CT,15,120%,121%,0.78 yrs,88%,95630
+BED,Hanscom Tower,Tower,6,MA,13,92%,128%,0.85 yrs,58%,109357
+BFI,Boeing Tower,Tower,6,WA,16,88%,135%,1.13 yrs,74%,105285
+BFL,Bakersfield Tower,Up/Down,6,CA,17,88%,114%,1.61 yrs,92%,104671
+BGM,Binghamton Tower,Up/Down,5,NY,13,92%,95%,1.6 yrs,94%,81249
+BGR,Bangor Tower,Up/Down,5,ME,22,73%,98%,2.05 yrs,76%,81249
+BHM,Birmingham Tower,Up/Down,8,AL,22,91%,118%,1.96 yrs,76%,110732
+BIL,Billings Tower,Up/Down,7,MT,19,100%,95%,2.06 yrs,66%,99209
+BIS,Bismarck TRACAB,Up/Down,5,ND,14,86%,109%,1.36 yrs,92%,81249
+BJC,Broomfield Tower,Tower,8,CO,17,65%,117%,0.57 yrs,92%,125603
+BNA,Nashville Tower,Up/Down,10,TN,52,60%,83%,1.88 yrs,71%,139307
+BOI,Boise Tower,Up/Down,8,ID,28,71%,115%,1.73 yrs,73%,109627
+BOS,Boston Tower,Tower,10,MA,33,79%,88%,1.14 yrs,61%,166702
+BPT,Beaumont Tower,Tower,4,TX,10,90%,134%,0.67 yrs,93%,71585
+BTR,Baton Rouge Tower,Up/Down,6,LA,15,80%,91%,1.75 yrs,84%,89784
+BTV,Burlington Tower,Up/Down,7,VT,16,100%,111%,1.84 yrs,80%,101235
+BUF,Buffalo Tower,Up/Down,7,NY,26,115%,114%,1.5 yrs,85%,103743
+BUR,Burbank Tower,Tower,7,CA,15,100%,99%,1.25 yrs,73%,124134
+BWI,Baltimore Tower,Tower,8,MD,22,86%,102%,0.89 yrs,79%,127027
+C90,Chicago TRACON,TRACON,12,IL,100,80%,83%,2.21 yrs,47%,182620
+CAE,Columbia Tower,Up/Down,7,SC,22,73%,113%,1.69 yrs,83%,99209
+CAK,Akron-Canton Tower,Tower,4,OH,15,100%,129%,0.56 yrs,100%,74747
+CCR,Concord Tower,Tower,5,CA,10,80%,125%,0.83 yrs,95%,108513
+CDW,Caldwell Tower,Tower,6,NJ,11,100%,120%,0.88 yrs,93%,113476
+CHA,Chattanooga Tower,Up/Down,7,TN,18,100%,132%,1.55 yrs,93%,99209
+CHS,Charleston Tower,Up/Down,8,SC,23,83%,123%,1.89 yrs,78%,109627
+CID,Cedar Rapids Tower,Up/Down,5,IA,14,100%,128%,1.19 yrs,89%,81249
+CKB,Clarksburg Tower,Up/Down,5,WV,18,83%,103%,1.46 yrs,97%,81249
+CLE,Cleveland Tower,Up/Down,8,OH,39,115%,131%,1.93 yrs,82%,114469
+CLT,Charlotte Tower,Up/Down,12,NC,85,86%,91%,1.66 yrs,87%,157382
+CMA,Camarillo Tower,Tower,7,CA,11,100%,114%,0.69 yrs,100%,122863
+CMH,Columbus Tower,Up/Down,8,OH,45,82%,123%,1.62 yrs,80%,114394
+CMI,Champaign Tower,Up/Down,6,IL,15,93%,104%,1.54 yrs,79%,89784
+CNO,Chino Tower,Tower,8,CA,11,91%,125%,1.68 yrs,82%,129677
+COS,Colorado Springs Tower,Up/Down,8,CO,30,67%,97%,1.6 yrs,68%,112521
+CPR,Casper Tower,Up/Down,5,WY,17,41%,90%,1.53 yrs,87%,81249
+CPS,St. Louis Downtown Tower,Tower,6,IL,10,90%,111%,0.65 yrs,85%,92062
+CRP,Corpus Christi Tower,Up/Down,8,TX,29,83%,124%,2.21 yrs,90%,110161
+CRQ,Palomar Tower,Tower,6,CA,11,127%,148%,0.56 yrs,86%,108008
+CRW,Charleston Tower,Up/Down,5,WV,21,81%,101%,1.23 yrs,83%,81249
+CSG,Columbus Tower,Tower,4,GA,10,130%,137%,0.56 yrs,100%,75701
+CVG,Cincinnati Tower,Up/Down,9,KY,40,98%,118%,2.3 yrs,73%,126173
+D01,Denver TRACON,TRACON,12,CO,90,77%,91%,1.36 yrs,78%,175860
+D10,Dallas-Fort Worth TRACON,TRACON,12,TX,100,72%,78%,2.77 yrs,57%,167364
+D21,Detroit TRACON,TRACON,10,MI,49,94%,96%,2.72 yrs,63%,156515
+DAB,Daytona Beach Tower,Up/Down,10,FL,58,83%,92%,2.37 yrs,69%,139307
+DAL,Dallas Love Tower,Tower,8,TX,21,110%,124%,0.76 yrs,91%,119179
+DAY,Dayton Tower,Tower,4,OH,15,80%,115%,0.4 yrs,79%,74251
+DCA,Wash. National Tower,Tower,9,DC,30,77%,96%,1.25 yrs,74%,142016
+DEN,Denver Tower,Tower,12,CO,47,66%,89%,0.98 yrs,84%,175860
+DFW,Dallas-Fort Worth Tower,Tower,12,TX,54,81%,93%,1.4 yrs,55%,167364
+DJT,Donald J Trump Tower,Up/Down,9,FL,59,66%,84%,2.84 yrs,70%,129009
+DLH,Duluth Tower,Up/Down,6,MN,19,84%,108%,2.12 yrs,67%,89784
+DPA,Dupage Tower,Tower,6,IL,13,131%,124%,0.79 yrs,92%,104663
+DSM,Des Moines Tower,Up/Down,7,IA,20,100%,122%,1.67 yrs,77%,100014
+DTW,Detroit Tower,Tower,9,MI,30,90%,89%,1.17 yrs,71%,136098
+DVT,Deer Valley Tower,Tower,9,AZ,20,70%,103%,0.61 yrs,79%,126711
+DWH,Houston Hooks Tower,Tower,6,TX,10,130%,206%,0.86 yrs,92%,103543
+ELM,Elmira TRACAB,Up/Down,5,NY,11,91%,112%,1.07 yrs,92%,81249
+ELP,El Paso Tower,Up/Down,7,TX,20,90%,119%,1.98 yrs,85%,99209
+EMT,El Monte Tower,Tower,5,CA,10,110%,135%,0.7 yrs,92%,101662
+ERI,Erie Tower,Tower,4,PA,10,110%,114%,0.65 yrs,93%,71585
+EUG,Eugene Tower,Up/Down,6,OR,19,95%,159%,1.3 yrs,94%,89784
+EVV,Evansville Tower,Up/Down,5,IN,13,92%,111%,1.73 yrs,41%,81249
+EWR,Newark Tower,Tower,11,NJ,38,76%,96%,1.95 yrs,72%,183299
+F11,Central Florida TRACON,TRACON,11,FL,56,71%,90%,1.9 yrs,76%,146614
+FAI,Fairbanks Tower,Up/Down,7,AK,22,59%,72%,1.85 yrs,46%,120219
+FAR,Fargo Tower,Up/Down,7,ND,18,100%,117%,1.44 yrs,75%,99209
+FAT,Fresno Tower,Up/Down,7,CA,27,70%,79%,2.28 yrs,80%,99709
+FAY,Fayetteville Tower,Up/Down,6,NC,23,96%,94%,2.98 yrs,76%,93757
+FCM,Flying Cloud Tower,Tower,6,MN,10,120%,144%,0.53 yrs,97%,102178
+FFZ,Falcon Tower,Tower,9,AZ,18,83%,103%,0.58 yrs,93%,126711
+FLL,Fort Lauderdale Tower,Tower,8,FL,24,88%,122%,0.51 yrs,88%,116754
+FLO,Florence Tower,Up/Down,5,SC,12,75%,84%,1.71 yrs,96%,81249
+FNT,Flint Tower,Tower,4,MI,10,120%,117%,0.68 yrs,100%,78960
+FPR,St. Lucie Tower,Tower,7,FL,10,110%,120%,0.64 yrs,90%,105659
+FRG,Farmingdale Tower,Tower,7,NY,11,100%,124%,1.47 yrs,52%,125389
+FSD,Sioux Falls Tower,Up/Down,6,SD,17,71%,100%,1.43 yrs,75%,89784
+FSM,Fort Smith Tower,Up/Down,7,AR,22,114%,126%,1.43 yrs,87%,99209
+FTW,Meacham Tower,Tower,7,TX,15,133%,156%,0.71 yrs,94%,107854
+FWA,Fort Wayne Tower,Up/Down,5,IN,20,80%,95%,2.1 yrs,70%,81249
+FXE,Ft. Lauderdale Exec Tower,Tower,7,FL,16,75%,116%,1.04 yrs,93%,105659
+GCN,Grand Canyon Tower,Tower,4,AZ,10,80%,118%,0.6 yrs,100%,76477
+GEG,Spokane Tower,Up/Down,8,WA,33,91%,123%,1.58 yrs,84%,110198
+GFK,Grand Forks Tower,Tower,9,ND,23,78%,84%,0.74 yrs,89%,121134
+GGG,Longview Tower,Up/Down,6,TX,17,106%,111%,1.94 yrs,73%,89784
+GPT,Gulfport Tower,Up/Down,7,MS,15,93%,120%,1.66 yrs,94%,99209
+GRB,Green Bay Tower,Up/Down,6,WI,19,95%,114%,0.81 yrs,88%,89784
+GRR,Grand Rapids Tower,Tower,5,MI,11,100%,119%,0.68 yrs,87%,82012
+GSO,Greensboro Tower,Up/Down,7,NC,24,83%,118%,1.88 yrs,73%,99209
+GSP,Greer Tower,Up/Down,7,SC,18,106%,118%,1.62 yrs,72%,99209
+GTF,Great Falls Tower,Up/Down,5,MT,18,61%,93%,1.87 yrs,66%,81249
+HCF,Honolulu Control Fac,Combined,11,HI,93,71%,83%,2.86 yrs,65%,163885
+HEF,Manassas Tower,Tower,5,VA,10,130%,145%,0.52 yrs,93%,97546
+HIO,Hillsboro Tower,Tower,7,OR,11,145%,179%,1.13 yrs,87%,108167
+HLN,Helena Tower,Up/Down,5,MT,11,82%,108%,1.54 yrs,70%,81249
+HOU,Hobby Tower,Tower,8,TX,21,81%,119%,0.92 yrs,95%,126428
+HPN,Westchester Tower,Tower,7,NY,13,92%,128%,2.4 yrs,70%,125389
+HSV,Huntsville Tower,Up/Down,7,AL,17,76%,125%,1.8 yrs,78%,103320
+HTS,Huntington Tower,Up/Down,5,WV,19,95%,105%,1.25 yrs,93%,81249
+HUF,Terre Haute Tower,Up/Down,6,IN,19,58%,91%,1.98 yrs,74%,89784
+HWD,Hayward Tower,Tower,6,CA,11,91%,103%,1.09 yrs,86%,119911
+I90,Houston TRACON,TRACON,12,TX,81,84%,90%,1.76 yrs,80%,177544
+IAD,Dulles Tower,Tower,10,VA,30,87%,93%,1.46 yrs,72%,164869
+IAH,Houston Intercont. Tower,Tower,11,TX,34,88%,103%,1.02 yrs,90%,169083
+ICT,Wichita Tower,Up/Down,8,KS,31,74%,83%,2.49 yrs,53%,109627
+ILG,Wilmington Tower,Tower,4,DE,10,120%,115%,0.6 yrs,96%,78881
+ILM,Wilmington Tower,Up/Down,7,NC,15,93%,117%,1.83 yrs,67%,99209
+IND,Indianapolis Tower,Up/Down,9,IN,45,78%,98%,2.12 yrs,77%,122262
+ISP,Islip Tower,Tower,7,NY,11,100%,147%,1.6 yrs,76%,125389
+ITO,Hilo TRACAB,Up/Down,5,HI,11,91%,131%,1.13 yrs,100%,86843
+JAN,Jackson Tower,Up/Down,6,MS,14,93%,107%,1.71 yrs,78%,89784
+JAX,Jacksonville Tower,Up/Down,9,FL,45,78%,85%,2.63 yrs,48%,121134
+JCF,Joshua TRACON,Combined,8,CA,27,74%,123%,1.46 yrs,84%,127804
+JFK,Kennedy Tower,Tower,11,NY,36,69%,74%,2.05 yrs,62%,185303
+JNU,Juneau Tower,Tower,5,AK,13,100%,110%,0.68 yrs,78%,92902
+L30,Las Vegas TRACON,TRACON,11,NV,46,59%,94%,1.91 yrs,85%,149758
+LAF,Lafayette Tower,Tower,6,IN,10,90%,117%,0.75 yrs,74%,90620
+LAN,Lansing Tower,Tower,4,MI,11,82%,140%,0.69 yrs,96%,79633
+LAS,Las Vegas Tower,Tower,11,NV,43,74%,88%,0.96 yrs,64%,149758
+LAX,Los Angeles Tower,Tower,11,CA,45,82%,94%,2.01 yrs,57%,181070
+LBB,Lubbock Tower,Up/Down,7,TX,17,82%,110%,0.91 yrs,78%,99209
+LCH,Lake Charles Tower,Up/Down,5,LA,16,88%,112%,1.82 yrs,83%,81249
+LEX,Lexington Tower,Up/Down,7,KY,24,75%,99%,1.25 yrs,72%,99209
+LFT,Lafayette Tower,Up/Down,5,LA,16,81%,107%,1.47 yrs,82%,81249
+LGA,La Guardia Tower,Tower,11,NY,37,92%,94%,2.11 yrs,57%,185303
+LGB,Long Beach Tower,Tower,9,CA,21,90%,99%,1.13 yrs,79%,151567
+LIT,Little Rock Tower,Up/Down,7,AR,22,100%,119%,1.45 yrs,85%,99209
+LNK,Lincoln Tower,Tower,5,NE,15,53%,91%,0.86 yrs,88%,81249
+LOU,Louisville Bowman Tower,Tower,6,KY,10,130%,175%,0.46 yrs,97%,89784
+LVK,Livermore Tower,Tower,7,CA,10,90%,135%,0.84 yrs,100%,132499
+M03,Memphis TRACON,TRACON,9,TN,32,75%,91%,1.13 yrs,92%,121134
+M98,Minneapolis TRACON,TRACON,10,MN,46,98%,93%,2.23 yrs,67%,156872
+MAF,Midland Tower,Up/Down,7,TX,14,86%,118%,1.74 yrs,80%,99209
+MBS,Saginaw Tower,Tower,4,MI,10,110%,145%,0.63 yrs,100%,71585
+MCI,Kansas City Intl Tower,Up/Down,8,MO,27,119%,142%,1.36 yrs,89%,111416
+MCO,Orlando Tower,Tower,9,FL,33,91%,105%,0.7 yrs,84%,121134
+MDT,Harrisburg Intl Tower,Up/Down,7,PA,31,65%,87%,1.79 yrs,60%,101218
+MDW,Midway Tower,Tower,8,IL,22,77%,110%,1.05 yrs,85%,130043
+MEM,Memphis Tower,Tower,8,TN,21,86%,102%,1.33 yrs,81%,109627
+MFD,Mansfield Tower,Tower,4,OH,10,120%,134%,0.58 yrs,94%,74747
+MGM,Montgomery Tower,Up/Down,6,AL,16,94%,98%,1.75 yrs,82%,89784
+MHT,Manchester Tower,Tower,4,NH,15,87%,119%,0.24 yrs,83%,81076
+MIA,Miami Tower,Up/Down,12,FL,90,73%,80%,2.69 yrs,60%,163958
+MIC,Crystal Tower,Tower,4,MN,10,120%,127%,0.4 yrs,96%,81468
+MKC,Kansas City Dntn Tower,Tower,5,MO,15,113%,131%,0.62 yrs,98%,82575
+MKE,Milwaukee Tower,Up/Down,8,WI,35,94%,121%,1.88 yrs,85%,116801
+MKG,Muskegon Tower,Tower,4,MI,10,90%,115%,0.57 yrs,91%,71585
+MLI,Moline Quad City Tower,Up/Down,6,IL,16,69%,85%,1.39 yrs,67%,91218
+MLU,Monroe Tower,Up/Down,5,LA,13,92%,126%,1.32 yrs,78%,81249
+MMU,Morristown Tower,Tower,6,NJ,10,100%,112%,0.75 yrs,71%,110945
+MOB,Mobile Tower,Up/Down,7,AL,19,79%,109%,1.11 yrs,88%,99209
+MRI,Merrill Tower,Tower,6,AK,12,58%,100%,0.78 yrs,77%,102662
+MRY,Monterey Tower,Tower,5,CA,10,80%,113%,0.89 yrs,95%,108513
+MSN,Madison Tower,Up/Down,7,WI,19,95%,115%,1.92 yrs,67%,99802
+MSP,Minneapolis Tower,Tower,9,MN,33,106%,112%,1.26 yrs,84%,136407
+MSY,Moisant Tower,Up/Down,9,LA,40,60%,76%,1.46 yrs,58%,121134
+MWH,Grant County Tower,Up/Down,6,WA,16,44%,55%,2.71 yrs,43%,89784
+MYF,Montgomery Tower,Tower,10,CA,20,85%,90%,0.63 yrs,75%,167701
+MYR,Myrtle Beach Tower,Up/Down,8,SC,27,78%,113%,1.58 yrs,90%,109627
+N90,New York TRACON,TRACON,12,NY,160,73%,66%,2.62 yrs,31%,194574
+NCT,NorCal TRACON,TRACON,12,CA,170,72%,74%,1.9 yrs,64%,174860
+NEW,Lakefront Tower,Tower,5,LA,10,110%,125%,0.59 yrs,89%,81249
+OAK,Oakland Tower,Tower,8,CA,18,106%,112%,0.98 yrs,86%,146413
+OGG,Kahului Tower,Tower,6,HI,12,133%,134%,1.49 yrs,66%,103199
+OKC,Oklahoma City Tower,Up/Down,8,OK,30,73%,91%,2.94 yrs,63%,109627
+OMA,Omaha Tower,Tower,6,NE,15,100%,112%,0.88 yrs,92%,90681
+ONT,Ontario Tower,Tower,5,CA,15,100%,106%,1.34 yrs,59%,96248
+ORD,Chicago O'Hare Tower,Tower,12,IL,88,64%,71%,1.75 yrs,59%,185250
+ORF,Norfolk Tower,Up/Down,8,VA,30,57%,79%,2.25 yrs,57%,111256
+ORL,Orlando Executive Tower,Tower,7,FL,10,120%,136%,0.55 yrs,94%,99209
+P31,Pensacola TRACON,TRACON,9,FL,35,86%,121%,1.6 yrs,89%,121134
+P50,Phoenix TRACON,TRACON,11,AZ,60,75%,93%,1.74 yrs,87%,153365
+P80,Portland TRACON,TRACON,9,OR,26,77%,98%,1.65 yrs,68%,131451
+PAE,Paine Tower,Tower,6,WA,10,130%,141%,0.78 yrs,88%,103291
+PAO,Palo Alto Tower,Tower,6,CA,11,91%,85%,1.14 yrs,86%,119911
+PCT,Potomac TRACON,TRACON,12,VA,160,93%,92%,1.45 yrs,87%,182199
+PDK,DeKalb-Peachtree Tower,Tower,7,GA,13,162%,178%,0.62 yrs,90%,104913
+PDX,Portland Tower,Tower,7,OR,19,147%,141%,1.12 yrs,85%,107659
+PHF,Patrick Henry Tower,Tower,5,VA,10,100%,154%,0.61 yrs,82%,82457
+PHL,Philadelphia Tower,Up/Down,12,PA,110,82%,87%,2.18 yrs,55%,173717
+PHX,Phoenix Tower,Tower,10,AZ,36,78%,91%,0.84 yrs,88%,145721
+PIA,Peoria Tower,Tower,4,IL,15,73%,131%,0.66 yrs,100%,71585
+PIE,St. Petersburg Tower,Tower,7,FL,11,91%,138%,1.16 yrs,76%,99209
+PIT,Pittsburgh Tower,Up/Down,8,PA,37,116%,125%,1.94 yrs,72%,113345
+PNE,NE Philadelphia Tower,Tower,6,PA,10,110%,133%,0.92 yrs,93%,103843
+PNS,Pensacola Tower,Tower,7,FL,10,100%,124%,0.46 yrs,74%,99209
+POC,Brackett Tower,Tower,6,CA,10,120%,154%,0.69 yrs,95%,112341
+POU,Poughkeepsie Tower,Tower,5,NY,10,100%,127%,0.81 yrs,100%,97691
+PRC,Prescott Tower,Tower,9,AZ,16,88%,104%,1.03 yrs,85%,121134
+PSC,Pasco Tower,Tower,4,WA,10,140%,167%,0.4 yrs,100%,71585
+PSP,Palm Springs Tower,Tower,5,CA,10,90%,123%,0.92 yrs,92%,97220
+PTK,Pontiac Tower,Tower,6,MI,11,100%,123%,1.14 yrs,85%,100567
+PUB,Pueblo Tower,Tower,7,CO,12,92%,126%,0.57 yrs,88%,101828
+PVD,Providence Tower,Up/Down,7,RI,29,86%,105%,1.63 yrs,66%,117109
+PWK,Palwaukee Tower,Tower,5,IL,10,110%,130%,0.79 yrs,97%,97768
+PWM,Portland Tower,Up/Down,7,ME,18,117%,128%,1.49 yrs,76%,113634
+R90,Omaha TRACON,TRACON,8,NE,22,86%,124%,1 yrs,100%,110723
+RDG,Reading Tower,Tower,5,PA,11,155%,110%,1.64 yrs,82%,89529
+RDU,Raleigh-Durham Tower,Up/Down,9,NC,40,88%,121%,1.48 yrs,91%,126494
+RFD,Rockford Tower,Up/Down,6,IL,22,95%,119%,0.99 yrs,100%,100368
+RHV,Reid-Hillview Tower,Tower,6,CA,10,100%,96%,0.78 yrs,96%,119911
+RIC,Richmond Tower,Tower,6,VA,15,100%,129%,0.77 yrs,92%,93787
+RNO,Reno Tower,Tower,6,NV,15,80%,96%,0.92 yrs,53%,91210
+ROA,Roanoke Tower,Up/Down,6,VA,22,86%,106%,1.81 yrs,78%,89784
+ROC,Rochester Tower,Up/Down,6,NY,21,76%,116%,1.76 yrs,66%,91870
+ROW,Roswell Tower,Up/Down,5,NM,13,54%,100%,2.58 yrs,71%,81249
+RST,Rochester Muni TRACAB,Up/Down,5,MN,13,69%,104%,1.14 yrs,67%,88578
+RSW,Fort Myers Tower,Up/Down,8,FL,33,91%,124%,1.46 yrs,83%,109627
+RVS,Riverside Tower,Tower,8,OK,12,100%,93%,1.16 yrs,54%,109627
+S46,Seattle TRACON,TRACON,10,WA,50,62%,95%,1.8 yrs,86%,164905
+S56,Salt Lake City TRACON,TRACON,10,UT,42,76%,90%,1.79 yrs,69%,139307
+SAN,San Diego Tower,Tower,8,CA,23,87%,122%,0.61 yrs,78%,131785
+SAT,San Antonio Tower,Up/Down,9,TX,42,81%,95%,2.41 yrs,64%,122914
+SAV,Savannah Tower,Up/Down,8,GA,29,66%,113%,1.48 yrs,79%,109627
+SBA,Santa Barbara Tower,Up/Down,7,CA,22,91%,118%,2.02 yrs,79%,124134
+SBN,South Bend Tower,Up/Down,7,IN,23,78%,84%,2.02 yrs,73%,99209
+SCK,Stockton Tower,Tower,4,CA,10,130%,127%,0.42 yrs,90%,90347
+SCT,SoCal TRACON,TRACON,12,CA,215,89%,90%,1.76 yrs,75%,185592
+SDF,Standiford Tower,Up/Down,9,KY,47,77%,86%,2.03 yrs,66%,121134
+SDL,Scottsdale Tower,Tower,7,AZ,13,100%,140%,0.73 yrs,73%,103777
+SEA,Seattle Tower,Tower,10,WA,33,91%,102%,0.6 yrs,86%,164905
+SEE,Gillespie Tower,Tower,7,CA,11,109%,144%,0.76 yrs,85%,119346
+SFB,Sanford Tower,Tower,9,FL,18,100%,110%,0.87 yrs,95%,121134
+SFO,San Francisco Tower,Tower,10,CA,32,69%,80%,1.39 yrs,60%,186053
+SGF,Springfield Tower,Up/Down,7,MO,24,100%,124%,1.28 yrs,88%,99209
+SHV,Shreveport Tower,Up/Down,5,LA,20,80%,86%,2.32 yrs,83%,81249
+SJC,San Jose Tower,Tower,7,CA,14,79%,128%,0.83 yrs,79%,132499
+SJU,San Juan Tower,Tower,7,PR,15,93%,107%,0.65 yrs,88%,104709
+SLC,Salt Lake City Tower,Tower,10,UT,32,81%,90%,0.91 yrs,85%,139307
+SMF,Sacramento Tower,Tower,6,CA,15,107%,126%,0.74 yrs,89%,102208
+SMO,Santa Monica Tower,Tower,5,CA,11,100%,123%,1.04 yrs,79%,101662
+SNA,John Wayne Tower,Tower,9,CA,23,87%,100%,1.26 yrs,64%,148256
+SPI,Springfield Tower,Tower,4,IL,10,100%,126%,0.37 yrs,95%,71585
+SRQ,Sarasota Tower,Tower,7,FL,12,117%,144%,0.75 yrs,96%,99209
+STL,St. Louis Tower,Tower,7,MO,15,147%,156%,0.7 yrs,66%,101726
+STP,St. Paul Tower,Tower,4,MN,10,110%,134%,0.55 yrs,94%,80061
+STS,Sonoma Tower,Tower,5,CA,11,45%,83%,1.03 yrs,63%,108513
+STT,St. Thomas Tower,Tower,4,VI,10,110%,145%,0.43 yrs,95%,78850
+SUS,Spirit Tower,Tower,6,MO,10,110%,94%,0.66 yrs,89%,92062
+SUX,Sioux Gateway Tower,Up/Down,5,IA,15,87%,92%,1.29 yrs,88%,81249
+SYR,Syracuse Tower,Up/Down,6,NY,19,84%,83%,1.84 yrs,60%,89784
+T75,St. Louis TRACON,TRACON,9,MO,38,82%,101%,1.82 yrs,68%,124207
+TEB,Teterboro Tower,Tower,9,NJ,28,54%,89%,1.6 yrs,93%,153099
+TLH,Tallahassee Tower,Up/Down,7,FL,17,88%,112%,1.97 yrs,66%,99209
+TMB,Tamiami Tower,Tower,8,FL,17,112%,94%,0.62 yrs,98%,120125
+TOA,Torrance Tower,Tower,5,CA,10,90%,134%,0.82 yrs,97%,101662
+TOL,Toledo Tower,Up/Down,6,OH,22,77%,94%,1.62 yrs,68%,89784
+TPA,Tampa Tower,Up/Down,10,FL,52,77%,83%,2.23 yrs,59%,139307
+TRI,Tri-Cities Tower,Up/Down,6,TN,17,100%,100%,1.38 yrs,54%,89784
+TUL,Tulsa Tower,Up/Down,8,OK,27,104%,121%,1.85 yrs,74%,109627
+TUS,Tucson Tower,Tower,6,AZ,15,93%,107%,1.28 yrs,75%,92790
+TVC,Traverse City Tower,Tower,5,MI,10,90%,115%,0.82 yrs,93%,81249
+TWF,Twin Falls Tower,Up/Down,5,ID,11,82%,126%,1.44 yrs,89%,81249
+TYS,Knoxville Tower,Up/Down,8,TN,26,88%,113%,2.25 yrs,75%,109627
+U90,Tucson TRACON,TRACON,8,AZ,19,74%,113%,1.52 yrs,71%,113017
+VGT,North Las Vegas Tower,Tower,7,NV,16,75%,113%,0.73 yrs,91%,101336
+VNY,Van Nuys Tower,Tower,9,CA,22,95%,106%,1.99 yrs,88%,151567
+VRB,Vero Beach Tower,Tower,8,FL,14,79%,105%,0.69 yrs,79%,116754
+Y90,Yankee TRACON,TRACON,8,CT,21,76%,106%,1.97 yrs,47%,128001
+YIP,Willow Run Tower,Tower,5,MI,15,93%,133%,0.52 yrs,89%,92396
+YNG,Youngstown Tower,Up/Down,5,OH,21,90%,103%,1.94 yrs,92%,84837
+ZAB,Albuquerque ARTCC,Center,10,NM,234,68%,80%,2.78 yrs,76%,140818
+ZAN,Anchorage ARTCC,Center,10,AK,98,89%,91%,2.76 yrs,75%,159288
+ZAU,Chicago ARTCC,Center,12,IL,290,91%,102%,2.74 yrs,80%,178806
+ZBW,Boston ARTCC,Center,11,NH,190,83%,97%,2.64 yrs,69%,166052
+ZDC,Washington ARTCC,Center,12,VA,281,90%,101%,3.1 yrs,80%,182199
+ZDV,Denver ARTCC,Center,10,CO,260,82%,102%,2.07 yrs,81%,155325
+ZFW,Fort Worth ARTCC,Center,12,TX,265,90%,103%,2.51 yrs,74%,167364
+ZHU,Houston ARTCC,Center,11,TX,257,98%,107%,2.28 yrs,88%,169083
+ZID,Indianapolis ARTCC,Center,12,IN,285,86%,89%,2.69 yrs,73%,155383
+ZJX,Jacksonville ARTCC,Center,11,FL,290,80%,90%,2.16 yrs,80%,146614
+ZKC,Kansas City ARTCC,Center,11,KS,232,84%,92%,2.44 yrs,73%,149006
+ZLA,Los Angeles ARTCC,Center,12,CA,268,75%,88%,3.05 yrs,68%,179477
+ZLC,Salt Lake City ARTCC,Center,10,UT,150,85%,106%,1.94 yrs,79%,139307
+ZMA,Miami ARTCC,Center,11,FL,277,77%,91%,2.73 yrs,79%,158399
+ZME,Memphis ARTCC,Center,12,TN,264,84%,88%,3.06 yrs,71%,153950
+ZMP,Minneapolis ARTCC,Center,11,MN,231,102%,102%,2.62 yrs,69%,159840
+ZNY,New York ARTCC,Center,12,NY,281,69%,53%,4.55 yrs,39%,194574
+ZOA,Oakland ARTCC,Center,11,CA,200,89%,89%,3.31 yrs,53%,195811
+ZOB,Cleveland ARTCC,Center,12,OH,274,101%,100%,2.19 yrs,74%,160749
+ZSE,Seattle ARTCC,Center,10,WA,141,87%,102%,2.5 yrs,68%,160264
+ZSU,San Juan,Combined,9,PR,50,78%,86%,3.25 yrs,55%,126919
+ZTL,Atlanta ARTCC,Center,12,GA,300,89%,102%,3.02 yrs,84%,162801
+ZUA,Guam,Combined,8,GU,17,88%,118%,1.02 yrs,77%,128357

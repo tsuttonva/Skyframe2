@@ -1,0 +1,210 @@
+code,facility,state,city_used,agency_matched,ori,population,violent_offenses_2024,violent_per_100k_2024,flag,match_type,app_crime_per_100k
+A80,Atlanta TRACON,GA,Atlanta,ATLANTA,GAAPD00,517123,2691,520,,direct,652
+ABE,Allentown Tower,PA,Allentown,ALLENTOWN,PA03901,124599,339,272,,direct,267
+ABI,Abilene Tower,TX,Abilene,ABILENE,TX22101,130275,553,424,,direct,
+ACK,Nantucket Tower,MA,,,,,,,no agency match,none,
+ACT,Waco Tower,TX,Waco,WACO,TX15512,146270,623,426,,direct,
+ACY,Atlantic City Tower,NJ,Atlantic City,ATLANTIC CITY,NJ00102,38480,685,1780,,direct,1758
+ADS,Addison Tower,TX,Addison,ADDISON,TX05701,17367,63,363,,direct,
+ADW,Andrews Tower,MD,Washington,WASHINGTON,DCMPD00,702250,6502,926,proxy city (DC agency used for a suburban airport: unreliable),proxy,281
+AFW,Alliance Tower,TX,Fort Worth,FORT WORTH,TX22012,997476,4572,458,proxy city,proxy,
+AGC,Allegheny Tower,PA,Pittsburgh,PITTSBURGH,PAPPD00,317177,1355,427,proxy city,proxy,427
+AGS,Augusta Tower,GA,Augusta,AUGUSTA-RICHMOND,GA12100,201399,1024,508,,direct,527
+ALB,Albany Tower,NY,Albany,ALBANY,NY00101,102095,834,817,,direct,
+ALO,Waterloo Tower,IA,Waterloo,WATERLOO,IA00703,66385,316,476,,direct,
+AMA,Amarillo Tower,TX,Amarillo,AMARILLO,TX18801,203039,1402,691,,direct,
+APC,Napa Tower,CA,Napa,NAPA,CA02802,76888,222,289,,direct,
+ARB,Ann Arbor Tower,MI,Ann Arbor,ANN ARBOR,MI81218,118025,357,302,,direct,
+ARR,Aurora Tower,IL,Aurora,AURORA,IL04501,170585,470,276,,direct,
+ASE,Aspen TRACAB,CO,Aspen,ASPEN,CO04901,6489,9,139,,direct,
+ATL,Atlanta Tower,GA,Atlanta,ATLANTA,GAAPD00,517123,2691,520,,direct,652
+AVL,Asheville Tower,NC,Asheville,,,,,,no agency match,direct,800
+AVP,Wilkes-Barre Tower,PA,Wilkes-Barre,WILKES-BARRE,PA04013,44254,191,432,,direct,428
+BDL,Bradley Tower,CT,Hartford,HARTFORD,CT00064,119626,617,516,proxy city,proxy,
+BED,Hanscom Tower,MA,Boston,BOSTON,MA01301,659049,4138,628,proxy city,proxy,
+BFI,Boeing Tower,WA,Seattle,SEATTLE,WASPD00,760058,5891,775,proxy city,proxy,
+BFL,Bakersfield Tower,CA,Bakersfield,BAKERSFIELD,CA01502,416120,2308,555,,direct,
+BGM,Binghamton Tower,NY,Binghamton,BINGHAMTON,NY00301,46378,247,533,,direct,
+BGR,Bangor Tower,ME,Bangor,BANGOR,ME01001,31598,51,161,,direct,
+BIL,Billings Tower,MT,Billings,BILLINGS,MT05601,122105,911,746,,direct,
+BIS,Bismarck TRACAB,ND,Bismarck,,,,,,no agency match,direct,
+BNA,Nashville Tower,TN,Nashville,,,,,,no agency match,direct,1124
+BOS,Boston Tower,MA,Boston,BOSTON,MA01301,659049,4138,628,,direct,628
+BPT,Beaumont Tower,TX,Beaumont,BEAUMONT,TX12301,111320,1266,1137,,direct,
+BTR,Baton Rouge Tower,LA,Baton Rouge,BATON ROUGE,LA01702,217387,663,305,,direct,
+BTV,Burlington Tower,VT,Burlington,BURLINGTON,VT00401,44456,213,479,,direct,
+BUF,Buffalo Tower,NY,Buffalo,BUFFALO,NY01401,273728,1933,706,,direct,
+BUR,Burbank Tower,CA,Burbank,BURBANK,CA01912,101377,396,391,,direct,
+BWI,Baltimore Tower,MD,Baltimore,BALTIMORE COUNTY POL DEP,MD00301,852726,3532,414,,direct,1316
+CAE,Columbia Tower,SC,Columbia,,,,,,no agency match,direct,770
+CAK,Akron-Canton Tower,OH,Canton,CANTON,OH07604,68725,771,1122,,direct,
+CCR,Concord Tower,CA,Concord,CONCORD,CA00704,121341,588,485,,direct,
+CDW,Caldwell Tower,NJ,Newark,NEWARK,NJNPD00,309708,1800,581,proxy city,proxy,
+CHA,Chattanooga Tower,TN,Chattanooga,CHATTANOOGA,TN03301,188894,1556,824,,direct,824
+CHS,Charleston Tower,SC,Charleston,,,,,,no agency match,direct,358
+CID,Cedar Rapids Tower,IA,Cedar Rapids,CEDAR RAPIDS,IA05701,135363,354,262,,direct,
+CKB,Clarksburg Tower,WV,Clarksburg,CLARKSBURG,WV01702,15316,57,372,,direct,
+CLE,Cleveland Tower,OH,Cleveland,CLEVELAND,OHCLP00,362762,5663,1561,,direct,1561
+CLT,Charlotte Tower,NC,Charlotte,,,,,,no agency match,direct,733
+CMA,Camarillo Tower,CA,Camarillo,CAMARILLO,CA05601,69115,89,129,,direct,
+CMI,Champaign Tower,IL,Champaign,CHAMPAIGN,IL01001,89466,449,502,,direct,
+CPR,Casper Tower,WY,Casper,CASPER,WY01301,58526,169,289,,direct,
+CPS,St. Louis Downtown Tower,IL,St. Louis,ST. LOUIS COUNTY POL DEP,MO09500,402510,1904,473,proxy city,proxy,
+CRQ,Palomar Tower,CA,San Diego,SAN DIEGO,CA03711,1389024,5726,412,proxy city,proxy,
+CRW,Charleston Tower,WV,Charleston,CHARLESTON,WV02002,46252,251,543,,direct,
+CSG,Columbus Tower,GA,Columbus,COLUMBUS,GA10601,201061,1214,604,,direct,
+DAY,Dayton Tower,OH,Dayton,DAYTON,OH05702,134857,1806,1339,,direct,
+DCA,Washington National,DC,Washington,WASHINGTON,DCMPD00,702250,6502,926,,direct,926
+DLH,Duluth Tower,MN,Duluth,DULUTH,MN06906,88003,193,219,,direct,
+DPA,Dupage Tower,IL,Chicago,CHICAGO,ILCPD00,2638698,14245,540,proxy city,proxy,
+DSM,Des Moines Tower,IA,Des Moines,DES MOINES,IA07703,209245,1471,703,,direct,
+DWH,Houston Hooks Tower,TX,Houston,HOUSTON,TXHPD00,2319160,26628,1148,,direct,
+ELM,Elmira TRACAB,NY,Elmira,ELMIRA,NY00701,26130,143,547,,direct,
+ELP,El Paso Tower,TX,El Paso,EL PASO,TX07102,678860,1890,278,,direct,
+EMT,El Monte Tower,CA,El Monte,EL MONTE,CA01922,102088,432,423,,direct,
+ERI,Erie Tower,PA,Erie,ERIE,PA02502,92379,347,376,,direct,381
+EUG,Eugene Tower,OR,Eugene,EUGENE,OR02002,178057,566,318,,direct,
+EVV,Evansville Tower,IN,Evansville,EVANSVILLE,IN08201,114660,1383,1206,,direct,
+EWR,Newark Tower,NJ,Newark,NEWARK,NJNPD00,309708,1800,581,,direct,581
+FAI,Fairbanks Tower,AK,Fairbanks,FAIRBANKS,AK00102,31676,221,698,,direct,
+FAR,Fargo Tower,ND,Fargo,,,,,,no agency match,direct,
+FAT,Fresno Tower,CA,Fresno,FRESNO,CA01005,546722,4021,735,,direct,
+FAY,Fayetteville Tower,NC,Fayetteville,,,,,,no agency match,direct,660
+FCM,Flying Cloud Tower,MN,Minneapolis,MINNEAPOLIS,MN02711,423282,4911,1160,proxy city,proxy,
+FLL,Fort Lauderdale Tower,FL,Fort Lauderdale,FORT LAUDERDALE,FL00603,184714,381,206,,direct,421
+FLO,Florence Tower,SC,Florence,,,,,,no agency match,direct,
+FNT,Flint Tower,MI,Flint,FLINT,MI25398,79183,996,1258,,direct,
+FPR,St. Lucie Tower,FL,Port St. Lucie,PORT ST. LUCIE,FL05602,259267,182,70,proxy city,proxy,
+FRG,Farmingdale Tower,NY,New York,NEW YORK,NY03030,8299271,55690,671,proxy city,proxy,
+FSD,Sioux Falls Tower,SD,Sioux Falls,,,,,,no agency match,direct,
+FSM,Fort Smith Tower,AR,Fort Smith,FORT SMITH,AR06601,89977,758,842,,direct,
+FTW,Meacham Tower,TX,Fort Worth,FORT WORTH,TX22012,997476,4572,458,proxy city,proxy,
+FWA,Fort Wayne Tower,IN,Fort Wayne,FORT WAYNE,IN00201,271892,836,307,,direct,
+FXE,Ft. Lauderdale Exec Tower,FL,Fort Lauderdale,FORT LAUDERDALE,FL00603,184714,381,206,proxy city,proxy,
+GCN,Grand Canyon Tower,AZ,,,,,,,no agency match,none,
+GGG,Longview Tower,TX,Longview,LONGVIEW,TX09205,83771,284,339,,direct,
+GPT,Gulfport Tower,MS,Gulfport,GULFPORT,MS02402,72810,0,0,no reported offenses (zero or not reported),direct,
+GRB,Green Bay Tower,WI,Green Bay,GREEN BAY,WI00502,105240,521,495,,direct,
+GRR,Grand Rapids Tower,MI,Grand Rapids,GRAND RAPIDS,MI41436,195913,1783,910,,direct,
+GSO,Greensboro Tower,NC,Greensboro,,,,,,no agency match,direct,924
+GSP,Greer Tower,SC,Greer,,,,,,no agency match,direct,354
+GTF,Great Falls Tower,MT,Great Falls,GREAT FALLS,MT00701,60414,347,574,,direct,
+HEF,Manassas Tower,VA,Manassas,MANASSAS,VA07501,43028,118,274,,direct,271
+HIO,Hillsboro Tower,OR,Hillsboro,HILLSBORO,OR03403,107978,343,318,,direct,
+HLN,Helena Tower,MT,Helena,HELENA,MT02501,35238,181,514,,direct,
+HPN,Westchester Tower,NY,New York,NEW YORK,NY03030,8299271,55690,671,proxy city,proxy,
+HSV,Huntsville Tower,AL,Huntsville,HUNTSVILLE,AL04701,228697,1105,483,,direct,
+HTS,Huntington Tower,WV,Huntington,HUNTINGTON,WV00602,44860,359,800,,direct,
+HUF,Terre Haute Tower,IN,Terre Haute,TERRE HAUTE,IN08401,58536,322,550,,direct,
+HWD,Hayward Tower,CA,Hayward,HAYWARD,CA00106,153419,732,477,,direct,
+IAD,Dulles Tower,VA,Washington,WASHINGTON,DCMPD00,702250,6502,926,proxy city (DC agency used for a suburban airport: unreliable),proxy,122
+ILG,Wilmington Tower,DE,Wilmington,WILMINGTON,DE00206,71958,811,1127,,direct,
+ILM,Wilmington Tower,NC,Wilmington,,,,,,no agency match,direct,482
+ISP,Islip Tower,NY,New York,NEW YORK,NY03030,8299271,55690,671,proxy city,proxy,
+ITO,Hilo TRACAB,HI,Hilo,,,,,,no agency match,direct,
+JAN,Jackson Tower,MS,Jackson,JACKSON,MS02501,140741,0,0,no reported offenses (zero or not reported),direct,
+JAX,Jacksonville Tower,FL,Jacksonville,JACKSONVILLE SHERIFF'S O,FL01600,1017014,5708,561,,direct,597
+JFK,Kennedy Tower,NY,New York,NEW YORK,NY03030,8299271,55690,671,proxy city,proxy,766
+JNU,Juneau Tower,AK,Juneau,JUNEAU,AK00103,31612,170,538,,direct,
+LAF,Lafayette Tower,IN,Lafayette,LAFAYETTE,IN07901,71374,428,600,,direct,
+LAN,Lansing Tower,MI,Lansing,LANSING,MI33519,111965,1506,1345,,direct,
+LBB,Lubbock Tower,TX,Lubbock,LUBBOCK,TX15202,269900,2216,821,,direct,
+LCH,Lake Charles Tower,LA,Lake Charles,LAKE CHARLES,LA01002,77982,478,613,,direct,
+LEX,Lexington Tower,KY,Lexington,LEXINGTON,KY03402,323254,847,262,,direct,
+LFT,Lafayette Tower,LA,Lafayette,LAFAYETTE,LA02803,121471,1295,1066,,direct,
+LGA,La Guardia Tower,NY,New York,NEW YORK,NY03030,8299271,55690,671,proxy city,proxy,766
+LIT,Little Rock Tower,AR,Little Rock,LITTLE ROCK,AR06002,204247,3415,1672,,direct,
+LNK,Lincoln Tower,NE,Lincoln,LINCOLN,NB05501,295808,1029,348,,direct,
+LOU,Louisville Bowman Tower,KY,Louisville,LOUISVILLE METRO,KY05680,676843,4788,707,,direct,
+LVK,Livermore Tower,CA,Livermore,LIVERMORE,CA00107,81316,191,235,,direct,
+MAF,Midland Tower,TX,Midland,MIDLAND,TX16501,140303,512,365,,direct,
+MBS,Saginaw Tower,MI,Saginaw,SAGINAW,MI73173,43023,32,74,,direct,
+MCO,Orlando Tower,FL,Orlando,ORLANDO,FL04804,325168,0,0,zero reported (likely a reporting gap),direct,816
+MDT,Harrisburg Tower,PA,Harrisburg,HARRISBURG,PA02202,49985,381,762,,direct,766
+MEM,Memphis Tower,TN,Memphis,MEMPHIS,TNMPD00,613207,15338,2501,,direct,2501
+MFD,Mansfield Tower,OH,Mansfield,MANSFIELD,OH07001,47770,100,209,,direct,
+MGM,Montgomery Tower,AL,Montgomery,MONTGOMERY,AL00301,193728,1152,595,,direct,
+MHT,Manchester Tower,NH,Manchester,MANCHESTER,NH00634,115464,388,336,,direct,
+MIC,Crystal Tower,MN,Crystal,CRYSTAL,MN02704,21477,60,279,,direct,
+MKC,Kansas City Dntn Tower,MO,Kansas City,KANSAS CITY,MOKPD00,511437,7914,1547,,direct,
+MKG,Muskegon Tower,MI,Muskegon,MUSKEGON,MI61161,60107,42,70,,direct,
+MLI,Moline Quad City Tower,IL,Moline,MOLINE,IL08106,41659,160,384,,direct,
+MLU,Monroe Tower,LA,Monroe,MONROE,LA03701,46290,876,1892,,direct,
+MMU,Morristown Tower,NJ,Morristown,MORRISTOWN,NJ01424,21172,56,265,,direct,
+MOB,Mobile Tower,AL,Mobile,MOBILE,AL00201,237092,1783,752,,direct,
+MRI,Merrill Tower,AK,Anchorage,ANCHORAGE,AK00101,286958,2912,1015,proxy city,proxy,
+MRY,Monterey Tower,CA,Monterey,MONTEREY,CA02700,107372,394,367,,direct,
+MSN,Madison Tower,WI,Madison,MADISON,WI01301,282045,722,256,,direct,
+MWH,Grant County Tower,WA,,,,,,,no agency match,none,
+MYR,Myrtle Beach Tower,SC,Myrtle Beach,,,,,,no agency match,direct,1125
+NEW,Lakefront Tower,LA,New Orleans,NEW ORLEANS,LANPD00,361802,0,0,no reported offenses (zero or not reported),proxy,
+OGG,Kahului Tower,HI,Kahului,,,,,,no agency match,direct,
+OMA,Omaha Tower,NE,Omaha,OMAHA,NB02802,480235,1772,369,,direct,
+ONT,Ontario Tower,CA,Ontario,ONTARIO,CA03607,184763,503,272,,direct,
+ORF,Norfolk Tower,VA,Norfolk,NORFOLK,VA11700,230460,1082,469,,direct,470
+ORL,Orlando Executive Tower,FL,Orlando,ORLANDO,FL04804,325168,0,0,no reported offenses (zero or not reported),direct,
+PAE,Paine Tower,WA,Seattle,SEATTLE,WASPD00,760058,5891,775,proxy city,proxy,
+PAO,Palo Alto Tower,CA,Palo Alto,PALO ALTO,CA04312,65079,138,212,,direct,
+PCT,Potomac TRACON,VA,Washington,WASHINGTON,DCMPD00,702250,6502,926,proxy city (DC agency used for a suburban airport: unreliable),proxy,98
+PDK,DeKalb-Peachtree Tower,GA,Atlanta,ATLANTA,GAAPD00,517123,2691,520,proxy city,proxy,135
+PDX,Portland Tower,OR,Portland,PORTLAND,OR02602,623066,4487,720,,direct,
+PHF,Patrick Henry Tower,VA,Newport News,NEWPORT NEWS,VA11600,183563,1351,736,proxy city,proxy,582
+PHL,Philadelphia Tower,PA,Philadelphia,PHILADELPHIA,PAPEP00,1549259,14078,909,,direct,909
+PIA,Peoria Tower,IL,Peoria,PEORIA,IL07207,109677,1475,1345,,direct,
+PIE,St. Petersburg Tower,FL,St. Petersburg,ST. PETERSBURG,FL05214,264999,1642,620,proxy city,proxy,
+PIT,Pittsburgh Tower,PA,Pittsburgh,PITTSBURGH,PAPPD00,317177,1355,427,,direct,427
+PNE,Northeast Philadelphia Tower,PA,Philadelphia,PHILADELPHIA,PAPEP00,1549259,14078,909,,direct,909
+PNS,Pensacola Tower,FL,Pensacola,PENSACOLA,FL01701,53476,33,62,,direct,
+POC,Brackett Tower,CA,Los Angeles,LOS ANGELES,CA01942,3796352,27656,728,proxy city,proxy,
+POU,Poughkeepsie Tower,NY,Poughkeepsie,POUGHKEEPSIE TOWN,NY01363,40746,72,177,,direct,
+PSC,Pasco Tower,WA,Pasco,PASCO,WA01102,80838,281,348,,direct,
+PSP,Palm Springs Tower,CA,Palm Springs,PALM SPRINGS,CA03311,45406,274,603,,direct,
+PTK,Pontiac Tower,MI,Pontiac,PONTIAC,MI63190,61644,607,985,,direct,
+PUB,Pueblo Tower,CO,Pueblo,PUEBLO,CO05101,110805,1578,1424,,direct,
+PVD,Providence Tower,RI,Providence,,,,,,no agency match,direct,
+PWK,Palwaukee Tower,IL,Chicago,CHICAGO,ILCPD00,2638698,14245,540,proxy city,proxy,
+PWM,Portland Tower,ME,Portland,PORTLAND,ME00305,69310,185,267,,direct,
+RDG,Reading Tower,PA,Reading,READING,PA00614,97868,330,337,,direct,211
+RDU,Raleigh-Durham Tower,NC,Raleigh,,,,,,no agency match,direct,489
+RFD,Rockford Tower,IL,Rockford,ROCKFORD,IL10104,145280,1569,1080,,direct,
+RHV,Reid-Hillview Tower,CA,San Jose,SAN JOSE,CA04313,956840,5806,607,proxy city,proxy,
+RIC,Richmond Tower,VA,Richmond,RICHMOND,VA12200,231805,781,337,,direct,337
+RNO,Reno Tower,NV,Reno,RENO,NV01601,278313,1474,530,,direct,
+ROA,Roanoke Tower,VA,Roanoke,ROANOKE,VA12300,97027,602,620,,direct,615
+ROC,Rochester Tower,NY,Rochester,ROCHESTER,NY02701,206093,1200,582,,direct,
+ROW,Roswell Tower,NM,Roswell,ROSWELL,NM00301,46677,396,848,,direct,
+RST,Rochester Muni TRACAB,MN,Rochester,ROCHESTER,MN05501,122694,189,154,,direct,
+SAV,Savannah Tower,GA,Savannah,SAVANNAH,GA02503,241780,49,20,suspiciously low (same problem as before),direct,355
+SBA,Santa Barbara Tower,CA,Santa Barbara,SANTA BARBARA,CA04200,142805,298,209,,direct,
+SBN,South Bend Tower,IN,South Bend,SOUTH BEND,IN07102,103415,998,965,,direct,
+SCK,Stockton Tower,CA,Stockton,STOCKTON,CA03905,319069,3656,1146,,direct,
+SDL,Scottsdale Tower,AZ,Scottsdale,SCOTTSDALE,AZ00725,245237,374,153,,direct,
+SEE,Gillespie Tower,CA,San Diego,SAN DIEGO,CA03711,1389024,5726,412,proxy city,proxy,
+SGF,Springfield Tower,MO,Springfield,SPRINGFIELD,MO03903,170527,2009,1178,,direct,
+SHV,Shreveport Tower,LA,Shreveport,SHREVEPORT,LA00901,175092,2151,1228,,direct,
+SJC,San Jose Tower,CA,San Jose,SAN JOSE,CA04313,956840,5806,607,,direct,
+SJU,San Juan Tower,PR,,,,,,,no agency match,none,
+SMF,Sacramento Tower,CA,Sacramento,SACRAMENTO,CA03400,621675,2825,454,,direct,
+SMO,Santa Monica Tower,CA,Santa Monica,SANTA MONICA,CA01965,88948,692,778,,direct,
+SPI,Springfield Tower,IL,Springfield,SPRINGFIELD,IL08402,111965,1009,901,,direct,
+SRQ,Sarasota Tower,FL,Sarasota,SARASOTA,FL05800,302725,349,115,,direct,
+STL,St. Louis Tower,MO,St. Louis,ST. LOUIS COUNTY POL DEP,MO09500,402510,1904,473,proxy city,proxy,
+STP,St. Paul Tower,MN,Saint Paul,,,,,,no agency match,proxy,
+STS,Sonoma Tower,CA,Sonoma,SONOMA,CA04900,138566,274,198,,direct,
+STT,St. Thomas Tower,VI,,,,,,,no agency match,none,
+SUS,Spirit Tower,MO,St. Louis,ST. LOUIS COUNTY POL DEP,MO09500,402510,1904,473,proxy city,proxy,
+SUX,Sioux Gateway Tower,IA,Sioux City,SIOUX CITY,IA09701,85711,476,555,proxy city,proxy,
+SYR,Syracuse Tower,NY,Syracuse,SYRACUSE,NY03301,145175,1111,765,,direct,
+TEB,Teterboro Tower,NJ,New York,NEW YORK,NY03030,8299271,55690,671,proxy city,proxy,
+TLH,Tallahassee Tower,FL,Tallahassee,TALLAHASSEE,FL03703,203672,1272,625,,direct,
+TOA,Torrance Tower,CA,Torrance,TORRANCE,CA01972,136899,426,311,,direct,
+TOL,Toledo Tower,OH,Toledo,TOLEDO,OH04807,263668,2745,1041,,direct,
+TPA,Tampa Tower,FL,Tampa,TAMPA,FL02902,408646,1817,445,,direct,445
+TRI,Tri-Cities Tower,TN,Johnson City,JOHNSON CITY,TN09001,74093,298,402,proxy city,proxy,411
+TUS,Tucson Tower,AZ,Tucson,TUCSON,AZ01003,548789,3231,589,,direct,
+TVC,Traverse City Tower,MI,Traverse City,TRAVERSE CITY,MI28781,15718,33,210,,direct,
+TWF,Twin Falls Tower,ID,Twin Falls,TWIN FALLS,ID04202,55932,233,417,,direct,
+TYS,Knoxville Tower,TN,Knoxville,KNOXVILLE,TN04701,200457,1484,740,,direct,740
+VGT,North Las Vegas Tower,NV,North Las Vegas,NORTH LAS VEGAS,NV00202,293100,1140,389,,direct,
+YIP,Willow Run Tower,MI,Ann Arbor,ANN ARBOR,MI81218,118025,357,302,proxy city,proxy,
+YNG,Youngstown Tower,OH,Youngstown,YOUNGSTOWN,OH05009,58850,405,688,,direct,
